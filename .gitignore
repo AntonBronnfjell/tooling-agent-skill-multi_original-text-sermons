@@ -1,0 +1,5 @@
+/data/
+/sermons/
+/sources/user/*
+!/sources/user/README.md
+__pycache__/
