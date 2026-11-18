@@ -39,6 +39,38 @@ class RefTests(unittest.TestCase):
         for b in BOOKS:
             self.assertEqual(parse_ref(f"{b}.1.1").book, b)
 
+    def test_every_alias_resolves(self):
+        from otslib.refs import _ALIASES
+        for alias, book in _ALIASES.items():
+            self.assertEqual(parse_ref(f"{alias} 1:1").book, book, alias)
+
+    def test_spanish_full_names_all_66(self):
+        names = """Génesis Éxodo Levítico Números Deuteronomio Josué Jueces Rut|1 Samuel|2 Samuel|1 Reyes|2 Reyes
+        |1 Crónicas|2 Crónicas|Esdras|Nehemías|Ester|Job|Salmos|Proverbios|Eclesiastés|Cantares|Cantar de los Cantares
+        |Isaías|Jeremías|Lamentaciones|Ezequiel|Daniel|Oseas|Joel|Amós|Abdías|Jonás|Miqueas|Nahúm|Habacuc|Sofonías|Hageo
+        |Zacarías|Malaquías|Mateo|Marcos|Lucas|Juan|Hechos|Romanos|1 Corintios|2 Corintios|Gálatas|Efesios|Filipenses
+        |Colosenses|1 Tesalonicenses|2 Tesalonicenses|1 Timoteo|2 Timoteo|Tito|Filemón|Hebreos|Santiago|1 Pedro|2 Pedro
+        |1 Juan|2 Juan|3 Juan|Judas|Apocalipsis""".replace("\n", "")
+        singles = "Génesis Éxodo Levítico Números Deuteronomio Josué Jueces Rut".split()
+        rest = [n.strip() for n in names.split("|")][1:]
+        full = singles + rest
+        seen = {parse_ref(f"{n} 1:1").book for n in full}
+        self.assertEqual(seen, set(BOOKS))
+
+    def test_spanish_abbreviations(self):
+        cases = {"Jr": "Jer", "Lm": "Lam", "Sl": "Ps", "1 P": "1Pet", "2 P": "2Pet", "1 Tm": "1Tim",
+                 "2 Tm": "2Tim", "Hb": "Heb", "Jds": "Jude", "Ct": "Song", "Qo": "Eccl", "1 R": "1Kgs",
+                 "2 R": "2Kgs", "1 S": "1Sam", "2 S": "2Sam", "St": "Jas", "Mc": "Mark", "Mic": "Mic",
+                 "Miq": "Mic"}
+        for ab, book in cases.items():
+            self.assertEqual(parse_ref(f"{ab} 1:1").book, book, ab)
+
+    def test_mc_is_mark(self): self.assertEqual(to_osis(parse_ref("Mc 1:1")), "Mark.1.1")
+    def test_roman_prefix(self): self.assertEqual(to_osis(parse_ref("I Juan 5:7")), "1John.5.7")
+    def test_roman_prefix_iii(self): self.assertEqual(to_osis(parse_ref("III Jn 1:4")), "3John.1.4")
+    def test_primera_de(self): self.assertEqual(to_osis(parse_ref("Primera de Juan 5:7")), "1John.5.7")
+    def test_isaiah_not_roman(self): self.assertEqual(to_osis(parse_ref("Isaías 53:5")), "Isa.53.5")
+
 
 if __name__ == "__main__":
     unittest.main()
