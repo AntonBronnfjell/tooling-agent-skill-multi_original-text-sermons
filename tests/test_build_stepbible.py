@@ -1,3 +1,4 @@
+import contextlib
 import io
 import lzma
 import os
@@ -32,10 +33,13 @@ def write_xz(path, text):
         f.write(text)
 
 
-def build(sources, dest, only=("stepbible",)):
+def build(sources, dest, only=("stepbible",), case=None):
+    """Build a fixture DB and open it; with `case`, the connection is closed when that test ends."""
     build_db.build(Path(sources), Path(dest), only=list(only), out=io.StringIO())
     conn = sqlite3.connect(dest)
     conn.row_factory = sqlite3.Row
+    if case is not None:
+        case.addCleanup(conn.close)
     return conn
 
 
@@ -187,7 +191,7 @@ class SyntheticEdgeCases(unittest.TestCase):
                     tahot_row("Gen.4.8#0502=R", "הַ/שָּׂדֶה"),
                     tahot_row("Gen.4.8#02=L", "אִם\\־"),
                     tahot_row("Gen.4.8#03=L", "תִּשְׁמַע\\׃")])
-        conn = build(self.src, Path(self.tmp) / "t.db")
+        conn = build(self.src, Path(self.tmp) / "t.db", case=self)
         text = conn.execute("select text from verses where witness='WLC'").fetchone()["text"]
         self.assertEqual(text, "אב אם־תשמע׃".replace("אב", "אָב").replace("אם", "אִם").replace("תשמע", "תִּשְׁמַע"))
         self.assertNotIn("נֵלְכָה", text)
@@ -199,7 +203,7 @@ class SyntheticEdgeCases(unittest.TestCase):
     def test_paragraph_markers_dropped(self):
         self.tahot([tahot_row("Gen.4.8#01=L", "אָב"),
                     tahot_row("Gen.4.8#02=L", "אִם\\׃\\ \\ס")])
-        conn = build(self.src, Path(self.tmp) / "t.db")
+        conn = build(self.src, Path(self.tmp) / "t.db", case=self)
         t = conn.execute("select text, match_key from verses where witness='WLC'").fetchone()
         self.assertTrue(t["text"].endswith("׃"))
         self.assertFalse(t["match_key"].endswith(" ס"))
@@ -208,7 +212,7 @@ class SyntheticEdgeCases(unittest.TestCase):
 
     def test_hebrew_strongs_joins_lexicon_without_instance_suffix(self):
         self.tahot([tahot_row("Gen.4.8#01=L", "אָב", root="H0001A_B")])
-        conn = build(self.src, Path(self.tmp) / "t.db")
+        conn = build(self.src, Path(self.tmp) / "t.db", case=self)
         self.assertEqual(conn.execute("select strongs from words").fetchone()[0], "H0001A")
 
     def test_greek_compound_displacement_tokens(self):
@@ -219,20 +223,20 @@ class SyntheticEdgeCases(unittest.TestCase):
                 for ed in ("Byz«14.24",)]
         rows.append("\t".join(["Rom.16.25#02=K", "δὲ (de)", "now", "G1161=CONJ", "δέ=but", "Tyn»1»1+TR", "", "", "", "", "#02", "G1161", "", "", "", "", ""]))
         write_xz(self.src / "stepbible" / "TAGNT_Act-Rev.txt.xz", "\ufeffpre\n\n" + hdr + "\n" + "\n".join(rows) + "\n")
-        conn = build(self.src, Path(self.tmp) / "t.db")
+        conn = build(self.src, Path(self.tmp) / "t.db", case=self)
         self.assertEqual(conn.execute("select text from verses where witness='Byz'").fetchone()[0], "Τῷ")
         self.assertEqual(conn.execute("select text from verses where witness='THGNT'").fetchone()[0], "δὲ")
 
     def test_ketiv_unparseable_is_skipped(self):
         self.tahot([tahot_row("Gen.4.8#01=Q(K)", "אָב", kmean="B= weird (x) ¦ K= y", kspell="L= x"),
                     tahot_row("Gen.4.8#02=L", "אִם")])
-        conn = build(self.src, Path(self.tmp) / "t.db")
+        conn = build(self.src, Path(self.tmp) / "t.db", case=self)
         self.assertIsNone(conn.execute("select 1 from verses where witness='Ketiv'").fetchone())
 
     def test_ketiv_from_spelling_column(self):
         self.tahot([tahot_row("Gen.4.8#01=Q(k)", "הַיְצֵ֣א", kspell="L= הַוְצֵ֣א ¦ ;K= הוֹצֵא"),
                     tahot_row("Gen.4.8#02=L", "אִם")])
-        conn = build(self.src, Path(self.tmp) / "t.db")
+        conn = build(self.src, Path(self.tmp) / "t.db", case=self)
         k = conn.execute("select text from verses where witness='Ketiv'").fetchone()["text"]
         self.assertEqual(k, "הוֹצֵא אִם")
 
@@ -244,9 +248,24 @@ class SyntheticEdgeCases(unittest.TestCase):
         row = "\t".join(["Act.2.11[2.10]#01=NKO", "Κρῆτες, (Krētes)", "Cretans", "G2912=N-NPM", "Κρής=Cretan",
                           eds, "", "", "", "", "#01", "G2912", "", "", "", "", ""])
         write_xz(self.src / "stepbible" / "TAGNT_Act-Rev.txt.xz", "﻿pre\n\n" + hdr + "\n" + row + "\n")
-        conn = build(self.src, Path(self.tmp) / "t.db")
+        conn = build(self.src, Path(self.tmp) / "t.db", case=self)
         self.assertIsNotNone(conn.execute("select 1 from verses where corpus='grnt' and ref='Acts.2.10'").fetchone())
         self.assertIsNone(conn.execute("select 1 from verses where corpus='grnt' and ref='Acts.2.11'").fetchone())
+
+
+class BuildCli(unittest.TestCase):
+    def test_loader_output_goes_to_out(self):
+        out = io.StringIO()
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stdout(io.StringIO()) as real:
+            build_db.build(FIXTURES, Path(d) / "x.db", only=["versification", "dss"], out=out)
+        self.assertEqual(real.getvalue(), "")
+        self.assertIn("dss:", out.getvalue())
+
+    def test_only_needs_explicit_db(self):
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            rc = build_db.main(["--only", "dss"])
+        self.assertEqual(rc, 2)
+        self.assertIn("--db", err.getvalue())
 
 
 class MissingDb(unittest.TestCase):
@@ -255,8 +274,9 @@ class MissingDb(unittest.TestCase):
         os.environ["OTS_DB"] = "/nonexistent/x.db"
         try:
             self.assertEqual(str(db.db_path()), "/nonexistent/x.db")
-            with self.assertRaises(SystemExit) as cm:
+            with self.assertRaises(SystemExit) as cm, contextlib.redirect_stderr(io.StringIO()) as err:
                 db.require_db()
+            self.assertIn("bible.db not found", err.getvalue())
             self.assertEqual(cm.exception.code, 2)
         finally:
             if old is None:

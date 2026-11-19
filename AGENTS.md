@@ -7,7 +7,7 @@ This repository **is** the `original-text-sermons` agent skill (repo root = skil
 Run from the repo root. Python 3 standard library only — never `pip install` anything.
 
 ```bash
-python3 scripts/build_db.py                       # sources/ -> data/bible.db (offline; --only <loader>, --db PATH)
+python3 scripts/build_db.py                       # sources/ -> data/bible.db (offline; --db PATH; --only <loader> needs --db)
 python3 -m unittest discover -s tests -v          # full test suite (unittest only)
 python3 scripts/lint_skill.py                     # SKILL.md frontmatter, < 500 lines, links, named scripts
 python3 scripts/check_sermon.py evals/fixtures/positive/*.md   # validator must pass every positive fixture

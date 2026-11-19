@@ -66,7 +66,9 @@ class Translations(unittest.TestCase):
         self.assertEqual(self.q("select count(*) c from translations where version='TEST'")["c"], 2)
         out = io.StringIO()
         from loaders import translations
-        translations.load(_mem(), FIXTURES, out=out)
+        c = _mem()
+        self.addCleanup(c.close)
+        translations.load(c, FIXTURES, out=out)
         self.assertIn("NoSuchBook", out.getvalue())
         self.assertIn("1 unparseable", out.getvalue())
 

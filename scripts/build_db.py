@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build data/bible.db from the vendored (xz-compressed) sources."""
 import argparse
+import contextlib
 import hashlib
 import importlib
 import os
@@ -34,7 +35,8 @@ def build(sources_dir, db_file, only=None, out=sys.stdout):
         for name in [n for n in LOADERS if n in todo]:
             t0 = time.time()
             mod = importlib.import_module(f"loaders.{name}")  # missing loader module = hard error
-            n = mod.load(conn, sources_dir)
+            with contextlib.redirect_stdout(out):  # loaders print their stats; keep them on `out`
+                n = mod.load(conn, sources_dir)
             conn.commit()
             print(f"{name}: {n} rows ({time.time() - t0:.1f}s)", file=out)
         manifest = sources_dir / "MANIFEST.json"
@@ -59,6 +61,11 @@ def main(argv=None):
     ap.add_argument("--only", help="comma-separated loaders to run (default: all)")
     a = ap.parse_args(argv)
     only = [s.strip() for s in a.only.split(",") if s.strip()] if a.only else None
+    if only and a.db is None:
+        print(f"--only builds a partial DB (only {', '.join(only)}); writing it over the default {db.db_path()} "
+              "would leave the skill without the other corpora. Pass --db PATH for a partial build, or omit "
+              "--only to rebuild everything.", file=sys.stderr)
+        return 2
     dest = build(a.sources, a.db or db.db_path(), only)
     print(f"wrote {dest}")
     return 0

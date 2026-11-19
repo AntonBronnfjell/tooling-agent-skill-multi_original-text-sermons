@@ -72,6 +72,7 @@ class Ext(unittest.TestCase):
         import sqlite3
         from otslib import db
         c = sqlite3.connect(":memory:")
+        self.addCleanup(c.close)
         c.executescript(db.SCHEMA)
         ext.load(c, FIXTURES, out)
         self.assertIn("0 sections skipped", out.getvalue())
