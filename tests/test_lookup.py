@@ -41,6 +41,17 @@ class Lookup(unittest.TestCase):
             ("G2010", "ἐπιτρέπω", "grc", "permit", ""), ("G20100", "ἄλλο", "grc", "other", ""),
             ("G14730", "ἄλλο2", "grc", "other2", "")])  # fixture already has G1473, G2424*, G2532
         c.execute("INSERT INTO variants VALUES ('Acts.2.4', 9, 'zzz', 'Byz+KJV')")
+        c.executemany("INSERT INTO variants VALUES (?,?,?,?)", [
+            ("Acts.2.4", 10, "yyy", "Byz+02"), ("Acts.2.4", 11, "xxx", "NIV+01")])
+        # real shapes: TAGNT row tagged for a witness that spells the word differently (variants row)
+        alled = "NA28+NA27+Tyn+SBL+WH+Treg+TR+Byz"
+        for ref, pos, surf, lem, txt_w, txt in [
+                ("1Cor.10.2", 5, "Μωϋσῆν", "Μωϋσῆς", "TR", "καὶ πάντες εἰς τὸν Μωσῆν ἐβαπτίσαντο"),
+                ("1Cor.1.17", 7, "ἀλλ᾽", "ἀλλά", "SBL", "οὐκ ἐν σοφίᾳ λόγου Χριστὸς ἀλλὰ ἐν")]:
+            c.execute("INSERT INTO words VALUES ('grnt','TAGNT',?,?,?,?,'G0001','N','g',?,'','')", (ref, pos, surf, lem, alled))
+            c.execute("INSERT INTO verses VALUES ('grnt',?,?,?,'')", (txt_w, ref, txt))
+        c.execute("INSERT INTO variants VALUES ('1Cor.10.2', 5, 'Μωσῆν', 'TR')")
+        c.execute("INSERT INTO variants VALUES ('1Cor.1.17', 7, 'ἀλλὰ', 'NA27+Tyn+SBL+WH+Treg+TR+Byz')")
         c.commit()
         c.close()
 
@@ -126,6 +137,23 @@ class Lookup(unittest.TestCase):
         self.assertTrue(w[0]["from_variant"])
         self.assertEqual(w[0]["pos"], 3)
         self.assertEqual([x["pos"] for x in o["words"]], sorted(x["pos"] for x in o["words"]))
+
+    def test_variant_spelling_replaces_row_not_duplicates(self):
+        for ref, wit, want in (("1Cor.10.2", "TR", "Μωσῆν"), ("1Cor.1.17", "SBL", "ἀλλὰ")):
+            o = run("verse", ref, "--witness", wit)
+            poss = [w["pos"] for w in o["words"]]
+            self.assertEqual(len(poss), len(set(poss)))
+            w = [x for x in o["words"] if x["surface"] == want]
+            self.assertEqual(len(w), 1)
+            self.assertTrue(w[0]["surface_from_variant"])
+            self.assertTrue(w[0]["lemma"])  # lemma/morph kept
+            self.assertIn(want, o["text"])
+
+    def test_late_manuscript_sigla_are_early(self):
+        cls = {x["reading"]: x["class"] for x in run("variants", "Acts.2.4")}
+        self.assertEqual(cls["yyy"], "early")  # Byz+02
+        self.assertEqual(cls["xxx"], "early")  # NIV+01
+        self.assertEqual(cls["zzz"], "late")   # Byz+KJV
 
     def test_words_note_when_incomplete(self):
         self.assertIn("words_note", run("verse", "Mark.16.9", "--witness", "SBL"))

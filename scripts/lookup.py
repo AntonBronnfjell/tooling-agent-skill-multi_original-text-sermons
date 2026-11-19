@@ -97,13 +97,17 @@ def edition_tokens(editions):
     return {re.split("[»«]", t)[0] for t in (editions or "").split("+") if t}
 
 
+SIGLUM_RE = re.compile(r"^(P\d+|\d+)[A-Za-z]*$")  # P46, P75, 01, 02, 03, 05 ...
+
+
 def is_late(editions):
-    """Controller ruling: ignore non-edition tokens (KJV, NIV...); if no edition token remains,
-    late only when the original tokens were within {TR, Byz, KJV}."""
+    """Late iff no critical edition or manuscript siglum (01, P75...) supports the reading beyond
+    TR/Byz. Translation tokens (KJV, NIV...) are dropped first; if only they remain, late iff
+    the tokens were within {TR, Byz, KJV}."""
     toks = edition_tokens(editions)
-    eds = toks & EDITIONS
-    if eds:
-        return eds <= {"TR", "Byz"}
+    kept = {t for t in toks if t in EDITIONS or SIGLUM_RE.match(t)}
+    if kept:
+        return kept <= {"TR", "Byz"}
     return bool(toks) and toks <= {"TR", "Byz", "KJV"}
 
 
@@ -113,10 +117,18 @@ def verse_words(conn, corpus, witness, ref):
         tok = EDITION_TOKEN.get(witness)
         rows = conn.execute("SELECT * FROM words WHERE corpus='grnt' AND ref=? ORDER BY pos, rowid", (ref,)).fetchall()
         rows = [dict(r) for r in rows if tok in edition_tokens(r["editions"])]
-        have = {(r["pos"], r["surface"]) for r in rows}
-        # substituted readings live only in `variants` (surface only, no lemma/morph)
-        for v in conn.execute("SELECT pos, reading, editions FROM variants WHERE ref=?", (ref,)):
-            if tok in edition_tokens(v["editions"]) and (v["pos"], v["reading"]) not in have:
+        # substituted readings live in `variants`: a word row tagged for this witness may be spelled
+        # differently there, so replace its surface; append a surface-only row only if no row at pos.
+        for v in conn.execute("SELECT pos, reading, editions FROM variants WHERE ref=? ORDER BY rowid", (ref,)):
+            if tok not in edition_tokens(v["editions"]):
+                continue
+            at = [r for r in rows if r["pos"] == v["pos"]]
+            if any(r["surface"] == v["reading"] for r in at):
+                continue
+            if at:
+                at[0]["surface"] = v["reading"]
+                at[0]["surface_from_variant"] = True
+            else:
                 rows.append({"pos": v["pos"], "surface": v["reading"], "lemma": "", "strongs": "", "morph": "",
                              "gloss": "", "domain": "", "syntax_role": "", "editions": v["editions"],
                              "from_variant": True})
@@ -127,8 +139,10 @@ def verse_words(conn, corpus, witness, ref):
 
 def word_dict(row, corpus):
     d = {k: row[k] for k in WORD_COLS}
-    if isinstance(row, dict) and row.get("from_variant"):
-        d["from_variant"] = True
+    if isinstance(row, dict):
+        for k in ("from_variant", "surface_from_variant"):
+            if row.get(k):
+                d[k] = True
     if corpus == "dss":
         d["flags"] = [f for f in row["editions"].split(",") if f]
     if corpus == "ext" and row["editions"] == "bracketed":
