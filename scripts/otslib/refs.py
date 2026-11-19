@@ -88,6 +88,13 @@ _TABLE = [
 
 BOOKS = [t[0] for t in _TABLE]
 
+# STEPBible (TAHOT/TAGNT) book abbreviations that are not already aliases above.
+_STEP_ABBREVS = {
+    "Deut": ["Deu"], "1Sam": ["1Sa"], "2Sam": ["2Sa"], "Prov": ["Pro"], "Eccl": ["Ecc"],
+    "Song": ["Sng"], "Ezek": ["Ezk"], "Joel": ["Jol"], "Amos": ["Amo"], "Obad": ["Oba"],
+    "Nah": ["Nam"], "Mark": ["Mrk"], "Luke": ["Luk"], "John": ["Jhn"], "Acts": ["Act"],
+}
+
 
 def _key(s):
     s = unicodedata.normalize("NFD", s.casefold())
@@ -98,7 +105,7 @@ def _key(s):
 def _build_aliases():
     out = {}
     for osis, en, es in _TABLE:
-        for name in [osis] + en + es:
+        for name in [osis] + en + es + _STEP_ABBREVS.get(osis, []):
             k = _key(name)
             if out.setdefault(k, osis) != osis:
                 raise RuntimeError(f"alias collision: {name!r}")
