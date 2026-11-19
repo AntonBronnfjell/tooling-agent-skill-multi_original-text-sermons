@@ -141,7 +141,17 @@ def _lookup(book_text):
     return None
 
 
+class CrossChapterError(RefError):
+    pass
+
+
+_CROSS_RE = re.compile(r"\d+\s*[.:]\s*\d+\s*[-–]\s*\d+\s*[.:]\s*\d+\s*$")
+
+
 def parse_ref(text):
+    if _CROSS_RE.search(text or ""):
+        raise CrossChapterError(f"range {text} crosses a chapter; split it at the chapter boundary "
+                                "(e.g. John.7.53 + John.8.1-11)")
     m = _REF_RE.match(text or "")
     if not m:
         raise RefError(f"cannot parse reference: {text!r}")

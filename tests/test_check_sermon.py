@@ -413,6 +413,17 @@ class Iteration1(Base):
         self.assertTrue(any("tradition term" in f.msg for f in es if f.level == "ERROR"))
         self.assertFalse(any("tradition term" in f.msg for f in self.qo(J11.replace("the word was God", "la iglesia"))))
 
+    def test_quotes_only_without_lang_scans_es_and_en(self):
+        for nat in ("la iglesia", "the church"):
+            fs = self.qo(J11.replace("the word was God", nat), lang=None)
+            self.assertTrue(any("tradition term" in f.msg for f in fs if f.level == "ERROR"), nat)
+            self.assertFalse([f for f in fs if f.level == "WARN"], fs)
+
+    def test_cross_chapter_quote_says_split(self):
+        q = "> [GRC John.7.53-8.11] καὶ\n> Literal: a\n> Natural: b\n"
+        fs = self.qo(q)
+        self.assertTrue(any("crosses a chapter; split it" in f.msg for f in fs if f.level == "ERROR"), fs)
+
     def test_quotes_only_cli(self):
         p = Path(self.tmp) / "chat2.md"
         p.write_text(J11, encoding="utf-8")

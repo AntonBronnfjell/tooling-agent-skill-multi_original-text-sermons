@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from otslib import db  # noqa: E402
 from otslib.norm import match_key, nfc, strip_accents  # noqa: E402
-from otslib.refs import BOOKS, RefError, canonical, parse_ref, source_ref, to_osis  # noqa: E402
+from otslib.refs import BOOKS, CrossChapterError, RefError, canonical, parse_ref, source_ref, to_osis  # noqa: E402
 
 NT = set(BOOKS[BOOKS.index("Matt"):])
 CORPORA = ("grnt", "hebot", "lxx", "dss", "ext")
@@ -59,6 +59,8 @@ def ref_list(conn, corpus, ref_text):
     else:
         try:
             r = parse_ref(ref_text)
+        except CrossChapterError as e:
+            raise Fail(str(e))
         except RefError:
             raise Fail(f"unknown ref: {ref_text}")
         label = to_osis(r)
@@ -86,6 +88,8 @@ def ref_list(conn, corpus, ref_text):
 def default_corpus(ref_text):
     try:
         return "grnt" if parse_ref(ref_text).book in NT else "hebot"
+    except CrossChapterError as e:
+        raise Fail(str(e))
     except RefError:
         raise Fail(f"unknown ref: {ref_text}")
 
@@ -483,6 +487,8 @@ def render_text(cmd, out):
     L = []
     if isinstance(out, dict) and out.get("absent"):
         return out["absent"]
+    if cmd == "search" and "ext" in out["results"]:
+        L.append(f"note: {EXT_NOTE}")
     if cmd in ("verse", "interlinear"):
         if "absent_in" in out:
             return f"{out['ref']} [{out['corpus']}]: absent in {out['absent_in']}; present in {', '.join(out['present_in'])}"
@@ -516,6 +522,7 @@ def render_text(cmd, out):
             for i in (sum(items.values(), []) if isinstance(items, dict) else items):
                 name = f"{c}:{i['witness']}" if "witness" in i else c
                 L.append(f"  {name} {i['ref']}: {i['snippet']}" + (" [editor-bracketed]" if i.get("editor_bracketed") else ""))
+        L.append(f"ext note: {out['ext_note']}")
         if out["papyri"]:
             for p in out["papyri"]:
                 L.append(f"papyri ({out['papyri_quality']}; {p['label']}): {p['entry'][:300]}")

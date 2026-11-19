@@ -7,7 +7,7 @@ Check every word study and every "the Greek really means…" sentence against th
 Meaning drawn from a word's components.
 
 - **Wrong:** "ἐκκλησία is ἐκ + καλέω, so it means 'the called-out ones', a people separated from the world."
-- **Right:** usage shows "assembly, gathering" — 77 times in the LXX (co-occurring with קָהָל, Israel's assembly, 66 times), in Josephus for Moses gathering the people (Ant.3.84 συγκαλεῖ τὸ πλῆθος εἰς ἐκκλησίαν), and in Acts.19.32 for a confused civic crowd in Ephesus (ἦν γὰρ ἡ ἐκκλησία συγκεχυμένη). "Called out" is not in any context the tool returned.
+- **Right:** `usage ἐκκλησία` counts 77 LXX occurrences (`word ἐκκλησία`: same-verse co-occurrence with קָהָל 66 times — not alignment). The contexts cited here name an assembly or gathering: Josephus for Moses gathering the people (Ant.3.84 συγκαλεῖ τὸ πλῆθος εἰς ἐκκλησίαν) and Acts.19.32 for a confused civic crowd in Ephesus (ἦν γὰρ ἡ ἐκκλησία συγκεχυμένη). "Called out" is not in any context the tool returned.
 
 ## 2. Etymological fallacy
 

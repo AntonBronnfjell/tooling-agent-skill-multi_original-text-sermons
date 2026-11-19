@@ -67,7 +67,7 @@ Show both when the difference affects meaning.
 
 ## 9. LXX and DSS alongside the MT
 
-Run `lookup.py lxx <ref>` and `dss <ref>` on key OT verses. Report differences as witnesses, not corrections: Isa.53.11 (1QIsaa and LXX add "light"), Isa.7.14 (עַלְמָה / παρθένος), Isa.9.6 (LXX μεγάλης βουλῆς ἄγγελος for the names), Deut.6.4 (LXX adds a sentence before ἄκουε Ισραηλ). Quote each in its own tag.
+Run `lookup.py lxx <ref>` and `dss <ref>` on key OT verses. Report differences as witnesses, not corrections: Isa.53.11 (1QIsaa and 1Q8 אור "light", 4Q58 או[ר] with ר reconstructed, LXX φῶς, WLC no object; 1QIsaa עבדו vs עבדי in 1Q8, 4Q58, WLC), Isa.7.14 (עַלְמָה / παρθένος), Isa.9.6 (LXX μεγάλης βουλῆς ἄγγελος for the names), Deut.6.4 (LXX adds a sentence before ἄκουε Ισραηλ). Quote each in its own tag.
 
 ## Commands used
 

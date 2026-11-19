@@ -29,8 +29,8 @@ Goal: let the listener know where the wording of the passage is uncertain or lat
 Run `variants` (NT) or `dss` + `lxx` (OT) over the **whole** passage, never a sample of verses. Ranges stay inside one chapter, so split at the chapter boundary: `variants John.7.53` + `variants John.8.1-11`. Then report:
 
 - the wording differences **inside** the passage that change meaning (e.g. `variants John.8.1-11` lists edition differences in every verse of the story, 8:9 alone has 31 rows — read them all, not only 8:11), not only whether an edition brackets the whole;
-- **every** witness the tool returns, each with its reading. `dss Isa.53.11` lists four scrolls: 1QIsaa and 1Q8 have אור after יראה, 4Q58 has או there, 4Q56 keeps only א יסב; 1QIsaa reads עבדו where 1Q8, 4Q58 and WLC read עבדי. Reporting 1QIsaa alone would tilt the picture.
-- Weigh nothing the tool doesn't weigh: **Wrong:** "the older witnesses lean towards 'light' — two independent kinds of witness." **Right:** "1QIsaa and 1Q8 read אור 'light'; LXX has δεῖξαι αὐτῷ φῶς; WLC has no object after יִרְאֶה."
+- **every** witness the tool returns, each with its reading. `dss Isa.53.11` lists four scrolls: 1QIsaa and 1Q8 read אור "light" after יראה; 4Q58 has או there (`verse --witness 4Q58` shows או[ר], the ר reconstructed); 4Q56 keeps only א יסב; WLC יִרְאֶה has no object; LXX δεῖξαι αὐτῷ φῶς. 1QIsaa also reads עבדו "his servant" where 1Q8, 4Q58 and WLC read עבדי "my servant". Reporting 1QIsaa alone would tilt the picture.
+- Weigh nothing the tool doesn't weigh: **Wrong:** "the older witnesses lean towards 'light' — two independent kinds of witness." **Right:** "1QIsaa and 1Q8 read אור 'light' after יראה; 4Q58 has או there (`verse --witness 4Q58` shows או[ר], the ר reconstructed); 4Q56 keeps only א יסב; WLC יִרְאֶה has no object; LXX δεῖξαι αὐτῷ φῶς. 1QIsaa also reads עבדו 'his servant' where 1Q8, 4Q58 and WLC read עבדי 'my servant'."
 - If `dss`/`lxx` answers `absent: "no DSS witness has <ref>"`, that is the finding: the corpus has no witness for that verse.
 
 ## What to report
@@ -42,7 +42,7 @@ Well-known cases (all in `contested-readings.md`):
 - **1John.5.7–8** — the long text is tagged `[TR]` only, class late; SBL, NA and Byz end v.7 at οἱ μαρτυροῦντες. Quote it only as `[GRC:TR 1John.5.7]`. The TR text in the data prints ἕν τῷ οὐρανῷ — ἕν "one" where the sense needs ἐν "in" (an erratum in the source data): quote it exactly as printed and explain in Notes.
 - **Mark.16.9–20** and **John.7.53–8.11** — editors enclose them in [[ ]] (judged later additions). Report the `[[ ]]` markers as each edition prints them in the tool output (`verse <ref> --witness W` for NA, THGNT, WH, Byz, TR, SBL): e.g. NA, THGNT, WH, Byz and TR print [[ before John.7.53, SBL prints none; THGNT has no John.8.11 at all. A marker shown for TR/Byz is inherited in the data, not their own judgment. Report the brackets, not "missing from".
 - **John.1.18** — μονογενὴς θεὸς (NA, SBL, WH, Treg) vs ὁ μονογενὴς υἱός (THGNT, TR, Byz): critical editions divide.
-- **Isa.53.11** — 1QIsaa and LXX "light" with no counterpart in WLC.
+- **Isa.53.11** — 1QIsaa and 1Q8 read אור "light" after יראה; 4Q58 has או there (`verse --witness 4Q58` shows או[ר], the ר reconstructed); 4Q56 keeps only א יסב; WLC יִרְאֶה has no object; LXX δεῖξαι αὐτῷ φῶς. 1QIsaa also reads עבדו "his servant" where 1Q8, 4Q58 and WLC read עבדי "my servant".
 - **Matt.28.19** — all editions agree on the long form; report the Eusebian citation question as stated in `contested-readings.md`, with no verdict.
 
 ## Format
@@ -53,7 +53,7 @@ In Notes, one bullet per variant:
 
 ```
 - John.3.16 after τὸν υἱὸν: αὐτοῦ "his" — Treg+TR+Byz; absent in SBL, NA, WH, THGNT. Tool label: early (because of Treg). Meaning: unchanged; KJV/BSB/RV1909 "his/su".
-- Isa.53.11 [DSS:1QIsaa Isa.53.11] יראה אור "he will see light"; WLC יִרְאֶה without object; LXX δεῖξαι αὐτῷ φῶς.
+- Isa.53.11 [DSS:1QIsaa Isa.53.11] יראה אור "he will see light" — also 1Q8 אור, 4Q58 או[ר] (ר reconstructed); 4Q56 only א יסב; WLC יִרְאֶה without object; LXX δεῖξαι αὐτῷ φῶς. 1QIsaa עבדו "his servant" vs 1Q8, 4Q58, WLC עבדי "my servant".
 ```
 
 When quoting a non-default witness in a quote block, the tag names it (`[GRC:TR …]`, `[DSS:1QIsaa …]`, `[HEB:Ketiv …]`), and the Notes say which editions support it.
@@ -63,5 +63,5 @@ When quoting a non-default witness in a quote block, the tag names it (`[GRC:TR 
 ```
 lookup.py variants John.3.16 | John.1.18 | 1John.5.7 | 1John.5.8 | Mark.16.9-20 | John.7.53 | John.8.1-11 | Matt.28.19
 lookup.py verse John.3.16 --witness NA|TR|Byz|WH|THGNT ; verse John.1.18 --witness THGNT|TR|NA ; verse Mark.16.9 --witness NA|SBL|WH|TR|Byz|THGNT ; verse John.7.53 --witness SBL|NA|THGNT|WH|TR|Byz ; verse John.8.11 --witness NA|THGNT ; verse 1John.5.7 --witness TR
-lookup.py dss Isa.53.11 ; lxx Isa.53.11 ; verse Ps.100.3 --witness Ketiv
+lookup.py dss Isa.53.11 ; verse Isa.53.11 --corpus dss --witness 4Q58 ; lxx Isa.53.11 ; verse Ps.100.3 --witness Ketiv
 ```

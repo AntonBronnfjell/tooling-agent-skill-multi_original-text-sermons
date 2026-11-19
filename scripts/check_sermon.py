@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from otslib import db, references  # noqa: E402
 from otslib.norm import match_key, nfc, strip_points  # noqa: E402
-from otslib.refs import RefError, parse_ref  # noqa: E402
+from otslib.refs import CrossChapterError, RefError, parse_ref  # noqa: E402
 
 REQUIRED_KEYS = ("passage", "language", "specialization", "audience", "template", "date")
 CORPUS = {"HEB": "hebot", "ARC": "hebot", "GRC": "grnt", "LXX": "lxx", "DSS": "dss", "EXT": "ext"}
@@ -104,6 +104,8 @@ def quote_refs(conn, corpus, witness, ref_text):
     else:
         try:
             r = parse_ref(ref_text)
+        except CrossChapterError as e:
+            return [], set(), str(e)
         except RefError:
             return [], set(), f"unknown ref: {ref_text}"
         if r.verse is None:
@@ -296,7 +298,8 @@ def check(path, conn, quotes_only=False, lang=None):
     out = []
     body_start, has_fm = split_frontmatter(lines)
     fm = references.frontmatter(path) if has_fm else {}
-    if quotes_only:
+    fm_lang_given = bool(lang or fm.get("language"))
+    if quotes_only:  # no --lang (and no frontmatter language): scan with both the es and en lists, no WARN
         fm = {"language": lang or fm.get("language") or "en"}
     for k in () if quotes_only else REQUIRED_KEYS:
         if not fm.get(k):
@@ -310,7 +313,9 @@ def check(path, conn, quotes_only=False, lang=None):
                            "such as es, en, pt, pt-BR"))
     elif lang is None:
         lang = re.split(r"[-_]", raw_lang)[0]
-    if lang and references.tradition_terms(lang):
+    if quotes_only and not fm_lang_given:
+        trad_langs = CHECKED_LANGS
+    elif lang and references.tradition_terms(lang):
         trad_langs = (lang,)
     else:
         # unknown or invalid language: still scan with the es and en lists, so a mislabelled Spanish or

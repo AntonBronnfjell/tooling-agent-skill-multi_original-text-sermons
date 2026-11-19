@@ -37,7 +37,7 @@ Hebrew and Greek manuscripts of the period have no upper/lower case distinction;
 - **No capitals added to πνεῦμα ἅγιον / רוּחַ**: write "holy spirit" / "espíritu santo" on `Literal:`/`Natural:` lines. If the sermon discusses how others capitalize it, do so in prose.
 - θεός / אֱלֹהִים is rendered "God" / "Dios" only where the target language's grammar treats the word as a name (e.g. ὁ θεὸς as subject in John.3.16 → "Dios"; אֱלֹהִים with a singular verb, as in Gen.1.1 בָּרָא and Gen.1.26 וַיֹּאמֶר → "God"). Where the form is anarthrous and the sense is debated (John.1.1c, Heb.1.8) or the word takes plural agreement (1Sam.28.13 אֱלֹהִים … עֹלִים, Ps.82.6 אֱלֹהִים אַתֶּם), show the options ("God / divine / a god / gods") instead of choosing by capital letter. In Gen.1.26 what is contested is the plural "let us … our", not the rendering of אֱלֹהִים.
 - No reverential capitals on pronouns or titles (he/him, hijo, palabra, él) on translation lines. "Son/Hijo", "Word/Verbo" as capitalized titles are a translation choice; mention them in comparison notes when a published version uses them.
-- κύριος as a title (Phil.2.11 κύριος Ἰησοῦς Χριστὸς): capitalize only where the target language's grammar capitalizes a title used with or for a person's name ("Lord/Señor"), never for reverence. Where the passage applies LXX YHWH-language (κύριος for יהוה), say so in Notes and leave the reader to weigh it.
+- κύριος / κύριε, whoever it refers to: render by the target language's grammar, never for reverence. For a predicate ("X is lord/Lord") use the language's normal capitalization for a title; if the choice is contested, state it in Notes. If the passage quotes or echoes an OT verse, show what `lxx <ref>` and `verse <ref>` print for that verse — including whether κύριος or יהוה stands there at all — and the `usage κύριος` contexts that show its range (address "sir", master/owner, lord, rendering of יהוה). Report; give no verdict.
 - Capitalization is not machine-checked (that would force a side on contested readings); this rule is enforced by review and evals.
 
 ## 5. Usage claims only from the tool
@@ -59,5 +59,5 @@ Say what the evidence shows and stop. "The data has no witness for X" is a valid
 
 - Scope summaries to the examples shown ("in the 10 contexts shown…"); no "never / always / all hearers / everyone in the 1st century", and no claims about what hearers thought.
 - At contested readings, no weighting words (leans, favors, independent support, more reliable) unless the tool output shows it; report every witness the tool returns, not a selection.
-- Background facts no lookup produced (dates, labels such as "hymn") are marked as background or left out.
+- Background facts no lookup produced (dates, labels such as "hymn") are marked as background or left out. Exception: the brief who/where/when setting sentence before the text (`audiences.md`) is permitted background (§7) if it stays general ("in the first century") and claims nothing contested.
 - Examples in these reference files are illustrations: re-run the lookup in the session before repeating one.

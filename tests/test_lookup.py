@@ -209,6 +209,16 @@ class Lookup(unittest.TestCase):
         v = run("verse", "Gen.1.1", "--corpus", "dss", "--witness", "1QIsaa")
         self.assertEqual(v["absent"], "no DSS witness has Gen.1.1")
 
+    def test_cross_chapter_range_says_split(self):
+        for args in (("variants", "John.7.53-8.11"), ("verse", "Juan 7:53-8:11"), ("dss", "Isa.52.13-53.12")):
+            r = run_raw(*args)
+            self.assertEqual(r.returncode, 1, args)
+            self.assertIn("crosses a chapter; split it", r.stderr)
+
+    def test_text_format_shows_ext_note(self):
+        self.assertIn("surface forms", run_raw("usage", "καί", "--format", "text").stdout)
+        self.assertIn("surface forms", run_raw("search", "καί", "--corpus", "ext", "--format", "text").stdout)
+
     def test_unknown_ref_still_exit_1(self):
         for args in (("dss", "Gen.99.1"), ("lxx", "Hezekiah 1:1")):
             r = run_raw(*args)
