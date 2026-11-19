@@ -131,9 +131,12 @@ def _headword(line):
 MM_MIN_BODY = 20  # chars; shorter bodies are OCR debris (empty or split-off headwords)
 
 
+MM_XREF = re.compile(r"See( also| s\.v\.)? [Ͱ-Ͽἀ-῿]")  # "See s.v. ἀγγεῖον." is a real, short entry
+
+
 def _keep_mm(lemma, body):
-    """Drop OCR noise: bodies < 20 chars; headwords <= 2 chars unless real Greek letters with a body."""
-    if len(body.strip()) < MM_MIN_BODY:
+    """Drop OCR noise: bodies < 20 chars unless a cross-reference; headwords <= 2 chars unless real Greek letters."""
+    if len(body.strip()) < MM_MIN_BODY and not MM_XREF.match(body.strip()):
         return False
     return any(unicodedata.category(ch).startswith("L") for ch in lemma) and (
         len(lemma) > 2 or all(unicodedata.category(ch).startswith("L") for ch in lemma))

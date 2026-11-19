@@ -119,6 +119,11 @@ class PapyriCleanup(unittest.TestCase):
             "΄.\n" + cls.BODY + "\n"             # accent-only headword -> dropped
             "Ὁ.\n" + cls.BODY + "\n"             # valid Greek, long body -> kept
             "ὁ.\nshort\n"                        # short headword, short body -> dropped
+            "ἄγγος.\nSee s.v. ἀγγεῖον.\n"        # short cross-reference -> kept
+            "ἐθέλω.\nSee θέλω.\n"                # ditto
+            "ἀλλά.\nSee also ἀλλήλων.\n"         # ditto
+            "βλέπω.\nSee below\n"               # short, not a cross-reference -> dropped
+            "γῆ.\nSee 12.\n"                    # See + not Greek -> dropped
         )
         p = os.path.join(cls.tmp, "ext")
         os.makedirs(p)
@@ -144,6 +149,12 @@ class PapyriCleanup(unittest.TestCase):
         self.assertNotIn("΄", self.lemmas())
         self.assertIn("Ὁ", self.lemmas())
 
+    def test_short_cross_references_kept(self):
+        for lem, body in (("ἄγγος", "See s.v. ἀγγεῖον."), ("ἐθέλω", "See θέλω."), ("ἀλλά", "See also ἀλλήλων.")):
+            self.assertEqual(self.conn.execute("select entry from papyri_vocab where lemma=?", (lem,)).fetchone()[0], body)
+        for lem in ("βλέπω", "γῆ"):
+            self.assertNotIn(lem, self.lemmas())
+
     def test_duplicates_merged(self):
         ls = self.lemmas()
         self.assertEqual(len(ls), len(set(ls)))
@@ -153,12 +164,14 @@ class PapyriCleanup(unittest.TestCase):
         self.assertIn("second", e)
 
     def test_count_returned(self):
-        self.assertEqual((self.n, self.raw), (3, 8))  # γράφω (merged), δοῦλος, Ὁ
+        self.assertEqual((self.n, self.raw), (6, 13))  # γράφω (merged), δοῦλος, Ὁ, 3 cross-references
 
     def test_real_fixture_no_junk(self):
+        from loaders import ext
         c = build(FIXTURES, os.path.join(self.tmp, "r.db"), only=("ext",))
         self.addCleanup(c.close)
-        self.assertEqual(c.execute("select count(*) from papyri_vocab where length(trim(entry)) < 20").fetchone()[0], 0)
+        short = [r[0] for r in c.execute("select entry from papyri_vocab where length(trim(entry)) < 20")]
+        self.assertTrue(all(ext.MM_XREF.match(e.strip()) for e in short), short)  # only cross-references stay short
         self.assertEqual(c.execute("select count(*)-count(distinct lemma) from papyri_vocab").fetchone()[0], 0)
 
 
