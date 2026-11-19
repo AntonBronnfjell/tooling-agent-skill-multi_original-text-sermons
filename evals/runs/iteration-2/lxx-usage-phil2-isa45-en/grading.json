@@ -1,0 +1,89 @@
+{
+  "eval_id": 6,
+  "eval_name": "lxx-usage-phil2-isa45-en",
+  "iteration": 2,
+  "expectations": [
+    {
+      "text": "The response shows the Hebrew text (WLC) of Isa 45:21-25 and the Rahlfs LXX text of Isa 45:21-25, both taken from lookup.py output (tagged [HEB Isa.45.x] and [LXX Isa.45.x] quotes or equivalent)",
+      "passed": true,
+      "evidence": "[HEB Isa.45.21]–[HEB Isa.45.25] and [LXX Isa.45.21]–[LXX Isa.45.25] all quoted as full verses (v.21 is now complete in both, unlike iteration 1); check_sermon verified each against WLC/Rahlfs."
+    },
+    {
+      "text": "The response reports that the Hebrew (WLC) has יְהוָה in Isa 45:21, 45:24 and 45:25",
+      "passed": true,
+      "evidence": "Point 3: 'The Hebrew has יְהוָה in verses 21, 24 and 25.' Notes repeat it verse by verse."
+    },
+    {
+      "text": "The response reports that Isa 45:23 in the LXX ends with τῷ θεῷ",
+      "passed": true,
+      "evidence": "Notes: 'Isa.45.23 WLC כִּי־לִי \"to me\", no name / LXX ἐμοὶ … τῷ θεῷ'; the quote ends 'ἐξομολογήσεται πᾶσα γλῶσσα τῷ θεῷ' (grader re-ran `lxx Isa.45.23`)."
+    },
+    {
+      "text": "The response reports that the LXX has ὁ θεός in 45:21, no divine name in 45:24, and κυρίου in 45:25",
+      "passed": true,
+      "evidence": "'The Greek has ὁ θεός in 21, \"God\" again in 22, τῷ θεῷ in 23…, no divine name at all in 24, and κυρίου in 25.' Matches `lxx Isa.45.21-25` (grader re-ran)."
+    },
+    {
+      "text": "The response does not claim that the LXX has κύριος in 45:23, and does not assert a link between Phil 2:10-11 and Isa 45 other than what the shown texts support (it reports Paul's wording alongside the data, or states what the data does not show)",
+      "passed": true,
+      "evidence": "No κύριος-in-45:23 claim. Link limited to shared wording ('Shared: πᾶν γόνυ…, κάμπτω…, πᾶσα γλῶσσα…, \"acknowledge\". Different: …'); κύριος in Phil 2:11 given as options (a) title, (b) the word standing for יְהוָה in the LXX, (c) both — 'which of these Paul meant, the data does not decide.' No 'hymn' label."
+    },
+    {
+      "text": "Any Hebrew/Greek quotes in the saved file pass check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-every-knee-isaiah-45.en.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_log_entries": 16,
+    "output_chars": 15792,
+    "transcript_chars": 18894,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets/table rows (one entry may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "κύριος NT 756, LXX 7423, Josephus 39, Philo 379; LXX co-occurrence with יהוה 5130",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Grader re-ran `usage κύριος` and `word κύριος`: exact."
+    },
+    {
+      "claim": "ἐξομολογέω contexts Gen.29.35, 1Kgs.8.33, Josephus Ant.8.129, War.1.625; papyri P Hib I 30 'acknowledge the debt'",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`usage ἐξομολογέω` (grader re-ran)."
+    },
+    {
+      "claim": "Isaiah's verbs are futures; Paul's are subjunctives after ἵνα",
+      "type": "factual",
+      "verified": true,
+      "evidence": "κάμψει V.FAI3S / ἐξομολογήσεται V.FMI3S (log); Phil κάμψῃ V-AAS-3S, ἐξομολογήσηται V-AMS-3S."
+    },
+    {
+      "claim": "'They come from a speech in Isaiah, where God puts himself on oath'",
+      "type": "quality",
+      "verified": true,
+      "evidence": "Supported by the shared wording shown and Rom 14:11; stated as the premise of the user's question."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Exemplary application of the new κύριος rule: range from `usage κύριος` (address, owner, LXX for יהוה) and three options with no verdict. Every DSS witness listed per verse. No doctrinal lean in either direction.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "6/6 (same as iteration 1), with the iteration-1 notes (partial v.21, 'hymn' label) resolved."
+  }
+}

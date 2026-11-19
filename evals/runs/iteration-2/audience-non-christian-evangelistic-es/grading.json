@@ -1,0 +1,82 @@
+{
+  "eval_id": 8,
+  "eval_name": "audience-non-christian-evangelistic-es",
+  "iteration": 2,
+  "expectations": [
+    {
+      "text": "The saved sermon has audience: non-christian (or equivalent) in its frontmatter and language: es",
+      "passed": true,
+      "evidence": "Frontmatter: 'audience: non-christian', 'language: es'."
+    },
+    {
+      "text": "Every insider term from this list that appears in the sermon prose is explained in the same sentence or replaced by a plain word on first use: iglesia, bautismo/bautizar, arrepentirse, evangelio, Cristo, gracia, pecado, salvación/salvo, santo, apóstol, espíritu santo, nacer de nuevo, vida eterna, justo/justificado, amén, aleluya, Señor, Mesías, cielo, infierno (terms from references/audiences.md)",
+      "passed": true,
+      "evidence": "Grader grep of the body (Notes excluded) for the listed terms: only 'vida eterna' (on translation lines and in prose: 'El texto promete \"vida eterna\": en griego, ζωὴν αἰώνιον, que puede entenderse como \"vida sin fin\" o \"vida de la era que viene\"' — explained in the same sentence) and 'cielo' in its plain sense ('un rayo desde el cielo'). 'creer' → 'confiar', 'salvar' → 'rescatar', 'Pascua' glossed 'fiesta… judía'."
+    },
+    {
+      "text": "The sermon gives who/where/when context for the passage in one or two sentences before reading the text",
+      "passed": true,
+      "evidence": "Before the first quote: 'El texto está en el libro de Juan, uno de los cuatro relatos antiguos sobre la vida de Jesús. En Jerusalén, en el siglo primero, durante la fiesta de la Pascua judía, un maestro respetado llamado Nicodemo va a ver a Jesús de noche…' — who, where (Jerusalem, from `verse John.2.23` ἐν τοῖς Ἱεροσολύμοις), when, in two sentences."
+    },
+    {
+      "text": "The sermon file passes check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-la-luz-que-no-vino-a-condenar.es.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    },
+    {
+      "text": "The closing is an invitation to consider, ask, read or trust, with no assumed agreement",
+      "passed": true,
+      "evidence": "Closing: 'la invitación es sencilla y sin presión: acércate a la luz. Lee este capítulo… Haz tus preguntas, como Nicodemo… Y si llegas a ver que este hijo es digno de confianza, confía en él.'"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_log_entries": 20,
+    "output_chars": 13374,
+    "transcript_chars": 17417,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets/table rows (one entry may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "Jerusalem at Passover (John 2:23)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`verse John.2.23`: ἐν τοῖς Ἱεροσολύμοις ἐν τῷ πάσχα (grader re-ran)."
+    },
+    {
+      "claim": "Οὕτως tagged 61.10 (manner) in John 3:16; domains 61.9/61.10/78.4",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`word οὕτω` domains include 61.9, 61.10, 78.4 (grader re-ran); per-verse tag from tool log."
+    },
+    {
+      "claim": "Eph.5.13 uses ἐλέγχω with the light image",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Tool log `usage ἐλέγχω`, `verse Eph.5.13`; quote passed check_sermon."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Doctrinal lean to flag (persists from iteration 1, slightly extended): Punto 2 'el que no confía \"ya ha sido juzgado\". No porque Dios haya venido a condenarlo, sino porque ha rechazado la cuerda' presents one reading of 3:18 as the text's; Punto 3 adds 'hecho \"en Dios\", no por su propio mérito' — a merit/grace gloss the Greek of 3:21 does not state. New and good: the speaker of 3:16–21 (Jesus or narrator) is shown as an open question; kitchen illustration framed 'Imagina' (rule 15).",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "No assertion catches theological glosses added in prose for a non-christian audience (e.g. 'no por su propio mérito'). Consider an assertion that prose claims about what the text means stay within the quoted wording or are marked as one reading."
+      }
+    ],
+    "overall": "5/5, up from 4/5; the setting sentence now names the place from tool data."
+  }
+}

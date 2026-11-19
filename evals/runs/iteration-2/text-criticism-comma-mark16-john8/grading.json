@@ -1,0 +1,93 @@
+{
+  "eval_id": 4,
+  "eval_name": "text-criticism-comma-mark16-john8",
+  "iteration": 2,
+  "expectations": [
+    {
+      "text": "For 1 John 5:7-8 the response names the witnesses that include or omit the extra words (e.g. TR vs SBL/NA/early editions per lookup.py variants output) and reports the extra clause as a late reading",
+      "passed": true,
+      "evidence": "Point 1: TR adds the Comma; 'the variants list for these two verses shows every added word… with a single supporting edition — TR — and the label \"late\". No other edition in our data prints them.' Quotes [GRC:TR 1John.5.7] and [GRC:TR 1John.5.8]. Grader re-ran `variants 1John.5.7`: all [TR] late."
+    },
+    {
+      "text": "For Mark 16:9-20 the response reports, as shown by lookup.py `verse`/`variants` output, which editions enclose the passage in [[ ]] (NA28, WH) and which print it (TR/Byz); it does not claim the passage is \"missing from\" an edition the data shows printing it; any \"late\" label is sourced to the data",
+      "passed": true,
+      "evidence": "Point 2: 'All six editions print verses 9–20. Nothing here is \"missing\"… NA28, THGNT and WH open verse 9 with a double bracket… Byz and TR show the same brackets in our data, but that marker is inherited… SBL prints no brackets.' Grader confirmed ]] after 16:20 in THGNT, Byz, TR and none in SBL/NA/WH, matching the Notes."
+    },
+    {
+      "text": "For John 7:53-8:11 the response reports, as shown by lookup.py `verse`/`variants` output, which editions enclose the passage in [[ ]] (NA28, WH) and which print it (TR/Byz); it does not claim the passage is \"missing from\" an edition the data shows printing it; any \"late\" label is sourced to the data",
+      "passed": true,
+      "evidence": "Point 3: NA28, THGNT, WH, Byz, TR print [[ before 7:53, SBL none; ']]' after 8:11 in NA28, WH, Byz, TR; THGNT has no 8:11. No 'missing from' claim. 'Late' labels are attributed to the variants output (e.g. 8:9 conscience clause 'TR and Byz')."
+    },
+    {
+      "text": "The transcript shows lookup.py `variants` (or `verse`) was run covering each of the three passages; for John 7:53-8:11, which crosses a chapter boundary, split calls (John.7.53 and John.8.1-11) or per-verse calls count",
+      "passed": true,
+      "evidence": "Tool log: `variants 1John.5.7`, `variants 1John.5.8`, `variants Mark.16.9-20`, `variants John.7.53`, `variants John.8.1-11` ('207 rows'), plus per-edition `verse` calls for Mark.16.8–20 and John.7.53–8.12. Full coverage, split at the chapter boundary."
+    },
+    {
+      "text": "Every witness cited in the handout is one that appears in the lookup.py output of that session",
+      "passed": true,
+      "evidence": "Witnesses cited: NA28/NA27, SBL, THGNT/Tyn, WH, Treg, Byz, TR (and 'KJV' as it appears in the variants row for John.8.6 'Byz+KJV'). All appear in this session's output; no manuscripts or codices are named."
+    },
+    {
+      "text": "Any Greek quotes in the file pass check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-three-places-bibles-differ.en.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []; quotes include [GRC:TR 1John.5.7], [GRC:TR 1John.5.8], [GRC:NA Mark.16.18], [GRC:NA John.8.11] and SBL [GRC John.8.11]."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_log_entries": 19,
+    "output_chars": 13902,
+    "transcript_chars": 17671,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets/table rows (one entry may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "Mark 16:18 καὶ ἐν ταῖς χερσὶν in NA28, NA27, Tyn, WH, Treg; absent SBL, Byz, TR",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Grader re-ran `variants Mark.16.9-20` and `verse Mark.16.18 --witness …`: exact."
+    },
+    {
+      "claim": "Mark 16:17 καιναῖς in NA28, NA27, TR, Byz and the SBL text; Mark 16:19 Ἰησοῦς in SBL text",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Variants rows plus `verse Mark.16.17|19 --witness SBL` (grader re-ran)."
+    },
+    {
+      "claim": "John 8:9 'convicted by conscience' TR+Byz (and SBL text); ἕως τῶν ἐσχάτων TR only; 8:10 additions TR+Byz",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`variants John.8.1-11` rows #4-8, #17-19 of 8.9 and #5-10, #17-20 of 8.10 (grader re-ran)."
+    },
+    {
+      "claim": "John 8:6 μὴ προσποιούμενος 'Byz+KJV' and in the SBL text",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Variants row lists [Byz+KJV]; `verse John.8.6 --witness SBL` ends 'μὴ προσποιούμενος'."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Fixes the iteration-1 coverage gap completely: the interior variants of both pericopes are reported with edition lists, and the user-facing consequence (BSB 'with their hands', KJV conscience clause) is explained. Options at the bracketed passages are given as '(a) part of the text… (b) a later addition… no verdict'. No doctrinal lean.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "The 'late' label in assertions 2-3 is now always attributed to the data, but no assertion checks that interior meaning-changing variants are reported. Add one (e.g. 'reports John 8:9 conscience clause as TR+Byz and Mark 16:18 \"with their hands\" as NA/THGNT/WH')."
+      }
+    ],
+    "overall": "6/6, up from 5/6. The coverage assertion now passes on full evidence."
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "eval_id": 12,
+  "eval_name": "usage-ekklesia-word-study-en",
+  "iteration": 2,
+  "expectations": [
+    {
+      "text": "The transcript shows `lookup.py usage` was run for ἐκκλησία",
+      "passed": true,
+      "evidence": "Tool log: `lookup.py usage ἐκκλησία` (text and JSON papyri field)."
+    },
+    {
+      "text": "The response cites LXX usage of ἐκκλησία with at least one reference and quote from the lookup output (e.g. Deut.4.10, Deut.9.10, Deut.23.1-2)",
+      "passed": true,
+      "evidence": "[LXX Deut.4.10] '…τῇ ἡμέρᾳ τῆς ἐκκλησίας…' and [LXX Ps.26.5] 'ἐμίσησα ἐκκλησίαν πονηρευομένων'. Grader ran `check_sermon.py --quotes-only --lang en` on all 10 chat quote blocks: exit 0."
+    },
+    {
+      "text": "The response cites Josephus usage of ἐκκλησία with at least one reference and quote from the lookup output (e.g. Ant.3.84, Ant.3.188)",
+      "passed": true,
+      "evidence": "[EXT:Josephus Ant.3.84], [EXT:Josephus Ant.16.62], [EXT:Josephus War.4.162]; texts match `verse … --corpus ext --witness Josephus` (grader re-ran; Ant.16.62 names Ἱεροσόλυμα, backing 'in Jerusalem')."
+    },
+    {
+      "text": "If the papyri/lexicon excerpt is mentioned, it is flagged as noisy OCR/unverified and is not quoted as verified text",
+      "passed": true,
+      "evidence": "'The Moulton–Milligan entry in our data (noisy OCR of a printed lexicon, so paraphrased, not quoted) reports two inscriptions…'; only the cited inscriptions are used, not the entry's own commentary (per the updated rule 12)."
+    },
+    {
+      "text": "The response reports the corpus counts as given by the tool (grnt 117, lxx 77, ext 71) without inventing other counts",
+      "passed": true,
+      "evidence": "'117 times in the New Testament, 77 in the Septuagint…, 48 in Josephus and 23 in Philo' with the surface-form caveat; Notes add `search --corpus ext` '71 in 68 passages'. The updated tool now splits ext by witness: grader re-ran `usage ἐκκλησία` → {'grnt': 117, 'lxx': 77, 'ext': {'Josephus': 48, 'Philo': 23}} and `search … --corpus ext` → '71 in 68 verses'. No invented counts."
+    },
+    {
+      "text": "The response draws no conclusion that goes beyond the cited examples (it states what the examples show and says what they do not show)",
+      "passed": true,
+      "evidence": "'In the contexts shown here (LXX Deut 4:10, Ps 26:5; Josephus Ant. 3.84, 16.62, War 4.162; Acts 7:38, 8:3, 19:32, 19:39; the two inscriptions), ἐκκλησία names a gathering…'; 'none shows the sense \"called-out ones\"'; 'Nothing here tells us how every first-century hearer understood the word.' The iteration-1 universals ('never meant', 'hearers didn't have') are gone. Minor residue: Acts 8:3 glossed 'people who met in houses' (the verse says Saul entered house after house)."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_log_entries": 12,
+    "output_chars": 0,
+    "transcript_chars": 9328,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets/table rows (one entry may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "Josephus 48, Philo 23 (ext 71)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`usage ἐκκλησία` and `search ἐκκλησία --corpus ext` (grader re-ran)."
+    },
+    {
+      "claim": "Ant.3.83 names Moses as the speaker of 3.84",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`verse Ant.3.83`: ἐπιφαίνεται Μωυσῆς."
+    },
+    {
+      "claim": "'background: Jewish War book 4 covers that period'",
+      "type": "quality",
+      "verified": true,
+      "evidence": "Marked as background, as the updated rule 14 requires."
+    },
+    {
+      "claim": "Followers of Jesus in Jerusalem were 'people who met in houses'",
+      "type": "quality",
+      "verified": false,
+      "evidence": "Acts 8:3 says Saul went κατὰ τοὺς οἴκους; that they met there is an inference beyond the quoted text."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Evidence scoped to the examples, papyri limited to cited inscriptions, Philo excluded with a stated reason (allegory). No doctrinal lean; the root-fallacy correction is now bounded.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "The updated references/exegetical-fallacies.md now contains a near-verbatim model answer for this eval ('In the 10 NT and LXX contexts `usage ἐκκλησία` shows… none shows \"called out\". These examples don't tell us how every hearer understood it.'). The pass may partly reflect teaching to the test; add a held-out word-study eval on a lemma not used as an example in the references."
+      }
+    ],
+    "overall": "6/6, up from 5/6."
+  }
+}

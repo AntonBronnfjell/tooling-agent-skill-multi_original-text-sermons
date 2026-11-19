@@ -1,0 +1,73 @@
+{
+  "eval_id": 9,
+  "eval_name": "template-default-and-custom-skeleton-en",
+  "iteration": 2,
+  "expectations": [
+    {
+      "text": "The first sermon file contains the default sections Introduction, Text, Big Idea, Point 1, Point 2, Point 3, Conclusion, Notes as H2 headings",
+      "passed": true,
+      "evidence": "the-shepherd-in-the-valley.en.md H2s: Introduction, Text, Big Idea, Point 1, Point 2, Point 3, Conclusion, Notes."
+    },
+    {
+      "text": "The second sermon file has template: custom in its frontmatter and a sections: list whose names and order match the example (Opener, The Word, The Anchor Point, Three Ropes, Response, or direct equivalents)",
+      "passed": true,
+      "evidence": "a-garrison-for-the-heart.en.md: 'template: custom', 'sections: Opener, The Word, The Anchor Point, Three Ropes, Response, Notes'; H2s in that order; title as '#'."
+    },
+    {
+      "text": "The second sermon contains none of the example's sentences verbatim (e.g. the storm story sentence about the waves and the boat does not appear)",
+      "passed": true,
+      "evidence": "Grader grep for the example's sentences ('waves', 'bow of', 'going down', 'father yelled'): no match in either sermon. The opener is a new hypothetical ('Imagine lying awake at three in the morning…'); the word 'storm' appears once as a metaphor ('your heart is out in the storm'), not the example's sentence."
+    },
+    {
+      "text": "Both sermon files pass check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "Both files — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_log_entries": 34,
+    "output_chars": 21664,
+    "transcript_chars": 27597,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets/table rows (one entry may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "No DSS witness has Ps.23.1",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`dss Ps.23.1` → 'no DSS witness has Ps.23.1' (grader re-ran)."
+    },
+    {
+      "claim": "LXX Ps.145.18 ἐγγὺς κύριος πᾶσιν τοῖς ἐπικαλουμένοις αὐτόν; WLC קָרוֹב יְהוָה",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`lxx Ps.145.18` (grader re-ran); quotes passed check_sermon."
+    },
+    {
+      "claim": "'Paul, in chains'",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`verse Phil.1.13` τοὺς δεσμούς μου in tool log."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Rule 15 applied: the example's first-person opener was replaced by a hypothetical and the Notes say so. 'The Lord is near' shown with options (Jesus / echo of LXX Ps 145:18 for YHWH / both) and 'Paul does not say which'; the Response then speaks of 'the God who is near', which quietly resolves toward one option — a minor lean. Three Ropes keeps the example's one-sentence-text + one-sentence-life format.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "4/4 (same as iteration 1); the invented-anecdote note from iteration 1 is resolved."
+  }
+}

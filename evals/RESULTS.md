@@ -97,3 +97,75 @@ Secondary changes:
 ## Overall pass rate
 
 **60/63 assertions (95.2%). 9 of 12 evals pass fully.** The three failures (evals 4, 8, 12) share one root cause: the evidence was gathered or used only partly. None of them comes from a fidelity, quoting or tradition-vocabulary error.
+
+---
+
+# Iteration 2
+
+Graded 2026-11-19. Five evals were re-run in `evals/runs/iteration-2/` after commits 6f69c2a and 8c1a028. Those commits changed SKILL.md, the references, `lookup.py` and `check_sermon.py`. The changes were:
+- the κύριος rule
+- full-passage coverage
+- keeping conclusions within the evidence
+- the required setting sentence
+- a ban on invented anecdotes
+
+`evals/evals.json` is unchanged, so the assertions are the same as in iteration 1.
+
+How it was graded:
+- `grade_programmatic.py` on all 5 sermon files: check_sermon exit 0, 0 errors, 0 warnings.
+- Every edition list, count and context an assertion depends on was re-checked with `lookup.py`. This covered Mark 16 and John 8 variants, the Isa 45 LXX/WLC divine names, `usage κύριος`, `usage ἐκκλησία` (now split by witness: Josephus 48, Philo 23), John 2:23, and Josephus Ant.16.62 and War.4.162.
+- The 10 chat quote blocks in eval 12 were run through `check_sermon.py --quotes-only --lang en`: exit 0.
+
+Per-run detail: `evals/runs/iteration-2/<name>/grading.json`.
+
+## Summary
+
+| # | eval | iteration 1 | iteration 2 | change |
+|---|---|---|---|---|
+| 4 | text-criticism-comma-mark16-john8 | 5/6 FAIL | 6/6 PASS | +1 |
+| 6 | lxx-usage-phil2-isa45-en | 6/6 PASS | 6/6 PASS | = |
+| 8 | audience-non-christian-evangelistic-es | 4/5 FAIL | 5/5 PASS | +1 |
+| 9 | template-default-and-custom-skeleton-en | 4/4 PASS | 4/4 PASS | = |
+| 12 | usage-ekklesia-word-study-en | 5/6 FAIL | 6/6 PASS | +1 |
+| | **iteration-2 subset** | **24/27 (88.9%)** | **27/27 (100%)** | +3 |
+
+**Failed assertions in iteration 2:** none.
+
+## Comparison with iteration 1
+
+- **Eval 4 (coverage).** The run now calls `variants John.7.53` and `variants John.8.1-11` (207 rows) and `variants Mark.16.9-20`, plus per-edition `verse` calls for every verse of both passages. The handout reports the wording differences inside the passages, each with its edition list:
+  - John 8:9, the conscience clause: TR+Byz and the SBL text.
+  - John 8:10 additions: TR+Byz.
+  - Mark 16:18 "with their hands": NA28/THGNT/WH.
+  - Mark 16:17 καιναῖς and 16:19 Ἰησοῦς.
+
+  It explains the effect on translations (BSB vs KJV). It also corrects the bracket report: ]] after Mark 16:20 appears in THGNT/Byz/TR. All of this was verified against the data.
+- **Eval 8 (setting sentence).** "En Jerusalén, en el siglo primero, durante la fiesta de la Pascua judía, un maestro respetado llamado Nicodemo va a ver a Jesús de noche" is two sentences, and the place comes from `verse John.2.23`. "vida eterna" is now explained in the same sentence.
+- **Eval 12 (keeping conclusions within the evidence).** The summary now names its contexts ("In the contexts shown here (LXX Deut 4:10 … Acts 19:39; the two inscriptions)"). It says "Nothing here tells us how every first-century hearer understood the word." The iteration-1 universals ("never meant", "hearers didn't have") are gone. The papyri are now limited to the inscriptions the entry cites.
+- **Eval 6.** Still 6/6, and the iteration-1 notes are resolved: Isa 45:21 is quoted in full, and the "Paul's hymn" label is gone. The new κύριος rule is applied cleanly. The run uses the range from `usage κύριος` (address, owner, LXX for יהוה; 5,130 co-occurrences, verified) and gives options (a) title, (b) LXX word for the divine name, (c) both, with "the data does not decide".
+- **Eval 9.** Still 4/4. The invented first-person opener is replaced by a hypothetical ("Imagine lying awake…"), and the Notes explain why.
+
+## Regressions
+
+No assertion regressed: 0 of 27 assertions went from pass to fail.
+
+Notes that persist or are new (none caused a failure):
+- **Eval 8, doctrinal lean (persists and is slightly extended).** One reading of John 3:18 is still given as what the text says: "el que no confía 'ya ha sido juzgado'. No porque Dios haya venido a condenarlo, sino porque ha rechazado la cuerda". A new gloss appears on 3:21, "no por su propio mérito", which the Greek doesn't state. The run does improve elsewhere: it now shows who speaks in 3:16–21 as an open question.
+- **Eval 9, minor lean.** The sermon leaves "the Lord is near" open (Jesus / YHWH echo / both), but the Response then says "the God who is near", which quietly picks one option.
+- **Eval 12, minor inference.** Acts 8:3 is glossed as "people who met in houses". The verse says Saul went house after house, so "met in houses" goes beyond it.
+- **Risk of teaching to the test.** The updated references now contain near-verbatim model answers for the graded items:
+  - the scoped ἐκκλησία summary ("In the 10 NT and LXX contexts…", `exegetical-fallacies.md`)
+  - the full Isa 53:11 witness list (`text-criticism.md`)
+  - "8:9 alone has 31 rows" for John 8
+
+  The iteration-2 gains on evals 4 and 12 may partly reflect this. Add held-out evals before trusting the improvement:
+  - a word study on a lemma the references don't use as an example (e.g. ἀπόστολος or πρεσβύτερος usage)
+  - a different pericope that crosses a chapter boundary
+  - a different DSS verse
+- **Eval 7 was not re-run.** The iteration-1 tilt notes on it ("lean towards light", the 1Q8/4Q58 עבדי readings left out) are now covered by the reference text but not yet tested.
+
+## Overall pass rate (combined)
+
+The combined figure uses iteration-1 results for the 7 evals not re-run (1, 2, 3, 5, 7, 10, 11: 36/36) and iteration-2 results for the 5 re-run evals (27/27).
+
+**63/63 assertions (100%). 12 of 12 evals pass fully** (iteration 1: 60/63, 95.2%, 9/12).
