@@ -52,6 +52,13 @@ class Lookup(unittest.TestCase):
             c.execute("INSERT INTO verses VALUES ('grnt',?,?,?,'')", (txt_w, ref, txt))
         c.execute("INSERT INTO variants VALUES ('1Cor.10.2', 5, 'Μωσῆν', 'TR')")
         c.execute("INSERT INTO variants VALUES ('1Cor.1.17', 7, 'ἀλλὰ', 'NA27+Tyn+SBL+WH+Treg+TR+Byz')")
+        # real shape of Mark 16:9-20 / John 7:53-8:11: TAGNT rows carry no SBL token, SBL text is MACULA's
+        noSBL = "NA28+NA27+Tyn+WH+Treg+TR+Byz"
+        c.execute("INSERT INTO words VALUES ('grnt','TAGNT','Mark.16.9',1,'[[Ἀναστὰς','ἀνίστημι','G0450','V','g',?,'','')", (noSBL,))
+        c.execute("INSERT INTO variants VALUES ('Mark.16.9', 1, '[[Ἀναστὰς', ?)", (noSBL,))
+        c.execute("INSERT INTO variants VALUES ('Mark.16.9', 2, 'ζζζ', 'TR')")
+        # a lemma only TR/Byz rows carry: per-edition counts must differ from the all-editions union
+        c.execute("INSERT INTO words VALUES ('grnt','TAGNT','Acts.2.4',99,'ξξξ','ξξξ','G0001','N','g','TR+Byz','','')")
         c.commit()
         c.close()
 
@@ -115,6 +122,50 @@ class Lookup(unittest.TestCase):
         v = run("variants", "Acts.2.38")
         self.assertTrue(all(x["class"] == "late" for x in v if x["editions"].startswith("TR")))
 
+    def test_verse_words_follow_witness_order(self):
+        tr = [w["surface"] for w in run("verse", "1Tim.1.1", "--witness", "TR")["words"]]
+        self.assertLess(tr.index("Ἰησοῦ"), tr.index("Χριστοῦ"))
+        na = [w["surface"] for w in run("verse", "1Tim.1.1", "--witness", "NA")["words"]]  # fixture SBL = MACULA
+        self.assertLess(na.index("Χριστοῦ"), na.index("Ἰησοῦ"))
+        self.assertIn("order_note", run("verse", "Acts.20.28", "--witness", "TR"))
+        self.assertNotIn("order_note", run("verse", "Acts.20.28", "--witness", "NA"))
+
+    def test_variants_report_word_order(self):
+        v = [x for x in run("variants", "Acts.20.28") if x.get("kind") == "order"]
+        self.assertEqual(len(v), 1)
+        orders = v[0]["orders"]
+        self.assertEqual(orders["Byz+TR"], "τοῦ ἰδίου αἵματος")
+        na_key = next(k for k in orders if "NA" in k.split("+"))
+        self.assertEqual(orders[na_key], "τοῦ αἵματος τοῦ ἰδίου")
+        self.assertEqual(v[0]["class"], "late")
+        t = run_raw("variants", "Acts.20.28", "--format", "text").stdout
+        self.assertIn("order", t)
+        self.assertIn("τοῦ ἰδίου αἵματος", t)
+
+    def test_variants_sbl_from_macula(self):
+        v = run("variants", "Mark.16.9")
+        first = [x for x in v if x["pos"] == 1][0]
+        self.assertIn("SBL", first["editions"].split("+"))
+        self.assertIn("MACULA", first["note"])
+        self.assertNotIn("SBL", [x for x in v if x["reading"] == "ζζζ"][0]["editions"].split("+"))
+        self.assertNotIn("note", run("variants", "Acts.2.4")[0])
+
+    def test_word_counts_per_edition(self):
+        c = run("word", "ξξξ")["counts"]
+        self.assertEqual(c["nt_by_edition"]["SBL"], 0)
+        self.assertEqual(c["nt_by_edition"]["TR"], 1)
+        self.assertEqual(c["nt_all_editions"], 1)
+        self.assertNotIn("nt", c)
+        u = run("usage", "ξξξ")["counts"]["grnt"]
+        self.assertEqual((u["SBL"], u["TR"], u["all_editions"]), (0, 1, 1))
+        self.assertIn("any edition", run("search", "ξξξ")["results"]["grnt"]["note"])
+
+    def test_text_format_shows_words_note(self):
+        self.assertIn("word-level data incomplete", run_raw("verse", "Mark.16.9", "--witness", "SBL", "--format", "text").stdout)
+
+    def test_same_chapter_range_with_chapter_repeated(self):
+        self.assertEqual(run("verse", "John.3.16-3.17")["ref"], "John.3.16-17")
+
     def test_late_ignores_translation_tokens(self):
         v = [x for x in run("variants", "Acts.2.4") if x["reading"] == "zzz"]
         self.assertEqual(v[0]["class"], "late")
@@ -136,7 +187,8 @@ class Lookup(unittest.TestCase):
         self.assertEqual(len(w), 1)
         self.assertTrue(w[0]["from_variant"])
         self.assertEqual(w[0]["pos"], 3)
-        self.assertEqual([x["pos"] for x in o["words"]], sorted(x["pos"] for x in o["words"]))
+        # TR prints αὐτοῖς ἀποφθέγγεσθαι (TAGNT row 15 is TR»1)
+        self.assertEqual([x["pos"] for x in o["words"]][13:16], [14, 16, 15])
 
     def test_variant_spelling_replaces_row_not_duplicates(self):
         for ref, wit, want in (("1Cor.10.2", "TR", "Μωσῆν"), ("1Cor.1.17", "SBL", "ἀλλὰ")):

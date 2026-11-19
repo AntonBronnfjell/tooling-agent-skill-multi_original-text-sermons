@@ -17,6 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from otslib import db  # noqa: E402
+from otslib import editions as ed  # noqa: E402
 from otslib.norm import match_key, nfc, strip_accents  # noqa: E402
 from otslib.refs import BOOKS, CrossChapterError, RefError, canonical, parse_ref, source_ref, to_osis  # noqa: E402
 
@@ -128,28 +129,40 @@ def is_late(editions):
     return bool(toks) and toks <= {"TR", "Byz", "KJV"}
 
 
+def grnt_words(conn, witness, ref):
+    """TAGNT words of one verse for one witness, in that witness's printed order. -> (rows, reordered).
+    Substituted readings live in `variants`: a word row tagged for this witness may be spelled differently
+    there, so its surface is replaced; a surface-only row is appended only if no row is at that pos.
+    Word order follows the TAGNT displacement marks (see otslib/editions.py)."""
+    tok = EDITION_TOKEN.get(witness)
+    rows = conn.execute("SELECT * FROM words WHERE corpus='grnt' AND ref=? ORDER BY pos, rowid", (ref,)).fetchall()
+    rows = [dict(r) for r in rows if tok in edition_tokens(r["editions"])]
+    sub_disp = {}
+    for v in conn.execute("SELECT pos, reading, editions FROM variants WHERE ref=? ORDER BY rowid", (ref,)):
+        if tok not in edition_tokens(v["editions"]):
+            continue
+        sub_disp[v["pos"]] = ed.displacements(v["editions"])
+        at = [r for r in rows if r["pos"] == v["pos"]]
+        if any(r["surface"] == v["reading"] for r in at):
+            continue
+        if at:
+            at[0]["surface"] = v["reading"]
+            at[0]["surface_from_variant"] = True
+        else:
+            rows.append({"pos": v["pos"], "surface": v["reading"], "lemma": "", "strongs": "", "morph": "",
+                         "gloss": "", "domain": "", "syntax_role": "", "editions": v["editions"],
+                         "from_variant": True})
+    rows.sort(key=lambda r: r["pos"])
+    entries = [(r["pos"] - 1, ed.effective(tok, ed.displacements(r["editions"]), sub_disp.get(r["pos"])),
+                r["surface"]) for r in rows]
+    idx = ed.order(entries)
+    return [rows[i] for i in idx], idx != list(range(len(rows)))
+
+
 def verse_words(conn, corpus, witness, ref):
     """Words of one verse for one witness (grnt: TAGNT rows whose editions include the witness)."""
     if corpus == "grnt":
-        tok = EDITION_TOKEN.get(witness)
-        rows = conn.execute("SELECT * FROM words WHERE corpus='grnt' AND ref=? ORDER BY pos, rowid", (ref,)).fetchall()
-        rows = [dict(r) for r in rows if tok in edition_tokens(r["editions"])]
-        # substituted readings live in `variants`: a word row tagged for this witness may be spelled
-        # differently there, so replace its surface; append a surface-only row only if no row at pos.
-        for v in conn.execute("SELECT pos, reading, editions FROM variants WHERE ref=? ORDER BY rowid", (ref,)):
-            if tok not in edition_tokens(v["editions"]):
-                continue
-            at = [r for r in rows if r["pos"] == v["pos"]]
-            if any(r["surface"] == v["reading"] for r in at):
-                continue
-            if at:
-                at[0]["surface"] = v["reading"]
-                at[0]["surface_from_variant"] = True
-            else:
-                rows.append({"pos": v["pos"], "surface": v["reading"], "lemma": "", "strongs": "", "morph": "",
-                             "gloss": "", "domain": "", "syntax_role": "", "editions": v["editions"],
-                             "from_variant": True})
-        return sorted(rows, key=lambda r: r["pos"])
+        return grnt_words(conn, witness, ref)[0]
     return conn.execute("SELECT * FROM words WHERE corpus=? AND witness=? AND ref=? ORDER BY pos, rowid",
                         (corpus, witness, ref)).fetchall()
 
@@ -252,6 +265,10 @@ def cmd_verse(conn, a, gloss_only=False):
         ntok = sum(len(t.split()) for t in texts.values())
         if not words or len(words) < 0.8 * ntok:
             out["words_note"] = "word-level data incomplete for this witness; text is authoritative"
+    if corpus == "grnt" and witness != "SBL" and any(grnt_words(conn, witness, r)[1] for r in texts):
+        out["order_note"] = (f"{witness} word order rebuilt from TAGNT displacement marks (checked on 73 of 78 "
+                             "SBLGNT verses; upstream marks are occasionally inconsistent): `variants` shows each "
+                             "edition's order")
     if corpus == "dss":
         out["extant_only"] = True
         out["note"] = DSS_NOTE
@@ -265,15 +282,83 @@ def cmd_interlinear(conn, a):
     return cmd_verse(conn, a, gloss_only=True)
 
 
+GREEK_EDITIONS = ["SBL", "NA", "THGNT", "WH", "Byz", "TR"]
+SBL_MACULA_NOTE = ("SBL text for this verse comes from MACULA (SBLGNT); TAGNT does not tag SBL here, so SBL is "
+                   "added to `editions` where the SBL verse text contains the reading")
+
+
+def _strip_end(s):
+    return (s or "").strip(ENDPUNCT + "¶")
+
+
+def order_entry(conn, ref):
+    """One `kind: order` entry when the editions print this verse's words in different orders, else None."""
+    present = set(witnesses_for(conn, "grnt", [ref]))
+    printed, moved = {}, set()
+    for w in GREEK_EDITIONS:
+        if w not in present:
+            continue
+        rows, m = grnt_words(conn, w, ref)
+        if rows:
+            printed[w] = [(r["pos"], _strip_end(r["surface"])) for r in rows]
+        if m:
+            moved.add(w)
+    if not moved:
+        return None
+    lo = hi = None
+    for w in moved:
+        poss = [p for p, _ in printed[w]]
+        diff = [i for i, (a, b) in enumerate(zip(poss, sorted(poss))) if a != b]
+        span = [poss[i] for i in diff]
+        lo = min(span + ([lo] if lo else []))
+        hi = max(span + ([hi] if hi else []))
+    lo -= 1  # one word of context before the moved span
+    groups = {}
+    for w, ws in printed.items():
+        text = " ".join(s for p, s in ws if lo <= p <= hi)
+        groups.setdefault(text, []).append(w)
+    orders = {"+".join(sorted(ws)): text for text, ws in groups.items()}
+    eds = "+".join(EDITION_TOKEN[w] for w in GREEK_EDITIONS if w in moved)
+    return {"ref": ref, "pos": lo + 1, "kind": "order", "reading": None, "editions": eds,
+            "class": "late" if is_late(eds) else "early", "orders": orders}
+
+
+def sbl_from_macula(conn, ref):
+    """SBL verse text if it exists and no TAGNT row of the verse carries the SBL token (Mark 16:9-20 ...)."""
+    row = conn.execute("SELECT match_key, text FROM verses WHERE corpus='grnt' AND witness='SBL' AND ref=?",
+                       (ref,)).fetchone()
+    if not row:
+        return None
+    if any("SBL" in edition_tokens(r[0]) for r in conn.execute(
+            "SELECT editions FROM words WHERE corpus='grnt' AND ref=?", (ref,))):
+        return None
+    return f" {row[0] or match_key(row[1], 'grc')} "
+
+
 def cmd_variants(conn, a):
     label, refs = ref_list(conn, "grnt", a.ref)
     q = in_clause(refs)
     rows = conn.execute(f"SELECT ref, pos, reading, editions FROM variants WHERE ref IN ({q}) ORDER BY rowid", refs)
-    out = []
+    out, macula = [], {}
     for r in rows:
-        late = is_late(r["editions"])
-        out.append({"ref": r["ref"], "pos": r["pos"], "reading": r["reading"], "editions": r["editions"],
-                    "class": "late" if late else "early"})
+        eds = r["editions"]
+        if r["ref"] not in macula:
+            macula[r["ref"]] = sbl_from_macula(conn, r["ref"])
+        sbl_key = macula[r["ref"]]
+        note = None
+        if sbl_key is not None:
+            note = SBL_MACULA_NOTE
+            if f" {match_key(r['reading'], 'grc')} " in sbl_key:
+                eds += "+SBL"
+        v = {"ref": r["ref"], "pos": r["pos"], "reading": r["reading"], "editions": eds,
+             "class": "late" if is_late(eds) else "early"}
+        if note:
+            v["note"] = note
+        out.append(v)
+    for ref in refs:
+        o = order_entry(conn, ref)
+        if o:
+            out.append(o)
     return out
 
 
@@ -293,6 +378,8 @@ def cmd_word(conn, a):
         return conn.execute(f"SELECT COUNT(*) FROM words WHERE corpus=? AND witness=? AND lemma IN ({ph})",
                             (corpus, wit, *lemmas)).fetchone()[0]
 
+    nt = nt_counts(conn, lemmas)
+
     def doms(corpus):
         return [r[0] for r in conn.execute(
             f"SELECT domain FROM words WHERE corpus=? AND lemma IN ({ph}) AND domain!='' "
@@ -307,9 +394,28 @@ def cmd_word(conn, a):
             GROUP BY h.lemma ORDER BY c DESC, h.lemma LIMIT 10""", lemmas)]
     return {"query": a.query, "lexicon": lex,
             "domains": {"louw_nida": doms("grnt"), "sdbh": doms("hebot")},
-            "counts": {"nt": n("grnt", "TAGNT"), "lxx": n("lxx", "Rahlfs"), "hebot": n("hebot", "WLC")},
+            "counts": {"nt_by_edition": {w: nt[w] for w in GREEK_EDITIONS}, "nt_all_editions": nt["all_editions"],
+                       "lxx": n("lxx", "Rahlfs"), "hebot": n("hebot", "WLC")},
+            "counts_note": NT_COUNT_NOTE,
             "lxx_hebrew_cooccurrence": co,
             "lxx_hebrew_cooccurrence_note": "same-verse co-occurrence, not alignment"}
+
+
+NT_COUNT_NOTE = ("NT counts per edition = TAGNT word rows tagged for that edition (a substituted reading with "
+                 "another lemma is not counted); all_editions = rows in any edition (union)")
+
+
+def nt_counts(conn, lemmas):
+    """Occurrences of `lemmas` per Greek edition, plus the union over all TAGNT rows."""
+    out = {w: 0 for w in GREEK_EDITIONS}
+    out["all_editions"] = 0
+    for (eds,) in conn.execute(f"SELECT editions FROM words WHERE corpus='grnt' AND witness='TAGNT' "
+                               f"AND lemma IN ({in_clause(lemmas)})", lemmas):
+        toks = edition_tokens(eds)
+        out["all_editions"] += 1
+        for w in GREEK_EDITIONS:
+            out[w] += EDITION_TOKEN[w] in toks
+    return out
 
 
 def ext_rows(conn, lemmas):
@@ -337,7 +443,7 @@ def cmd_usage(conn, a):
     for corpus, wit in (("grnt", "TAGNT"), ("lxx", "Rahlfs")):
         rows = conn.execute("SELECT ref, surface FROM words WHERE corpus=? AND witness=? AND lemma=? ORDER BY rowid",
                             (corpus, wit, lemma)).fetchall()
-        counts[corpus] = len(rows)
+        counts[corpus] = nt_counts(conn, [lemma]) if corpus == "grnt" else len(rows)
         vw = "SBL" if corpus == "grnt" else wit
         ctx[corpus] = []
         for r in rows[:5]:
@@ -361,7 +467,8 @@ def cmd_usage(conn, a):
            for r in conn.execute("SELECT lemma, entry FROM papyri_vocab WHERE lemma=? OR lemma=?",
                                  (lemma, unicodedata.normalize("NFD", lemma)))]
     qual = conn.execute("SELECT value FROM meta WHERE key='papyri_quality'").fetchone()
-    return {"lemma": lemma, "counts": counts, "contexts": ctx, "lxx_witness": "Rahlfs", "ext_note": EXT_NOTE,
+    return {"lemma": lemma, "counts": counts, "counts_note": NT_COUNT_NOTE, "contexts": ctx, "lxx_witness": "Rahlfs",
+            "ext_note": EXT_NOTE,
             "papyri": pap or None, "papyri_quality": qual[0] if qual else "unknown"}
 
 
@@ -478,6 +585,8 @@ def cmd_search(conn, a):
         refs = [r[0] for r in rows]
         res[c] = {"verses": len(refs), "occurrences": sum(r[1] for r in rows), "refs": refs[:a.limit],
                   "truncated": len(refs) > a.limit}
+        if c == "grnt":
+            res[c]["note"] = "grnt: rows in any edition (TAGNT union); `word` gives counts per edition"
     return {"query": a.query, "lemmas": lemmas, "results": res}
 
 
@@ -493,8 +602,9 @@ def render_text(cmd, out):
         if "absent_in" in out:
             return f"{out['ref']} [{out['corpus']}]: absent in {out['absent_in']}; present in {', '.join(out['present_in'])}"
         L.append(f"{out['ref']} [{out['corpus']}:{out['witness']}]  {out['text']}")
-        if out.get("note"):
-            L.append(f"  note: {out['note']}")
+        for k in ("note", "words_note", "order_note"):
+            if out.get(k):
+                L.append(f"  {k.replace('_', ' ')}: {out[k]}")
         for w in out["words"]:
             parts = [str(w.get("ref", "")) if "ref" in w else "", str(w["pos"]), w["surface"]]
             if cmd == "verse":
@@ -507,17 +617,27 @@ def render_text(cmd, out):
                 parts.append(w["gloss"])
             L.append("  " + " | ".join(p for p in parts if p != ""))
     elif cmd == "variants":
+        notes = []
         for v in out:
-            L.append(f"{v['ref']} #{v['pos']} {v['reading']}  [{v['editions']}]  {v['class']}")
+            if v.get("kind") == "order":
+                L.append(f"{v['ref']} #{v['pos']} order  [{v['editions']}]  {v['class']}: "
+                         + " | ".join(f"{k}: {t}" for k, t in v["orders"].items()))
+            else:
+                L.append(f"{v['ref']} #{v['pos']} {v['reading']}  [{v['editions']}]  {v['class']}")
+            if v.get("note") and v["note"] not in notes:
+                notes.append(v["note"])
+        L += [f"note: {n}" for n in notes]
     elif cmd == "word":
         for r in out["lexicon"]:
             L.append(f"{r['strongs']} {r['lemma']} ({r['lang']}): {r['gloss']}")
         L.append(f"counts: {out['counts']}")
+        L.append(f"counts note: {out['counts_note']}")
         L.append(f"domains: {out['domains']}")
         L.append("LXX/Hebrew same-verse co-occurrence (not alignment): " +
                  ", ".join(f"{c['lemma']}({c['verses']})" for c in out["lxx_hebrew_cooccurrence"]))
     elif cmd == "usage":
         L.append(f"{out['lemma']}: {out['counts']}")
+        L.append(f"counts note: {out['counts_note']}")
         for c, items in out["contexts"].items():
             for i in (sum(items.values(), []) if isinstance(items, dict) else items):
                 name = f"{c}:{i['witness']}" if "witness" in i else c

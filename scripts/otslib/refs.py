@@ -145,11 +145,14 @@ class CrossChapterError(RefError):
     pass
 
 
-_CROSS_RE = re.compile(r"\d+\s*[.:]\s*\d+\s*[-–]\s*\d+\s*[.:]\s*\d+\s*$")
+_CROSS_RE = re.compile(r"(\d+)\s*[.:]\s*(\d+)\s*[-–]\s*(\d+)\s*[.:]\s*(\d+)\s*$")
 
 
 def parse_ref(text):
-    if _CROSS_RE.search(text or ""):
+    cm = _CROSS_RE.search(text or "")
+    if cm and int(cm.group(1)) == int(cm.group(3)):  # John.3.16-3.17: same chapter written twice
+        text = text[:cm.start()] + f"{cm.group(1)}.{cm.group(2)}-{cm.group(4)}"
+    elif cm:
         raise CrossChapterError(f"range {text} crosses a chapter; split it at the chapter boundary "
                                 "(e.g. John.7.53 + John.8.1-11)")
     m = _REF_RE.match(text or "")

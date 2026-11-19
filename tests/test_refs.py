@@ -16,6 +16,9 @@ class RefTests(unittest.TestCase):
     def test_spanish_numbered(self): self.assertEqual(to_osis(parse_ref("1 Juan 5:7")), "1John.5.7")
     def test_chapter_only(self): self.assertEqual(to_osis(parse_ref("Jn 3")), "John.3")
     def test_range(self): self.assertEqual(to_osis(parse_ref("Juan 3:16-17")), "John.3.16-17")
+    def test_range_same_chapter_repeated(self):
+        self.assertEqual(to_osis(parse_ref("John.3.16-3.17")), "John.3.16-17")
+        self.assertEqual(to_osis(parse_ref("Juan 3:16-3:17")), "John.3.16-17")
     def test_psalms_es(self): self.assertEqual(to_osis(parse_ref("Salmos 51:1")), "Ps.51.1")
     def test_matthew_es(self): self.assertEqual(to_osis(parse_ref("Mateo 16:18")), "Matt.16.18")
     def test_accent_case(self): self.assertEqual(to_osis(parse_ref("GÉNESIS 1:1")), "Gen.1.1")
