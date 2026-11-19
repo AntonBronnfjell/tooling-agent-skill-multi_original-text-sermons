@@ -26,6 +26,9 @@ class NormTests(unittest.TestCase):
         self.assertEqual(match_key("ב[ר]אשית", "heb"), match_key("בראשית", "heb"))
     def test_strip_points(self):
         self.assertEqual(strip_points("בְּרֵאשִׁית"), "בראשית")
+    def test_greek_grave_folds_to_acute(self):
+        self.assertEqual(match_key("καὶ θεὸς", "grc"), match_key("καί θεός", "grc"))
+        self.assertNotEqual(match_key("καὶ", "grc"), match_key("και", "grc"))  # accent still required
     def test_maqaf(self):
         self.assertEqual(match_key("כָּל־הָאָרֶץ", "heb"), match_key("כָּל הָאָרֶץ", "heb"))
     def test_greek_display_unchanged(self):

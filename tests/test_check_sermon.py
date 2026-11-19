@@ -1,5 +1,6 @@
 import io
 import os
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -119,6 +120,75 @@ class Fixtures(Base):
         r = subprocess.run([sys.executable, str(CHECK), str(POS[0])], capture_output=True, text=True, env=env)
         self.assertEqual(r.returncode, 2)
         self.assertIn("bible.db", r.stderr)
+
+
+NEG_ERR = {
+    "tag-space-after-colon": "unparseable quote tag",
+    "tag-bold": "unparseable quote tag",
+    "tag-no-space": "unparseable quote tag",
+    "tag-parens": "untagged original-language text",
+    "untagged-greek-blockquote": "untagged original-language text",
+    "greek-after-natural": "untagged original-language text",
+    "template-sermon-output": "template",
+    "template-traversal": "template",
+    "dup-natural-church": "tradition term",
+    "natural-continuation-church": "tradition term",
+    "language-unsupported": "language",
+    "range-nonexistent": "not found",
+    "range-giant": "range",
+    "chapter-only": "chapter",
+}
+
+
+class Hardening(Base):
+    def test_negative_fixtures_error_with_message(self):
+        for name, frag in NEG_ERR.items():
+            errs = [f.msg for f in check(FX / "negative" / f"{name}.md", self.conn) if f.level == "ERROR"]
+            self.assertTrue(any(frag in m for m in errs), (name, errs))
+
+    def test_stitched_single_words_warns(self):
+        fs = check(FX / "negative" / "stitched-single-words.md", self.conn)
+        self.assertFalse([f for f in fs if f.level == "ERROR"], fs)
+        self.assertTrue(any("one-word" in f.msg for f in fs if f.level == "WARN"))
+        self.assertTrue(any("segments" in f.msg for f in fs if f.level == "WARN"))
+
+    def test_prose_greek_run_warns(self):
+        t = fm(template="custom", sections="Text, Notes") + "## Text\n\nκαὶ θεὸς ἦν ὁ λόγος here\n\n## Notes\n\nx\n"
+        self.assertTrue(any("original-language words in prose" in f.msg for f in self.run_text(t) if f.level == "WARN"))
+        t = fm(template="custom", sections="Text, Notes") + "## Text\n\nthe word λόγος and ἦν only\n\n## Notes\n\nx\n"
+        self.assertFalse(any("original-language words" in f.msg for f in self.run_text(t)))
+
+    def test_language_names_normalized(self):
+        for lang in ("Spanish", "español", "es-MX", "ES"):
+            e = [f.msg for f in self.run_text(fm(language=lang, template="custom", sections="Text, Notes") + body(["Text", "Notes"], quote=J11.replace("the word was God", "la iglesia")))
+                 if f.level == "ERROR"]
+            self.assertTrue(any("tradition term" in m for m in e), (lang, e))
+        e = [f.msg for f in self.run_text(fm(language="English") + body())]
+        self.assertFalse(any("language" in m for m in e))
+
+    def test_template_name_restricted(self):
+        for t in ("sermon-output", "../references/tradition-vocabulary", "Big-Idea"):
+            self.assertTrue(any("template" in f.msg for f in self.run_text(fm(template=t) + body()) if f.level == "ERROR"), t)
+
+    def test_dss_uses_hebrew_matching(self):
+        q = "> [DSS:1QIsaa Isa.53.11] יראה אור וישבע\n> Literal: a\n> Natural: b\n"
+        self.assertFalse([f for f in self.run_text(fm(passage="Isa.53.11") + body(quote=q, notes="- Isa.53.11")) if f.level == "ERROR"])
+
+    def test_reversed_range(self):
+        q = "> [GRC John.3.17-16] ἀλλ\n> Literal: a\n> Natural: b\n"
+        self.assertTrue([f for f in self.run_text(fm() + body(quote=q)) if f.level == "ERROR"])
+
+    def test_non_db_file_exit_2(self):
+        bad = os.path.join(self.tmp, "junk.db")
+        Path(bad).write_text("not a database at all" * 100)
+        r = subprocess.run([sys.executable, str(CHECK), "--db", bad, str(POS[0])], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 2)
+        self.assertNotIn("Traceback", r.stderr)
+        empty = os.path.join(self.tmp, "empty.db")
+        sqlite3.connect(empty).close()
+        r = subprocess.run([sys.executable, str(CHECK), "--db", empty, str(POS[0])], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 2)
+        self.assertNotIn("Traceback", r.stderr)
 
 
 class Rulings(Base):

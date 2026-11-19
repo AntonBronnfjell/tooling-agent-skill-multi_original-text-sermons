@@ -28,6 +28,8 @@ def match_key(s, lang):
     s = display(s, lang).replace("־", " ")
     if lang == "grc":
         s = _ELISION.sub("'", s)
+        # grave is positional (acute before a pause): fold to acute; accents are otherwise kept
+        s = nfc(unicodedata.normalize("NFD", s).replace("\u0300", "\u0301"))
     s = _BRACKETS.sub("", s)
     s = _PUNCT.sub("", s)
     s = _WS.sub(" ", s).strip()

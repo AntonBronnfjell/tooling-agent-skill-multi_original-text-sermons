@@ -8,6 +8,7 @@ Exit: 1 if any ERROR, 2 if bible.db is missing, else 0.
 """
 import argparse
 import re
+import sqlite3
 import sys
 from pathlib import Path
 from typing import NamedTuple
@@ -28,6 +29,14 @@ LABEL_RE = re.compile(r"^(Literal|Natural)\s*:\s*(.*)$", re.IGNORECASE)
 H2_RE = re.compile(r"^##(?!#)\s*(.*?)\s*$")
 OSIS_IN_TEXT = re.compile(r"(?<![\w.])((?:[1-3])?[A-Za-z]+\.\d+\.\d+(?:\s*[-–]\s*\d+)?)")
 HUMAN_IN_TEXT = re.compile(r"(?<![\w.])((?:[1-3]\s?)?[^\W\d_]+\.?)\s+(\d+):(\d+)(?:\s*[-–]\s*(\d+))?")
+HAS_SCRIPT = re.compile("[\u0370-\u03ff\u1f00-\u1fff\u0590-\u05ff]")
+SCRIPT_WORD = "[\u0300-\u036f\u0370-\u03ff\u1f00-\u1fff\u0590-\u05ff]+"
+PROSE_RUN = re.compile(rf"{SCRIPT_WORD}(?:[\s,.;\u00b7:\u05c3]+{SCRIPT_WORD}){{2,}}")
+TEMPLATE_NAME = re.compile(r"^[a-z0-9-]+$")
+MAX_RANGE = 50
+MAX_ELLIPSES = 4
+LANGS = {"es": "es", "spanish": "es", "español": "es", "espanol": "es", "castellano": "es", "spa": "es",
+         "en": "en", "english": "en", "inglés": "en", "ingles": "en", "eng": "en"}
 HEB_POINT = re.compile("[ְ-ׇּֿׁׂ]")
 
 
@@ -84,7 +93,7 @@ def resolve_witness(conn, corpus, w):
 
 
 def quote_refs(conn, corpus, witness, ref_text):
-    """-> (list of verse refs present for corpus+witness in order, set of refs the tag names, error|None)."""
+    """-> (verse refs present for corpus+witness in order, set of refs the tag names, error|None)."""
     if corpus == "ext":
         wanted = [ref_text.strip()]
     else:
@@ -93,18 +102,21 @@ def quote_refs(conn, corpus, witness, ref_text):
         except RefError:
             return [], set(), f"unknown ref: {ref_text}"
         if r.verse is None:
-            rows = conn.execute("SELECT ref FROM verses WHERE corpus=? AND witness=? AND ref LIKE ?",
-                                (corpus, witness, f"{r.book}.{r.chapter}.%")).fetchall()
-            wanted = sorted({x[0] for x in rows}, key=lambda s: int(s.rsplit(".", 1)[1]))
-        else:
-            wanted = [f"{r.book}.{r.chapter}.{v}" for v in range(r.verse, (r.verse_end or r.verse) + 1)]
-    present = []
-    for ref in wanted:
-        if conn.execute("SELECT 1 FROM verses WHERE corpus=? AND witness=? AND ref=? LIMIT 1",
-                        (corpus, witness, ref)).fetchone():
-            present.append(ref)
-    if not present:
-        return [], set(wanted), f"ref {ref_text} not found for {corpus} witness {witness} (unknown ref or absent in this witness)"
+            return [], set(), f"chapter-only ref {ref_text}: use Book.Chapter.Verse (or a verse range)"
+        end = r.verse_end or r.verse
+        if end < r.verse:
+            return [], set(), f"reversed verse range: {ref_text}"
+        if end - r.verse + 1 > MAX_RANGE:
+            return [], set(), f"verse range {ref_text} too long (max {MAX_RANGE} verses)"
+        wanted = [f"{r.book}.{r.chapter}.{v}" for v in range(r.verse, end + 1)]
+    present = [ref for ref in wanted
+               if conn.execute("SELECT 1 FROM verses WHERE corpus=? AND witness=? AND ref=? LIMIT 1",
+                               (corpus, witness, ref)).fetchone()]
+    missing = [r for r in wanted if r not in present]
+    if missing:
+        shown = ", ".join(missing[:5]) + (" ..." if len(missing) > 5 else "")
+        return present, set(wanted), (f"verse(s) {shown} not found for {corpus} witness {witness} "
+                                      "(unknown ref, or the verse is absent in this witness)")
     return present, set(wanted), None
 
 
@@ -136,19 +148,26 @@ def find_in_order(hay, segments):
 
 
 def check_quote(conn, corpus, witness, hay_refs, original, lang):
-    segs = [s for s in re.split(r"…|\.\.\.", nfc(original)) if s.strip()]
+    """-> (error message | None, [warning messages])."""
+    original = nfc(original)
+    segs = [s for s in re.split(r"…|\.\.\.", original) if s.strip()]
     if not segs:
-        return "empty quote"
+        return "empty quote", []
+    warns = []
+    if len(segs) > 1 and any(len(s.split()) == 1 for s in segs):
+        warns.append("quote has one-word segments around an ellipsis (stitching risk): quote a contiguous phrase")
+    if len(re.findall(r"…|\.\.\.", original)) > MAX_ELLIPSES:
+        warns.append(f"quote has more than {MAX_ELLIPSES + 1} segments (stitching risk): split it into separate quotes")
     hay = haystack(conn, corpus, witness, hay_refs, lang)
     keys = [match_key(s, lang) for s in segs]
     miss = find_in_order(hay, keys)
     if miss is not None and lang == "heb" and not any(HEB_POINT.search(s) for s in segs):
         miss = find_in_order(strip_points(hay), keys)  # unpointed quote vs pointed verse
     if miss is None:
-        return None
+        return None, warns
     span = hay_refs[0] if len(hay_refs) == 1 else f"{hay_refs[0]}..{hay_refs[-1]}"
     shown = next((s.strip() for s, k in zip(segs, keys) if k == miss), miss)
-    return f"quoted text not found in {corpus}/{witness} {span}: {shown[:60]}"
+    return f"quoted text not found in {corpus}/{witness} {span}: {shown[:60]}", warns
 
 
 # ---------------------------------------------------------------- parsing
@@ -164,27 +183,47 @@ def split_frontmatter(lines):
 
 
 def parse_quotes(lines, start):
-    """Quote blocks -> list of dicts(line, tag, original, literal, natural, label_lines)."""
-    quotes, cur = [], None
+    """Blockquote scan -> (quotes, problems).
+
+    quotes: dicts(line, tag, original, labels={'literal': [(line, text)], 'natural': [...]}).
+    problems: (line, msg) for tag-like lines that do not parse and for original-language text that
+    is not the original line(s) of a tagged quote. Continuation lines after a label extend it.
+    """
+    quotes, problems, cur, last = [], [], None, None
     for i in range(start, len(lines)):
-        raw = lines[i]
-        if not raw.lstrip().startswith(">"):
-            cur = None
+        raw = lines[i].lstrip()
+        if not raw.startswith(">"):
+            cur = last = None
             continue
-        content = raw.lstrip()[1:].strip()
+        content = raw
+        while content.startswith(">"):
+            content = content[1:].lstrip()
+        ln = i + 1
         m = TAG_RE.match(content)
         if m:
-            cur = {"line": i + 1, "tag": m.groups()[:3], "original": m.group(4), "labels": {}}
+            cur = {"line": ln, "tag": m.groups()[:3], "original": m.group(4), "labels": {}}
             quotes.append(cur)
+            last = None
             continue
-        if cur is None:
+        if content.lstrip("*_ ").startswith("["):
+            problems.append((ln, "unparseable quote tag: expected `> [CORPUS[:WITNESS] Ref] original`"))
+            cur = last = None
             continue
         lm = LABEL_RE.match(content)
-        if lm:
-            cur["labels"][lm.group(1).lower()] = (i + 1, lm.group(2))
-        elif not cur["labels"]:
-            cur["original"] += " " + content
-    return quotes
+        if lm and cur is not None:
+            last = [ln, lm.group(2)]
+            cur["labels"].setdefault(lm.group(1).lower(), []).append(last)
+            if HAS_SCRIPT.search(lm.group(2)):
+                problems.append((ln, "untagged original-language text on a translation line"))
+        elif cur is not None and last is None and not cur["labels"]:
+            cur["original"] += " " + content  # original continued on the next `>` line
+        elif last is not None:
+            last[1] += " " + content
+            if HAS_SCRIPT.search(content):
+                problems.append((ln, "untagged original-language text in quote block"))
+        elif HAS_SCRIPT.search(content):
+            problems.append((ln, "untagged original-language text in blockquote: tag it `[CORPUS Ref]` so it can be verified"))
+    return quotes, problems
 
 
 def required_sections(fm, lang):
@@ -192,9 +231,11 @@ def required_sections(fm, lang):
     if tpl == "custom":
         names = [s.strip() for s in fm.get("sections", "").split(",") if s.strip()]
         return [(n, n) for n in names], None if names else "template custom requires `sections:` in frontmatter"
-    if not (references.TEMPLATES / f"{tpl}.md").is_file():
-        return [], f"unknown template: {tpl!r}"
+    if not TEMPLATE_NAME.match(tpl) or tpl == "sermon-output" or not (references.TEMPLATES / f"{tpl}.md").is_file():
+        return [], f"unknown template: {tpl!r} (use a template name from templates/, or `custom`)"
     en = references.template_sections(tpl)
+    if not en:
+        return [], f"template {tpl!r} declares no sections"
     loc = references.template_sections(tpl, lang)
     if len(loc) != len(en):
         loc = en
@@ -223,7 +264,13 @@ def check(path, conn):
     for k in REQUIRED_KEYS:
         if not fm.get(k):
             out.append(Finding("ERROR", 1, f"missing frontmatter key: {k}"))
-    lang = (fm.get("language") or "en").lower()[:2]
+    raw_lang = (fm.get("language") or "en").strip().lower()
+    lang = LANGS.get(raw_lang) or LANGS.get(re.split(r"[-_]", raw_lang)[0])
+    if lang is None:
+        out.append(Finding("ERROR", 1, f"unsupported language {fm.get('language')!r}: use es or en (tradition vocabulary is per language)"))
+    elif not references.tradition_terms(lang):
+        out.append(Finding("ERROR", 1, f"no tradition vocabulary for language {lang!r}"))
+    lang = lang or "en"
 
     # headings / notes section
     headings = [(i + 1, m.group(1)) for i in range(body_start, len(lines)) if (m := H2_RE.match(lines[i]))]
@@ -249,7 +296,8 @@ def check(path, conn):
     trad = tradition_regex(lang)
 
     # quotes
-    quotes = parse_quotes(lines, body_start)
+    quotes, problems = parse_quotes(lines, body_start)
+    out += [Finding("ERROR", ln, msg) for ln, msg in problems]
     for q in quotes:
         tag, wit, ref_text = q["tag"]
         corpus = CORPUS.get(tag.upper())
@@ -268,10 +316,11 @@ def check(path, conn):
                     if err:
                         out.append(Finding("ERROR", q["line"], err))
                     else:
-                        lg = "heb" if corpus == "hebot" else "grc"
-                        msg = check_quote(conn, corpus, canon, hay_refs, q["original"], lg)
+                        lg = "heb" if corpus in ("hebot", "dss") else "grc"
+                        msg, warns = check_quote(conn, corpus, canon, hay_refs, q["original"], lg)
                         if msg:
                             out.append(Finding("ERROR", q["line"], msg))
+                        out += [Finding("WARN", q["line"], w) for w in warns]
                         if corpus != "ext":
                             hit = (set(hay_refs) | named) & contested
                             miss = sorted(hit - notes_verses)
@@ -282,10 +331,17 @@ def check(path, conn):
             if label not in q["labels"]:
                 out.append(Finding("ERROR", q["line"], f"missing {label.capitalize()}: line after quote"))
     for q in quotes:
-        for label, (ln, text) in q["labels"].items():
-            if trad:
-                for m in trad.finditer(nfc(text)):
+        for label, entries in q["labels"].items():
+            for ln, text in entries:
+                for m in (trad.finditer(nfc(text)) if trad else ()):
                     out.append(Finding("ERROR", ln, f"tradition term {m.group(0)!r} on {label.capitalize()}: line; use a plain rendering (discuss the term in prose or Notes)"))
+
+    # runs of original-language words in prose (outside any blockquote) should be tagged quotes
+    for i in range(body_start, len(lines)):
+        if lines[i].lstrip().startswith(">") or (notes_range and notes_range[0] <= i + 1 <= notes_range[1]):
+            continue  # quote blocks are verified; Notes legitimately cite variant phrases
+        if PROSE_RUN.search(nfc(lines[i])):
+            out.append(Finding("WARN", i + 1, "3+ original-language words in prose: put the phrase in a tagged quote block so it is verified"))
 
     # word count (excluding frontmatter, quote blocks, headings, Notes)
     words = 0
@@ -316,6 +372,11 @@ def main(argv=None):
         conn = db.connect(p)
     else:
         conn = db.require_db()
+    try:
+        conn.execute("SELECT 1 FROM verses LIMIT 1").fetchall()
+    except sqlite3.DatabaseError:
+        print("not a valid bible.db (no readable verses table); rebuild with python3 scripts/build_db.py", file=sys.stderr)
+        return 2
     bad = False
     for f in a.files:
         try:
