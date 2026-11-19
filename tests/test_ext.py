@@ -98,5 +98,69 @@ class Ext(unittest.TestCase):
         self.assertEqual(self.q("select value from meta where key='papyri_quality'")["value"], "noisy-ocr")
 
 
+class PapyriCleanup(unittest.TestCase):
+    """Moulton-Milligan OCR noise filtering and duplicate merging (synthetic source)."""
+
+    BODY = "A reasonably long body describing the word in the papyri."
+
+    @classmethod
+    def setUpClass(cls):
+        import lzma
+        import sqlite3
+        from loaders import ext
+        from otslib import db
+        cls.tmp = tempfile.mkdtemp()
+        src = (
+            "ἀτρεμεῖ.\n\n"                       # empty body -> dropped
+            "βαρύς.\nshort\n"                    # body < 20 -> dropped
+            "γράφω.\n" + cls.BODY + " first\n"
+            "δοῦλος.\n" + cls.BODY + "\n"
+            "γράφω.\n" + cls.BODY + " second\n"  # duplicate lemma -> merged
+            "΄.\n" + cls.BODY + "\n"             # accent-only headword -> dropped
+            "Ὁ.\n" + cls.BODY + "\n"             # valid Greek, long body -> kept
+            "ὁ.\nshort\n"                        # short headword, short body -> dropped
+        )
+        p = os.path.join(cls.tmp, "ext")
+        os.makedirs(p)
+        with lzma.open(os.path.join(p, "moulton-milligan.txt.xz"), "wt", encoding="utf-8") as f:
+            f.write(src)
+        cls.conn = sqlite3.connect(":memory:")
+        cls.conn.executescript(db.SCHEMA)
+        cls.n, cls.raw = ext._load_mm(cls.conn, Path(p) / "moulton-milligan.txt.xz")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.conn.close()
+        shutil.rmtree(cls.tmp)
+
+    def lemmas(self):
+        return [r[0] for r in self.conn.execute("select lemma from papyri_vocab")]
+
+    def test_short_body_dropped(self):
+        for lem in ("ἀτρεμεῖ", "βαρύς", "ὁ"):
+            self.assertNotIn(lem, self.lemmas())
+
+    def test_punctuation_headword_dropped_real_short_kept(self):
+        self.assertNotIn("΄", self.lemmas())
+        self.assertIn("Ὁ", self.lemmas())
+
+    def test_duplicates_merged(self):
+        ls = self.lemmas()
+        self.assertEqual(len(ls), len(set(ls)))
+        e = self.conn.execute("select entry from papyri_vocab where lemma='γράφω'").fetchone()[0]
+        self.assertEqual(e.count("\n---\n"), 1)
+        self.assertIn("first", e)
+        self.assertIn("second", e)
+
+    def test_count_returned(self):
+        self.assertEqual((self.n, self.raw), (3, 8))  # γράφω (merged), δοῦλος, Ὁ
+
+    def test_real_fixture_no_junk(self):
+        c = build(FIXTURES, os.path.join(self.tmp, "r.db"), only=("ext",))
+        self.addCleanup(c.close)
+        self.assertEqual(c.execute("select count(*) from papyri_vocab where length(trim(entry)) < 20").fetchone()[0], 0)
+        self.assertEqual(c.execute("select count(*)-count(distinct lemma) from papyri_vocab").fetchone()[0], 0)
+
+
 if __name__ == "__main__":
     unittest.main()

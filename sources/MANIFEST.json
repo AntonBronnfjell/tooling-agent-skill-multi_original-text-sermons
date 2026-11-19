@@ -1179,7 +1179,7 @@
       "commit_or_version": "eBible.org catalogue 2026-11-18",
       "version": "Reina1569",
       "lang": "es",
-      "reason": "No Reina 1569 (Biblia del Oso) text on eBible.org (only spaRV1909, sparvg, spav1602p) and no digital verse text found on GitHub.",
+      "reason": "Searched again 2026-11-19; still no verse-segmented machine-readable Reina 1569 (Biblia del Oso). Places searched: eBible.org translations.csv (only spaRV1909, sparvg, spav1602p); GitHub repository search (no results); es.wikisource.org (Biblia del oso is a 474-byte scan-link page, no text); archive.org full-text OCR (la-biblia-del-oso, labibliaqveeslos00rein, LaSantaBibliaversinDeCasiodoroDeReinaAAo1.569BibliaDelOso: facsimile OCR with long-s misreads, two columns and no verse numbers in the 1569 print, so it cannot be segmented reliably; BibliaElOso: a modernized later revision, not the 1569 text); bibliavida.com and devocionalescristianos.org (web/PDF reading only, no downloadable text). Not vendored: a false text would be worse than none.",
       "license_note": "Public domain (1569)"
     },
     {

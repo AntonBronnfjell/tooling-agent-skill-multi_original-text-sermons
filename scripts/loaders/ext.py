@@ -128,23 +128,39 @@ def _headword(line):
     return norm.nfc(w)
 
 
+MM_MIN_BODY = 20  # chars; shorter bodies are OCR debris (empty or split-off headwords)
+
+
+def _keep_mm(lemma, body):
+    """Drop OCR noise: bodies < 20 chars; headwords <= 2 chars unless real Greek letters with a body."""
+    if len(body.strip()) < MM_MIN_BODY:
+        return False
+    return any(unicodedata.category(ch).startswith("L") for ch in lemma) and (
+        len(lemma) > 2 or all(unicodedata.category(ch).startswith("L") for ch in lemma))
+
+
 def _load_mm(conn, path):
-    entries, cur, body = [], None, []
+    raw, cur, body = [], None, []
     for line in lzma.open(path, "rt", encoding="utf-8-sig"):
         hw = _headword(line)
         if hw:
             if cur:
-                entries.append((cur, "\n".join(body).strip()))
+                raw.append((cur, "\n".join(body).strip()))
             cur, body = hw, []
         elif cur is not None:
             body.append(line.rstrip("\n"))
     if cur:
-        entries.append((cur, "\n".join(body).strip()))
+        raw.append((cur, "\n".join(body).strip()))
+    merged = {}  # OCR re-splits one entry into several: merge same-lemma bodies
+    for lemma, entry in raw:
+        if _keep_mm(lemma, entry):
+            merged.setdefault(lemma, []).append(entry)
+    entries = [(lemma, "\n---\n".join(parts)) for lemma, parts in merged.items()]
     conn.executemany("INSERT INTO papyri_vocab VALUES (?,?)", entries)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_papyri_lemma ON papyri_vocab (lemma)")
     conn.execute("DELETE FROM meta WHERE key='papyri_quality'")
     conn.execute("INSERT INTO meta VALUES ('papyri_quality','noisy-ocr')")
-    return len(entries)
+    return len(entries), len(raw)
 
 
 def _mm_deferred(sources_dir):
@@ -173,12 +189,13 @@ def load(conn, sources_dir, out=None):
                 continue
             _load_tei(conn, p, witness, work, stats)
     mm = sources_dir / "ext" / "moulton-milligan.txt.xz"
-    n_mm = 0
+    n_mm = raw_mm = 0
     if _mm_deferred(sources_dir) or not mm.is_file():
         print("ext: Moulton-Milligan skipped (deferred or missing)", file=out)
     else:
-        n_mm = _load_mm(conn, mm)
+        n_mm, raw_mm = _load_mm(conn, mm)
     for w in ("Josephus", "Philo"):
         print(f"ext {w}: {stats['verses'][w]} verses, {stats['words'][w]} words", file=out)
-    print(f"ext: {stats['skipped']} sections skipped (non-numeric ref or empty); {n_mm} papyri entries", file=out)
+    print(f"ext: {stats['skipped']} sections skipped (non-numeric ref or empty); {n_mm} papyri entries "
+          f"(from {raw_mm} OCR entries; noise dropped, duplicates merged)", file=out)
     return sum(stats["words"].values()) + sum(stats["verses"].values()) + n_mm

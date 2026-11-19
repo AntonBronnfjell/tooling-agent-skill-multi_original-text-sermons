@@ -494,9 +494,15 @@ def cmd_usage(conn, a):
         if r["editions"] == "bracketed":
             c["editor_bracketed"] = True
         items.append(c)
-    pap = [{"lemma": r["lemma"], "entry": r["entry"], "label": OCR_LABEL}
-           for r in conn.execute("SELECT lemma, entry FROM papyri_vocab WHERE lemma=? OR lemma=?",
-                                 (lemma, unicodedata.normalize("NFD", lemma)))]
+    pap = {}  # at most one entry per lemma; stray duplicate rows are joined
+    for r in conn.execute("SELECT lemma, entry FROM papyri_vocab WHERE lemma=? OR lemma=?",
+                          (lemma, unicodedata.normalize("NFD", lemma))):
+        k = unicodedata.normalize("NFC", r["lemma"])
+        if k in pap:
+            pap[k]["entry"] += "\n---\n" + r["entry"]
+        else:
+            pap[k] = {"lemma": r["lemma"], "entry": r["entry"], "label": OCR_LABEL}
+    pap = list(pap.values())
     qual = conn.execute("SELECT value FROM meta WHERE key='papyri_quality'").fetchone()
     return {"lemma": lemma, "counts": counts, "counts_note": NT_COUNT_NOTE, "contexts": ctx, "lxx_witness": "Rahlfs",
             "ext_note": EXT_NOTE,

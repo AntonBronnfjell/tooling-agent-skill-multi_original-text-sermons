@@ -282,6 +282,23 @@ class Lookup(unittest.TestCase):
         self.assertEqual(o["papyri_quality"], "noisy-ocr")
         self.assertIn("OCR", o["papyri"][0]["label"])
 
+    def test_usage_papyri_at_most_one_entry_per_lemma(self):
+        import sqlite3
+        c = sqlite3.connect(self.db)
+        c.executemany("INSERT INTO papyri_vocab VALUES (?,?)", [("ἔργον", "first part of the entry"), ("ἔργον", "second part of the entry")])
+        c.commit()
+        c.close()
+        try:
+            o = run("usage", "ἔργον")
+            self.assertEqual(len(o["papyri"]), 1)
+            self.assertIn("first part", o["papyri"][0]["entry"])
+            self.assertIn("second part", o["papyri"][0]["entry"])
+        finally:
+            c = sqlite3.connect(self.db)
+            c.execute("DELETE FROM papyri_vocab WHERE lemma='ἔργον'")
+            c.commit()
+            c.close()
+
     def test_usage_papyri_null_when_absent(self):
         self.assertIsNone(run("usage", "λόγος")["papyri"])
 
