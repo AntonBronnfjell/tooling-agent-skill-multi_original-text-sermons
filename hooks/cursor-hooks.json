@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": "__REPO__/hooks/check-sermon-hook.sh"
+      }
+    ]
+  }
+}

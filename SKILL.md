@@ -1,6 +1,12 @@
 ---
 name: original-text-sermons
 description: Writes concise, preachable sermons and word studies straight from the Hebrew, Aramaic and Greek texts (Masoretic, critical and TR Greek NT, Septuagint, Dead Sea Scrolls, Josephus, Philo), translated fresh into any language (Spanish and English fully validated) in a literal and a natural layer, with every original-language quote verified against a local database. Works from the original texts only, without creeds, commentaries or denominational doctrine; shows the options at contested readings, early vs late manuscripts, and where published translations diverge. Use whenever the user wants to write, outline or prepare a sermon, message or Bible study, preach a passage, or asks what a verse says in the Greek or Hebrew original, for exegesis, a word study, Septuagint (LXX) or Dead Sea Scrolls evidence. Also for Spanish requests (sermón, prédica, predicación, predicar, bosquejo, mensaje, estudio bíblico, texto original, griego, hebreo, exégesis, estudio de palabras, Septuaginta, Rollos del Mar Muerto).
+hooks:
+  PostToolUse:
+    - matcher: "Write|Edit"
+      hooks:
+        - type: command
+          command: "\"$HOME/.claude/skills/original-text-sermons/hooks/check-sermon-hook.sh\""
 ---
 
 # Original-text sermons
