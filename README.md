@@ -1,44 +1,137 @@
+<div align="center">
+
 # original-text-sermons
 
-An LLM-agnostic agent skill (Claude Code, Cursor, Copilot, or any agent that reads markdown and runs `python3`) that writes **concise, preachable sermons straight from the Hebrew/Aramaic and Greek texts**, translated fresh into any language — Spanish and English fully validated (tradition-vocabulary check and localized templates), others with a custom localized template and a warning that tradition vocabulary was not machine-checked — instead of leaning on published translations whose wording carries later doctrine and church tradition.
+**Concise, preachable sermons straight from the Hebrew/Aramaic and Greek — no doctrine, no tradition, only fidelity to the text.**
 
-- **Every original-language quote comes from local data**, never from model memory, and is mechanically verified by `scripts/check_sermon.py`: quote blocks and inline-tagged phrases are matched against the DB, and any untagged run of two or more Greek/Hebrew words — in the body or in Notes — is an error (single words, e.g. a lemma in a word study, are allowed).
-- **Two-layer translation**: a literal word-for-word line, then a natural line; later church vocabulary (*church*, *baptize*, *iglesia*…) is not allowed on either.
-- **Contested readings show the options** (John 1:1c, *pistis Christou*, Gen 1:26 …) with their grammatical, lexical and textual basis — never resolved silently, in either direction.
-- **Evidence from the 1st century**: LXX as the lexicon of NT Greek, Dead Sea Scrolls, Josephus, Philo and papyri usage; early vs late manuscripts (SBL/NA/THGNT/WH vs Byz/TR); where published translations diverge.
-- **No doctrine sources**: no creeds, commentaries, church fathers as interpreters, study-Bible notes or denominational statements. The skill's only loyalty is fidelity to the text.
-- Audience- and specialization-aware (theology, apologetics, evangelistic, teaching, pastoral × christian, non-christian, mixed), following a default template, a preset, or the skeleton of an example sermon you paste.
+<p>
+  <img alt="Python 3.9+" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
+  <img alt="Standard library only" src="https://img.shields.io/badge/dependencies-stdlib%20only-success">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-335%20passing-success">
+  <img alt="Code license MIT" src="https://img.shields.io/badge/code-MIT-blue">
+  <img alt="Data non-commercial" src="https://img.shields.io/badge/data-personal%20%2F%20non--commercial-orange">
+</p>
+
+<p>
+  <img alt="Claude Code" src="https://img.shields.io/badge/Claude%20Code-skill%20%2B%20hook-D97757">
+  <img alt="Cursor" src="https://img.shields.io/badge/Cursor-skill%20%2B%20hook-000000">
+  <img alt="GitHub Copilot" src="https://img.shields.io/badge/Copilot-skill-24292F?logo=github">
+  <img alt="Google Antigravity" src="https://img.shields.io/badge/Antigravity-skill-4285F4?logo=google&logoColor=white">
+</p>
+
+<a href="#what-it-does">What it does</a> ·
+<a href="#install">Install</a> ·
+<a href="#usage">Usage</a> ·
+<a href="#tooling">Tooling</a> ·
+<a href="#data-sources">Data sources</a> ·
+<a href="#known-limitations">Limitations</a> ·
+<a href="#use-and-license">License</a>
+
+</div>
+
+---
+
+An LLM-agnostic agent skill (Claude Code, Cursor, Copilot, Google Antigravity, or any agent that reads markdown and runs `python3`). It translates fresh into **any language** — Spanish and English fully validated (tradition-vocabulary check and localized templates); other languages use a custom localized template and get a warning that tradition vocabulary was not machine-checked.
+
+> [!IMPORTANT]
+> The skill holds **no doctrinal position**. Where the text honestly allows more than one reading, it shows the original, each option and what the context favors — never picking silently, in either direction.
+
+## What it does
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h4>🔒 Quotes are verified, not remembered</h4>
+      Every Hebrew/Greek quote comes from a local SQLite database and is checked by <code>scripts/check_sermon.py</code>: quote blocks and inline-tagged phrases must match the tagged edition and verse; any untagged run of two or more original-language words — in the body or in Notes — is an error.
+    </td>
+    <td width="50%" valign="top">
+      <h4>🪜 Two-layer translation</h4>
+      A literal word-for-word line, then a natural line. Later church vocabulary (<i>church</i>, <i>baptize</i>, <i>iglesia</i>, <i>bautizar</i>…) is not allowed on either — the plain meaning goes in the line, tradition terms may be discussed in prose.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h4>⚖️ Contested readings show the options</h4>
+      John 1:1c, <i>pistis Christou</i>, Gen 1:26, Matt 28:19 / Acts 2:38 "the name", 1 John 5:7… each with its grammatical, lexical and textual basis — no verdict.
+    </td>
+    <td valign="top">
+      <h4>📜 1st-century evidence</h4>
+      LXX as the lexicon of NT Greek, Dead Sea Scrolls (extant letters only), Josephus, Philo and papyri usage; six printed Greek editions side by side (SBL/NA/THGNT/WH vs Byz/TR); where published translations diverge.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h4>🚫 No doctrine sources</h4>
+      No creeds, commentaries, church fathers as interpreters, study-Bible notes or denominational statements.
+    </td>
+    <td valign="top">
+      <h4>🎯 Audience &amp; specialization aware</h4>
+      Theology, apologetics, evangelistic, teaching, pastoral × christian, non-christian, mixed — using the default <i>Big Idea</i> template, the <i>Hook-Book-Look-Took</i> preset, or the skeleton of an example sermon you paste.
+    </td>
+  </tr>
+</table>
 
 See [SKILL.md](SKILL.md) for the workflow the agent follows and [AGENTS.md](AGENTS.md) for contributors.
 
 ## Install
 
-Requirements: Python 3.9+ (standard library only), `xz`-capable Python (`lzma`, built in), ~500 MB free disk for the built database (`data/bible.db`, ~400 MB).
+**Requirements:** Python 3.9+ (standard library only, `lzma` built in) · ~500 MB free disk for the built database (`data/bible.db`, ~400 MB).
 
 ```bash
-git clone <this repo> ~/Development/anton.social/tooling-agent-skill-multi_original-text-sermons
+git clone https://github.com/AntonBronnfjell/tooling-agent-skill-multi_original-text-sermons.git \
+  ~/Development/anton.social/tooling-agent-skill-multi_original-text-sermons
 cd ~/Development/anton.social/tooling-agent-skill-multi_original-text-sermons
 ./install.sh            # build data/bible.db if missing, symlink into each agent's skills dir, wire hooks
 ./install.sh --status   # show where it is installed
 ./install.sh --uninstall
 ```
 
-`install.sh` symlinks the repo (one copy on disk) into `~/.claude/skills/original-text-sermons`, `~/.cursor/skills/…`, `~/.agents/skills/…` and `~/.copilot/skills/…` for the agent directories that exist, and wires the validator as a post-write hook where the host supports it. For Claude Code the hook is declared in `SKILL.md` frontmatter: it activates once the skill is invoked and depends on the skill being installed under one of `.claude/skills` (project), `~/.claude/skills`, `~/.agents/skills`, `~/.copilot/skills` or `~/.cursor/skills`. If that is not possible (for example an organisation lock on skill hooks), merge `hooks/claude-code.json` into `~/.claude/settings.json` manually. See `hooks/README.md`.
+`install.sh` symlinks the repo (one copy on disk) into each agent's skills directory that exists:
+
+| Host | Skills directory | Validator hook |
+|---|---|---|
+| Claude Code | `~/.claude/skills/original-text-sermons` | `PostToolUse` hook declared in `SKILL.md` frontmatter — active once the skill is invoked; errors block, warnings are returned to the model |
+| Cursor | `~/.cursor/skills/…` | `afterFileEdit` entry merged into `~/.cursor/hooks.json` (output may not reach the agent) |
+| Copilot | `~/.copilot/skills/…` | none — SKILL.md step 10 runs the validator |
+| Google Antigravity | `~/.gemini/config/skills/…` (created when `~/.gemini` exists) | none — SKILL.md step 10 runs the validator |
+| Other agents | `~/.agents/skills/…` | none — SKILL.md step 10 runs the validator |
+
+<details>
+<summary><b>Claude hook details and manual fallback</b></summary>
+
+The Claude hook command searches `.claude/skills` (project), `~/.claude/skills`, `~/.agents/skills`, `~/.copilot/skills` and `~/.cursor/skills` for the validator. If skill-scoped hooks are disabled (for example an organisation lock), merge `hooks/claude-code.json` into `~/.claude/settings.json` manually. See [hooks/README.md](hooks/README.md).
+</details>
 
 To build the database by hand: `python3 scripts/build_db.py` (offline; reads the vendored `sources/`). Set `OTS_DB=/path/to/bible.db` to keep it elsewhere.
 
-Then ask your agent, e.g. *"Write a sermon on John 3:16–17 for a mixed audience, in Spanish"* or *"Prepara una prédica evangelística sobre Lucas 15"*. Sermons are saved to `./sermons/YYYY-MM-DD-<slug>.<lang>.md` in your working directory.
+## Usage
 
-### Your own translations
+Ask your agent, for example:
+
+- *"Write a sermon on John 3:16–17 for a mixed audience, in Spanish"*
+- *"Prepara una prédica evangelística sobre Lucas 15"*
+- *"Give me a word study on ekklesia — how was it used in the first century?"*
+
+Sermons are saved to `./sermons/YYYY-MM-DD-<slug>.<lang>.md` in your working directory and validated before they are shown. A quote block looks like this:
+
+```markdown
+> [GRC John.1.1] καὶ θεὸς ἦν ὁ λόγος
+> Literal: and God was the word
+> Natural: …options shown in Notes…
+```
+
+<details>
+<summary><b>Your own translations</b></summary>
 
 Drop modern translations you own as CSV files in `sources/user/` (format in `sources/user/README.md`; the directory is gitignored) and rebuild the DB; they appear in `lookup.py compare`.
+</details>
 
 ## Tooling
 
 ```bash
 python3 scripts/lookup.py --format text verse John.1.1          # text + morphology + glosses
 python3 scripts/lookup.py --format text variants 1John.5.7      # readings by edition, early vs late
-python3 scripts/lookup.py --format text usage ἐκκλησία          # NT, LXX, Josephus, Philo, papyri
+python3 scripts/lookup.py --format text usage ἐκκλησία          # NT (per edition), LXX, Josephus, Philo, papyri
 python3 scripts/lookup.py --format text compare Matt.16.18      # published translations side by side
 python3 scripts/lookup.py --format text dss Isa.53.11           # Dead Sea Scrolls vs Masoretic text
 python3 scripts/check_sermon.py sermons/2026-11-18-example.es.md  # validate a sermon file
@@ -51,6 +144,9 @@ Other subcommands: `interlinear`, `word`, `lxx`, `search`. Run `python3 scripts/
 ## Data sources
 
 All sources are vendored (xz-compressed, pinned) under `sources/`; `sources/MANIFEST.json` records each file's upstream, commit/version, sha256 and license note. The licenses below are those of the data, not of this repo's code.
+
+<details open>
+<summary><b>Sources and licenses</b></summary>
 
 | source | gives | license (from `MANIFEST.json`) |
 |---|---|---|
@@ -66,10 +162,21 @@ All sources are vendored (xz-compressed, pinned) under `sources/`; `sources/MANI
 | [Moulton & Milligan, *Vocabulary of the Greek Testament*](https://archive.org/details/vocabularyofgree00mouluoft) | papyri and inscription usage per lemma (noisy OCR) | Public domain (Hodder & Stoughton 1914–1929; scan University of Toronto / Internet Archive 2008) |
 | [eBible.org](https://ebible.org/) — KJV, YLT, BSB, WEB, RV1909 | comparison translations | Public domain |
 
-Listed in the manifest but not vendored: LXX Swete 1930 (CC BY-NC-SA 4.0) and Reina 1569 (public domain).
+Listed in the manifest but not vendored: LXX Swete 1930 (CC BY-NC-SA 4.0) and Reina 1569 (public domain; no digital text found).
+</details>
+
+## Known limitations
+
+> [!WARNING]
+> - About 10–30 TR/Byzantine verses still come out with wrong word order (e.g. Mark 7:30, 2 Pet 1:18, Luke 15:30) because some upstream TAGNT word-order marks are inconsistent; a TR/Byz quote of those verses can validate against text no printed edition contains.
+> - The data holds **printed editions**, not individual manuscripts; the Romans 16:25–27 doxology is absent from the SBL text per MACULA and TAGNT.
+> - Moulton & Milligan is noisy OCR and is never quoted as verified text.
+
+The plan to close these gaps is in [docs/superpowers/plans/2026-11-19-gap-closure.md](docs/superpowers/plans/2026-11-19-gap-closure.md).
 
 ## Use and license
 
-This skill is built for **personal, non-commercial use** — some of the data (LXX, Dead Sea Scrolls) is licensed non-commercial only, and the TBESH lexicon definitions need permission before publication. Respect each source's license (attribution for CC BY data; share-alike for CC BY-SA) if you share anything derived from it.
+> [!NOTE]
+> This skill is built for **personal, non-commercial use** — some of the data (LXX, Dead Sea Scrolls) is licensed non-commercial only, and the TBESH lexicon definitions need permission before publication. Respect each source's license (attribution for CC BY data; share-alike for CC BY-SA) if you share anything derived from it.
 
 The code (scripts, tests, references, templates) is MIT-licensed — see [LICENSE](LICENSE). The data under `sources/` and the built `data/bible.db` keep their own licenses, listed above.
