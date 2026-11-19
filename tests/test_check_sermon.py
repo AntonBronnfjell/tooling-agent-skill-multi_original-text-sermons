@@ -519,6 +519,42 @@ class FinalReview(Base):
         self.assertFalse([f for f in fs if "editor-bracketed" in f.msg and f.level == "ERROR"], fs)
         self.assertTrue([f for f in fs if "editor-bracketed" in f.msg and f.level == "WARN"], fs)
 
+    def ext_errs(self, notes, quote=None):
+        return [f for f in check(self._qo_doc(self.doc(quote=quote or self.ext_quote(), notes=notes)), self.conn)
+                if f.level == "ERROR" and "editor-bracketed" in f.msg]
+
+    def _qo_doc(self, text):
+        p = Path(self.tmp) / "fr3.md"
+        p.write_text(text, encoding="utf-8")
+        return p
+
+    def test_ext_bracket_note_must_name_ref(self):
+        notes = "- John.1.1 options.\n- Mark.16.9: editors enclose [[ ]] the long ending."
+        self.assertTrue(self.ext_errs(notes))
+        self.assertTrue(self.ext_errs("- Ant.18.63 is a testimonium.\n- elsewhere the editor brackets things."))
+
+    def test_ext_bracket_note_same_line_ok(self):
+        self.assertFalse(self.ext_errs("- Ant.18.63 \u2014 editor-bracketed in Niese"))
+        self.assertFalse(self.ext_errs("- Ant.18.63\n  editor-bracketed in Niese"))
+        self.assertFalse(self.ext_errs("- Ant.18.63-64: corchetes del editor"))
+
+    def test_ext_bracket_inline_same_line_ok(self):
+        t = self.conn.execute("select text from verses where corpus='ext' and witness='Josephus' and ref='Ant.18.63'").fetchone()[0]
+        q = " ".join(t.split()[:4])
+        e = self.errs(self.doc(prose=f"The editor brackets [EXT:Josephus Ant.18.63] {q} here."))
+        self.assertFalse([m for m in e if "editor-bracketed" in m], e)
+
+    def test_lemma_list_allowed(self):
+        for prose in ("Related lemmas: \u03b2\u03ac\u03c0\u03c4\u03b9\u03c3\u03bc\u03b1, \u03b2\u03b1\u03c0\u03c4\u03b9\u03c3\u03bc\u03cc\u03c2 / \u03b2\u03b1\u03c0\u03c4\u03b9\u03c3\u03bc\u03bf\u1fe6",
+                      "lemmas \u03ba\u03b1\u03af, \u03b8\u03b5\u03cc\u03c2; \u03bb\u03cc\u03b3\u03bf\u03c2 \u00b7 \u1f26\u03bd",
+                      "lemmas \u03ba\u03b1\u03af\u037e \u03b8\u03b5\u03cc\u03c2\u0387 \u03bb\u03cc\u03b3\u03bf\u03c2"):
+            self.assertEqual(self.errs(self.doc(prose=prose)), [], prose)
+
+    def test_two_adjacent_words_still_error(self):
+        for prose in ("\u03ba\u03b1\u1f76 \u03b8\u03b5\u1f78\u03c2 here", "\u03ba\u03b1\u1f76 \u03b8\u03b5\u1f78\u03c2 \u1f26\u03bd \u1f41 \u03bb\u03cc\u03b3\u03bf\u03c2",
+                      "\u03ba\u03b1\u1f76, \u03b8\u03b5\u1f78\u03c2 \u1f26\u03bd \u1f41 \u03bb\u03cc\u03b3\u03bf\u03c2"):
+            self.assertTrue(any("untagged" in m for m in self.errs(self.doc(prose=prose))), prose)
+
     def test_baptiz_stems(self):
         q = "> [GRC John.1.1] καὶ θεὸς\n> Literal: a\n> Natural: {}\n"
         cases = [("es", "id y bautizad"), ("es", "bautizarlos"), ("es", "yo bautizo"), ("es", "que se bautícen"),

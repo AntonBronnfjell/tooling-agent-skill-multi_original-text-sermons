@@ -347,6 +347,33 @@ def ext_bracketed(conn, witness, refs, original):
     return hit
 
 
+LIST_SEP = re.compile("[,;/\u00b7\u037e\u0387]")
+
+
+def note_blocks(lines):
+    """Split Notes lines into bullets/paragraphs: a blank line or a new list marker starts a block."""
+    blocks, cur = [], []
+    for l in lines:
+        if not l.strip():
+            blocks.append(cur)
+            cur = []
+        elif re.match(r"\s*(?:[-*+]|\d+[.)])\s", l) and cur:
+            blocks.append(cur)
+            cur = [l]
+        else:
+            cur.append(l)
+    blocks.append(cur)
+    return ["\n".join(b) for b in blocks if b]
+
+
+def ext_note_ok(q, hay_refs, blocks, lines):
+    """An editor-bracket note counts only on the quote's own line (inline quote) or in a Notes bullet naming its ref."""
+    if q["labels"] is None and EDITOR_NOTE.search(lines[q["line"] - 1]):
+        return True
+    pats = [re.compile(r"(?<![\w.])" + re.escape(r) + r"(?![\w]|\.\d)") for r in hay_refs]
+    return any(EDITOR_NOTE.search(b) and any(p.search(b) for p in pats) for b in blocks)
+
+
 def inline_quotes(lines, start, block_quotes):
     """Original-language runs outside blockquotes -> (inline quotes, problems).
 
@@ -361,9 +388,12 @@ def inline_quotes(lines, start, block_quotes):
             t = INLINE_TAG.search(text[:m.start()])
             if t:
                 out.append({"line": i + 1, "tag": t.groups(), "original": m.group(0), "labels": None})
-            elif len(SCRIPT_TOKEN.findall(m.group(0))) >= 2 and not quoted_already(m.group(0), block_quotes + out, i + 1):
-                problems.append((i + 1, "untagged original-language text: tag it inline "
-                                        "`[CORPUS[:WITNESS] Ref] <original>` right before the words, or quote it"))
+            else:  # untagged: pieces split on , ; / \u00b7 are judged alone (a lemma list is not a quote)
+                for piece in LIST_SEP.split(m.group(0)):
+                    if len(SCRIPT_TOKEN.findall(piece)) >= 2 and not quoted_already(piece, block_quotes + out, i + 1):
+                        problems.append((i + 1, "untagged original-language text: tag it inline "
+                                                "`[CORPUS[:WITNESS] Ref] <original>` right before the words, or quote it"))
+                        break
     return out, problems
 
 
@@ -440,7 +470,7 @@ def check(path, conn, quotes_only=False, lang=None):
     quotes, problems = parse_quotes(lines, body_start)
     inline, run_problems = inline_quotes(lines, body_start, quotes)
     out += [Finding("ERROR", ln, msg) for ln, msg in problems + run_problems]
-    editor_text = "\n".join(lines if quotes_only else notes_lines)
+    blocks = note_blocks(lines if quotes_only else notes_lines)
     for q in quotes + inline:
         tag, wit, ref_text = q["tag"]
         corpus = CORPUS.get(tag.upper())
@@ -467,13 +497,13 @@ def check(path, conn, quotes_only=False, lang=None):
                         if not msg:
                             out += order_findings(conn, corpus, canon, hay_refs, q["line"])
                         if corpus == "ext" and not msg and ext_bracketed(conn, canon, hay_refs, q["original"]):
-                            if EDITOR_NOTE.search(editor_text):
+                            if ext_note_ok(q, hay_refs, blocks, lines):
                                 out.append(Finding("WARN", q["line"], "EXT quote includes editor-bracketed words "
                                                    "(the edition marks them as doubtful); keep that visible to the hearer"))
                             else:
                                 out.append(Finding("ERROR", q["line"], "EXT quote includes editor-bracketed words "
                                                    "(the edition marks them as doubtful): say so in Notes "
-                                                   "(bracket / corchetes / editor)"))
+                                                   "(bracket / corchetes / editor) in the same bullet as the ref"))
                         if corpus != "ext" and not quotes_only:
                             hit = (set(hay_refs) | named) & contested
                             miss = sorted(hit - notes_verses)
