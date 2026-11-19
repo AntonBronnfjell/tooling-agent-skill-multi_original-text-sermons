@@ -26,7 +26,8 @@ except ValueError:
     sys.exit("Cursor hook NOT wired: %s is not valid JSON \u2014 fix or remove it and re-run" % path)
 hooks = cfg.get("hooks") if isinstance(cfg.get("hooks"), dict) else {}
 entries = hooks.get("afterFileEdit") if isinstance(hooks.get("afterFileEdit"), list) else []
-ours = [e for e in entries if isinstance(e, dict) and e.get("command") == cmd]
+old = cmd.strip('"')  # earlier installs wrote the path unquoted
+ours = [e for e in entries if isinstance(e, dict) and e.get("command") in (cmd, old)]
 if mode == "status":
     print("wired" if ours else "not wired"); sys.exit(0)
 def save(new):
@@ -35,15 +36,27 @@ def save(new):
     with open(path, "w") as f:
         json.dump(new, f, indent=2); f.write("\n")
 if mode == "add":
-    if ours: print("already wired"); sys.exit(0)
+    if ours and all(e["command"] == cmd for e in ours): print("already wired"); sys.exit(0)
     cfg.setdefault("version", 1)
-    cfg.setdefault("hooks", {}).setdefault("afterFileEdit", []).append({"command": cmd})
+    lst = cfg.setdefault("hooks", {}).setdefault("afterFileEdit", [])
+    if ours:  # migrate old unquoted entry in place
+        first = True
+        for e in list(lst):
+            if e in ours:
+                if first: e["command"] = cmd; first = False
+                else: lst.remove(e)
+        save(cfg); print("wired (migrated old entry)"); sys.exit(0)
+    lst.append({"command": cmd})
     save(cfg); print("wired")
 elif mode == "remove":
     if not ours: print("not wired"); sys.exit(0)
     cfg["hooks"]["afterFileEdit"] = [e for e in entries if e not in ours]
     if not cfg["hooks"]["afterFileEdit"]:
         del cfg["hooks"]["afterFileEdit"]
+    if not cfg["hooks"]:
+        del cfg["hooks"]
+    if cfg == {"version": 1} and not os.path.exists(path + ".bak"):  # file we created (no backup = it did not exist)
+        os.remove(path); print("removed (deleted empty hooks file)"); sys.exit(0)
     save(cfg); print("removed")
 PY
 }

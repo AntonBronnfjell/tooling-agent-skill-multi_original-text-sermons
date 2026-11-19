@@ -5,7 +5,10 @@ import unittest
 # `discover -s tests` does not import tests/__init__.py, so repeat the path setup.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
 
-from otslib.references import contested_refs, template_sections, tradition_terms
+import tempfile
+from pathlib import Path
+
+from otslib.references import contested_refs, frontmatter, template_sections, tradition_terms
 
 REQUIRED_CONTESTED = {"John.1.1", "Gal.2.16", "Gen.1.26", "Acts.2.38", "1John.5.7", "Matt.28.19",
                       "Isa.9.6", "Phil.2.6", "Titus.2.13", "Rom.9.5", "Col.2.9", "Deut.6.4"}
@@ -55,6 +58,22 @@ class ReferenceTableTests(unittest.TestCase):
     def test_template_unknown(self):
         with self.assertRaises(FileNotFoundError):
             template_sections("no-such-template")
+
+    def _fm(self, text):
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        p = Path(d.name) / "s.md"
+        p.write_text(text, encoding="utf-8")
+        return frontmatter(p)
+
+    def test_hash_in_custom_section_name_kept(self):
+        fm = self._fm("---\nsections: Intro, Point #1, Notes\nlanguage: es # spanish\n---\n")
+        self.assertEqual(fm["sections"], "Intro, Point #1, Notes")
+        self.assertEqual(fm["language"], "es")
+
+    def test_bom_before_frontmatter_stripped(self):
+        fm = self._fm("\ufeff---\nlanguage: en\n---\nbody\n")
+        self.assertEqual(fm.get("language"), "en")
 
 
 if __name__ == "__main__":

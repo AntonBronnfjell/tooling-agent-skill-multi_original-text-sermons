@@ -205,6 +205,34 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(cfg["hooks"]["afterFileEdit"], [{"command": "other.sh"}])
         self.assertTrue((self.home / ".cursor" / "hooks.json.bak").exists())
 
+    def test_uninstall_removes_hooks_file_it_created(self):
+        path = self.home / ".cursor" / "hooks.json"
+        self.run_install()
+        self.assertTrue(path.exists())
+        r = self.run_install("--uninstall")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertFalse(path.exists())
+
+    def test_uninstall_keeps_preexisting_version_only_file(self):
+        path = self.home / ".cursor" / "hooks.json"
+        path.write_text('{"version": 1}')
+        self.run_install()
+        self.run_install("--uninstall")
+        self.assertTrue(path.exists())
+        self.assertEqual(json.loads(path.read_text()), {"version": 1})
+
+    def test_old_unquoted_cursor_entry_migrated(self):
+        path = self.home / ".cursor" / "hooks.json"
+        old = "%s/hooks/check-sermon-hook.sh" % ROOT.resolve()
+        path.write_text(json.dumps({"version": 1, "hooks": {"afterFileEdit": [{"command": "other.sh"}, {"command": old}]}}))
+        r = self.run_install()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        cmds = [h["command"] for h in json.loads(path.read_text())["hooks"]["afterFileEdit"]]
+        self.assertEqual(cmds, ["other.sh", '"%s"' % old])
+        self.run_install("--uninstall")
+        cmds = [h["command"] for h in json.loads(path.read_text())["hooks"]["afterFileEdit"]]
+        self.assertEqual(cmds, ["other.sh"])
+
     def test_non_symlink_path_refused(self):
         target = self.home / ".claude" / "skills" / "original-text-sermons"
         target.mkdir()

@@ -97,11 +97,14 @@ def default_corpus(ref_text):
         raise Fail(f"unknown ref: {ref_text}")
 
 
-def resolve_witness(conn, corpus, w):
+def resolve_witness(conn, corpus, w, refs=None, label=None):
     names = [r[0] for r in conn.execute("SELECT DISTINCT witness FROM verses WHERE corpus=?", (corpus,))]
     for n in names:
         if n.casefold() == w.casefold():
             return n
+    have = witnesses_for(conn, corpus, refs) if refs else []
+    if have:
+        raise Fail(f"unknown witness {w!r} for corpus {corpus}; witnesses with {label or 'this ref'}: {', '.join(have[:30])}")
     raise Fail(f"unknown witness {w!r} for corpus {corpus}; known: {', '.join(sorted(names)[:30])}")
 
 
@@ -245,7 +248,7 @@ def cmd_verse(conn, a, gloss_only=False):
         known = [r[0] for r in conn.execute("SELECT DISTINCT witness FROM verses WHERE corpus=? ORDER BY 1", (corpus,))]
         raise Fail(f"--witness is required for corpus {corpus}; known: {', '.join(known[:30])}")
     label, refs = ref_list(conn, corpus, a.ref)
-    witness = resolve_witness(conn, corpus, witness)
+    witness = resolve_witness(conn, corpus, witness, refs, label)
     texts = verse_texts(conn, corpus, witness, refs)
     if not texts:
         return {"ref": label, "corpus": corpus, "absent_in": witness,

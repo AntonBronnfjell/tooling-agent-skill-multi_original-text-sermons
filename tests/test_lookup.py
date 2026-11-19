@@ -97,6 +97,16 @@ class Lookup(unittest.TestCase):
         self.assertIn("reconstructed", o["note"])
         self.assertIn("rec", o["words"][0]["flags"])
 
+    def test_unknown_witness_lists_witnesses_with_the_ref(self):
+        r = run_raw("verse", "Isa.53.9", "--corpus", "dss", "--witness", "Nope")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("unknown witness", r.stderr)
+        self.assertIn("1QIsaa", r.stderr)
+        self.assertIn("Isa.53.9", r.stderr)
+        self.assertNotIn("4Q56", r.stderr)  # exists in the corpus, lacks this verse
+        r = run_raw("verse", "John.1.1", "--witness", "Nope")
+        self.assertIn("SBL", r.stderr)
+
     def test_dss_requires_witness(self):
         self.assertEqual(run_raw("verse", "Isa.53.11", "--corpus", "dss").returncode, 1)
 

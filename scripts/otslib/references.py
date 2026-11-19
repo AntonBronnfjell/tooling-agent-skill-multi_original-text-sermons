@@ -31,7 +31,7 @@ def _table(path: Path) -> list:
 
 def frontmatter(path: Path) -> dict:
     """Minimal `key: value` frontmatter between leading `---` lines. No YAML."""
-    lines = path.read_text(encoding="utf-8").splitlines()
+    lines = path.read_text(encoding="utf-8").lstrip("\ufeff").splitlines()
     out = {}
     if not lines or lines[0].strip() != "---":
         return out
@@ -40,18 +40,19 @@ def frontmatter(path: Path) -> dict:
             break
         key, sep, value = line.partition(":")
         if sep:
-            out[key.strip()] = _scalar(value)
+            out[key.strip()] = _scalar(value, comment=key.strip() == "language")
     return out
 
 
-def _scalar(value: str) -> str:
-    """YAML-ish scalar: `"x"`/`'x'` -> x; plain `x # comment` -> x."""
+def _scalar(value: str, comment: bool = False) -> str:
+    """YAML-ish scalar: `"x"`/`'x'` -> x; with comment=True (the `language` key only), plain `x # comment` -> x.
+    Elsewhere `#` is text (a custom section name may contain it)."""
     value = value.strip()
     if len(value) >= 2 and value[0] in "\"'":
         end = value.find(value[0], 1)
         if end > 0 and (end == len(value) - 1 or re.match(r"\s*(#.*)?$", value[end + 1:])):
             return value[1:end].strip()
-    return re.sub(r"\s+#.*$", "", value).strip()
+    return (re.sub(r"\s+#.*$", "", value) if comment else value).strip()
 
 
 def tradition_terms(lang: str) -> set:

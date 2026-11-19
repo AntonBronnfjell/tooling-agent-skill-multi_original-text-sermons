@@ -544,6 +544,11 @@ class FinalReview(Base):
         e = self.errs(self.doc(prose=f"The editor brackets [EXT:Josephus Ant.18.63] {q} here."))
         self.assertFalse([m for m in e if "editor-bracketed" in m], e)
 
+    def test_bom_before_frontmatter(self):
+        p = Path(self.tmp) / "bom.md"
+        p.write_text("\ufeff" + self.doc(), encoding="utf-8")
+        self.assertFalse([f for f in check(p, self.conn) if "frontmatter" in f.msg], [f.msg for f in check(p, self.conn)])
+
     def test_lemma_list_allowed(self):
         for prose in ("Related lemmas: \u03b2\u03ac\u03c0\u03c4\u03b9\u03c3\u03bc\u03b1, \u03b2\u03b1\u03c0\u03c4\u03b9\u03c3\u03bc\u03cc\u03c2 / \u03b2\u03b1\u03c0\u03c4\u03b9\u03c3\u03bc\u03bf\u1fe6",
                       "lemmas \u03ba\u03b1\u03af, \u03b8\u03b5\u03cc\u03c2; \u03bb\u03cc\u03b3\u03bf\u03c2 \u00b7 \u1f26\u03bd",
@@ -556,6 +561,22 @@ class FinalReview(Base):
             return [f for f in check(p, self.conn) if "separated original-language" in f.msg]
         self.assertTrue(w("The words \u03ba\u03b1\u03af, \u1f10\u03b3\u03ad\u03bd\u03b5\u03c4\u03bf, \u03c6\u1ff6\u03c2, \u03bc\u03ad\u03b3\u03b1, \u03b8\u03b5\u03cc\u03c2 here."))
         self.assertFalse(w("The words \u03ba\u03b1\u03af, \u1f10\u03b3\u03ad\u03bd\u03b5\u03c4\u03bf, \u03c6\u1ff6\u03c2, \u03bc\u03ad\u03b3\u03b1 here."))
+
+    def test_list_cap_any_separator(self):
+        def w(prose):
+            p = self._qo_doc(self.doc(prose=prose))
+            return [f for f in check(p, self.conn) if "separated original-language" in f.msg]
+        five = ["\u03ba\u03b1\u03af", "\u1f10\u03b3\u03ad\u03bd\u03b5\u03c4\u03bf", "\u03c6\u1ff6\u03c2", "\u03bc\u03ad\u03b3\u03b1", "\u03b8\u03b5\u03cc\u03c2"]
+        for sep in (" \u2014 ", " - ", " \u2013 "):
+            self.assertTrue(w("Words " + sep.join(five) + " here."), repr(sep))
+            self.assertFalse(w("Words " + sep.join(five[:4]) + " here."), repr(sep))
+        self.assertTrue(w("Words (" + ") (".join(five) + ") here."))
+        self.assertTrue(w("Words " + "\n".join(five) + "\nhere."))
+        self.assertTrue(w("Words " + five[0] + " (" + five[1] + ") \u2014 " + ", ".join(five[2:]) + "."))
+        self.assertFalse(w("Run `word " + "`, `word ".join(five) + "` here."))  # command snippets do not count
+        # wrapped bullet lines count together; a new bullet starts a fresh count
+        self.assertTrue(w("- " + " \u2014 ".join(five[:3]) + "\n  " + " \u2014 ".join(five[3:])))
+        self.assertFalse(w("- " + " \u2014 ".join(five[:3]) + "\n- " + " \u2014 ".join(five[3:])))
 
     def test_slash_separated_lists(self):
         def w(prose):

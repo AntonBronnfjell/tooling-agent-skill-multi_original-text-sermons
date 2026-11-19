@@ -380,11 +380,15 @@ def inline_quotes(lines, start, block_quotes):
     A run preceded on its line by `[CORPUS[:WITNESS] Ref]` is an inline quote (verified like a block quote);
     an untagged run of 2+ words is a problem unless it appears verbatim in a quote above it."""
     out, problems, warns = [], [], []
+    block_n = 0  # untagged original-language pieces in the current paragraph/bullet (any separator)
     for i in range(start, len(lines)):
+        if lines[i].lstrip().startswith(">") or not lines[i].strip() or re.match(r"\s*(?:[-*+]|\d+[.)]|#+)\s", lines[i]):
+            block_n = 0
         if lines[i].lstrip().startswith(">"):
             continue
         text = nfc(lines[i])
-        groups, prev_end = [], None  # untagged runs; runs joined only by a `/` form one list
+        code = [(m.start(), m.end()) for m in re.finditer(r"`[^`]*`", text)]  # command snippets do not count toward the cap
+        groups, in_code, prev_end = [], set(), None  # untagged runs; runs joined only by a `/` form one list
         for m in SCRIPT_RUN.finditer(text):
             t = INLINE_TAG.search(text[:m.start()])
             if t:
@@ -396,8 +400,10 @@ def inline_quotes(lines, start, block_quotes):
                 groups[-1].append(m.group(0))
             else:
                 groups.append([m.group(0)])
+            if any(a <= m.start() < b for a, b in code):
+                in_code.add(len(groups) - 1)
             prev_end = m.end()
-        for g in groups:  # untagged: pieces split on , ; / \u00b7 are judged alone (a lemma list is not a quote)
+        for gi, g in enumerate(groups):  # untagged: pieces split on , ; / \u00b7 are judged alone (a lemma list is not a quote)
             pieces = [x for run in g for x in LIST_SEP.split(run) if SCRIPT_TOKEN.search(x)]
             for piece in pieces:
                 if len(SCRIPT_TOKEN.findall(piece)) >= 2 and not quoted_already(piece, block_quotes + out, i + 1):
@@ -405,15 +411,16 @@ def inline_quotes(lines, start, block_quotes):
                                             "`[CORPUS[:WITNESS] Ref] <original>` right before the words, or quote it"))
                     break
             else:
-                if len(pieces) >= 5:
-                    warns.append((i + 1, f"{len(pieces)} separated original-language words in one run \u2014 tag it "
+                before, block_n = block_n, block_n + (0 if gi in in_code else len(pieces))
+                if before < 5 <= block_n:
+                    warns.append((i + 1, f"{block_n} separated original-language words in one run \u2014 tag it "
                                          "as a quote if it is text, or keep lemma lists short"))
     return out, list(dict.fromkeys(problems)), warns
 
 
 def check(path, conn, quotes_only=False, lang=None):
     path = Path(path)
-    lines = path.read_text(encoding="utf-8").splitlines()
+    lines = path.read_text(encoding="utf-8").lstrip("\ufeff").splitlines()
     out = []
     if quotes_only:  # a chat answer: any `---` block is plain text; no --lang: scan with the es and en lists
         body_start, has_fm, terminated = 0, False, True
