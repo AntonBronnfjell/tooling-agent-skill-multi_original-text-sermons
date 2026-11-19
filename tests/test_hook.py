@@ -143,6 +143,21 @@ class InstallTests(unittest.TestCase):
             self.assertEqual(link.resolve(), ROOT.resolve())
         self.assertFalse((self.home / ".copilot").exists())
 
+    def test_install_links_antigravity_when_gemini_exists(self):
+        (self.home / ".gemini").mkdir()
+        r = self.run_install()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        link = self.home / ".gemini" / "config" / "skills" / "original-text-sermons"
+        self.assertTrue(link.is_symlink())
+        self.assertEqual(link.resolve(), ROOT.resolve())
+        r = self.run_install("--uninstall")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertFalse(link.is_symlink())
+
+    def test_install_skips_antigravity_without_gemini(self):
+        self.assertEqual(self.run_install().returncode, 0)
+        self.assertFalse((self.home / ".gemini").exists())
+
     def test_install_twice_changes_nothing(self):
         self.assertEqual(self.run_install().returncode, 0)
         first = self.snapshot()

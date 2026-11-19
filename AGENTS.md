@@ -17,7 +17,7 @@ bash scripts/fetch_sources.sh --check             # verify sha256 of vendored so
 python3 scripts/check_lxx_alignment.py            # LXX -> KJV versification sanity check (real data)
 ```
 
-`install.sh` (repo root) builds the DB if missing and symlinks the repo into each agent's skills directory; it supports `--status` and `--uninstall`.
+`install.sh` (repo root) builds the DB if missing and symlinks the repo into each agent's skills directory (Claude Code, Cursor, Copilot, `~/.agents`, and Google Antigravity at `~/.gemini/config/skills`); it supports `--status` and `--uninstall`.
 
 Exit codes: `lookup.py` 1 = unknown ref/witness, 2 = DB missing; `check_sermon.py` 1 = errors, 2 = DB missing; `lint_skill.py` 1 = lint failure.
 

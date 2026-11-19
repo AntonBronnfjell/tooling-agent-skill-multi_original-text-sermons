@@ -15,7 +15,7 @@ Concise sermons built from the Hebrew/Aramaic and Greek texts, translated fresh 
 
 The skill's only loyalty is **fidelity to the text**, as close to the 1st century as the surviving evidence allows. It holds no doctrinal position of its own: no creeds, no commentaries, no church fathers as interpreters, no denominational statements. Where the text honestly allows more than one reading, it shows the options and the evidence — it never picks silently, in either direction.
 
-LLM-agnostic: works in Claude Code, Cursor, Copilot, or any agent that reads markdown and runs `python3` (standard library only).
+LLM-agnostic: works in Claude Code, Cursor, Copilot, Google Antigravity, or any agent that reads markdown and runs `python3` (standard library only).
 
 ## Paths and setup
 

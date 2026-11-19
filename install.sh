@@ -10,7 +10,9 @@ NAME="original-text-sermons"
 REPO="$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$(dirname "${BASH_SOURCE[0]}")")"
 HOOK_CMD="\"$REPO/hooks/check-sermon-hook.sh\""
 DB="${OTS_DB:-$REPO/data/bible.db}"
-SKILL_DIRS=("$HOME/.claude/skills" "$HOME/.cursor/skills" "$HOME/.agents/skills" "$HOME/.copilot/skills")
+# Antigravity (Google): global skills dir ~/.gemini/config/skills (antigravity.google/docs/skills); created when ~/.gemini exists.
+ANTIGRAVITY_SKILLS="$HOME/.gemini/config/skills"
+SKILL_DIRS=("$HOME/.claude/skills" "$HOME/.cursor/skills" "$HOME/.agents/skills" "$HOME/.copilot/skills" "$ANTIGRAVITY_SKILLS")
 CURSOR_HOOKS="$HOME/.cursor/hooks.json"
 
 # Cursor hooks.json editing. Modes: add | remove | status. Entry is ours iff its command == HOOK_CMD.
@@ -93,6 +95,7 @@ do_install() {
     fi
     python3 "$REPO/scripts/build_db.py"
   fi
+  [ -d "$HOME/.gemini" ] && mkdir -p "$ANTIGRAVITY_SKILLS"
   linked_any=0
   for d in "${SKILL_DIRS[@]}"; do
     [ -d "$d" ] && linked_any=1
