@@ -1,6 +1,6 @@
 ---
 name: original-text-sermons
-description: Writes concise, preachable sermons, word studies and passage explanations straight from the Hebrew, Aramaic and Greek texts (Masoretic, critical and Textus Receptus Greek NT, Septuagint, Dead Sea Scrolls, Josephus, Philo), translated fresh into Spanish or English in a literal and a natural layer, with every original-language quote verified against a local database. Works from the original texts only, without creeds, commentaries or denominational doctrine; shows the options at contested readings, early vs late manuscripts, and where published translations diverge. Use whenever the user wants to write, outline or prepare a sermon, message or Bible study, preach a passage, or asks what a verse says in the Greek or Hebrew original, for exegesis, a word study, Septuagint (LXX) or Dead Sea Scrolls evidence. Also for Spanish requests (sermón, prédica, predicación, predicar, bosquejo, mensaje, estudio bíblico, texto original, griego, hebreo, exégesis, estudio de palabras, Septuaginta, Rollos del Mar Muerto).
+description: Writes concise, preachable sermons and word studies straight from the Hebrew, Aramaic and Greek texts (Masoretic, critical and TR Greek NT, Septuagint, Dead Sea Scrolls, Josephus, Philo), translated fresh into any language (Spanish and English fully validated) in a literal and a natural layer, with every original-language quote verified against a local database. Works from the original texts only, without creeds, commentaries or denominational doctrine; shows the options at contested readings, early vs late manuscripts, and where published translations diverge. Use whenever the user wants to write, outline or prepare a sermon, message or Bible study, preach a passage, or asks what a verse says in the Greek or Hebrew original, for exegesis, a word study, Septuagint (LXX) or Dead Sea Scrolls evidence. Also for Spanish requests (sermón, prédica, predicación, predicar, bosquejo, mensaje, estudio bíblico, texto original, griego, hebreo, exégesis, estudio de palabras, Septuaginta, Rollos del Mar Muerto).
 ---
 
 # Original-text sermons
@@ -28,7 +28,7 @@ Ask **only what is missing**, in **one short message**:
 - topic or passage
 - specialization: theology · apologetics · evangelistic · teaching/discipleship · pastoral ([specializations.md](references/specializations.md))
 - audience: christian · non-christian · mixed ([audiences.md](references/audiences.md))
-- output language: Spanish (`es`) or English (`en`) — the validator's tradition-vocabulary check exists for these two; for any other language say so and offer `es`/`en`
+- output language: any. Spanish (`es`) and English (`en`) are fully validated (tradition-vocabulary check + localized default templates); for any other language (e.g. `pt`, `fr`) see step 7 and hard rule 4
 - template: "Use the default template, or paste an example sermon whose structure I should copy?"
 
 A bare request like "a sermon on grace" / "una prédica sobre la gracia" gets the intake message, not a sermon. Don't ask what the user already said; infer the language from the request when it is obvious, and confirm it in the same message.
@@ -57,7 +57,7 @@ Literal layer first (word-for-word in the target language, with glosses), then t
 
 ### 7. Structure
 
-Fill the chosen template. Use its **localized section names** for the sermon language — `sections_es:` for Spanish, `sections:` for English — as `##` headings spelled exactly as listed, in order. If an example sermon was supplied, extract only its skeleton (sections, order, relative length) — discard its wording and theology.
+Fill the chosen template. Use its **localized section names** for the sermon language — `sections_es:` for Spanish, `sections:` for English — as `##` headings spelled exactly as listed, in order. For **another language**, use `template: custom` with the template's sections translated into that language in the `sections:` list (same order, last one = Notes). If an example sermon was supplied, extract only its skeleton (sections, order, relative length) — discard its wording and theology.
 
 Length: **concise** = ~500–1300 words of body prose (quote blocks and Notes excluded), ~15–20 minutes spoken. Cut points before cutting evidence.
 
@@ -71,13 +71,14 @@ Save to `./sermons/YYYY-MM-DD-<slug>.<lang>.md` in the current working directory
 
 ### 10. Verify
 
-Run `python3 scripts/check_sermon.py ./sermons/<file>.md` (by its path in the skill folder). **Fix every ERROR and run it again until it exits 0** before presenting the sermon as done. Then handle each WARN (length, contested ref without an options note in Notes, untagged original-language words in prose). Never "fix" an ERROR by changing the quoted text to something `lookup.py` did not print — re-run `lookup.py` and copy, or drop the quote. Exit 2 = DB missing (see Paths and setup).
+Run `python3 scripts/check_sermon.py ./sermons/<file>.md` (by its path in the skill folder). **Fix every ERROR and run it again until it exits 0** before presenting the sermon as done. Then handle each WARN: length; contested ref without an options note in Notes; 3+ untagged original-language words in prose; one-word segments around `…` or too many `…` (stitching risk — quote a contiguous phrase or split the quote); tradition vocabulary not checked (languages other than es/en — say so in Notes). Never "fix" an ERROR by changing the quoted text to something `lookup.py` did not print — re-run `lookup.py` and copy, or drop the quote. Exit 2 = DB missing (see Paths and setup).
 
 ## Hard rules
 
 1. **Never quote Hebrew, Aramaic or Greek from memory.** Copy it from `lookup.py` output for the exact corpus + witness in the tag. If the tool did not print it, it does not go in the sermon.
 2. **Tag every quote** `[CORPUS[:WITNESS] Ref]`:
    - corpora `HEB` `ARC` `GRC` (NT) `LXX` `DSS` `EXT`; defaults `GRC`→SBL, `HEB`/`ARC`→WLC, `LXX`→Rahlfs;
+   - tag `ARC` for the Aramaic portions — Dan.2.4b–7.28, Ezra.4.8–6.18, Ezra.7.12–26, Jer.10.11 (`verse` morphology codes start with `A` there) — and `HEB` elsewhere in the OT;
    - no space after the colon (`[GRC:TR 1John.5.7]`, not `[GRC: TR …]`); one space before the ref;
    - `DSS` and `EXT` always name a witness: `[DSS:1QIsaa Isa.53.11]`, `[EXT:Josephus Ant.1.222]`, `[EXT:Philo Abr.1.1]`;
    - a late reading names its witness (`[GRC:TR …]`, `[GRC:Byz …]`), so a TR-only text never passes as plain `[GRC …]` (= SBL); Ketiv is `[HEB:Ketiv …]`;
@@ -85,8 +86,8 @@ Run `python3 scripts/check_sermon.py ./sermons/<file>.md` (by its path in the sk
    - if a witness omits a verse inside a range, split the quote into per-verse quotes for the verses it has;
    - the quoted text must be a contiguous run of that witness's verse text; `…` may elide, but never stitch single words together.
 3. **Two lines after every quote**: `Literal:` then `Natural:`, in the sermon language.
-4. **No tradition vocabulary on `Literal:`/`Natural:` lines** — any term in [tradition-vocabulary.md](references/tradition-vocabulary.md) for that language (e.g. *church/iglesia* for ἐκκλησία, *baptize/bautizar* for βαπτίζω) is an error there. Use the plain rendering; name and discuss the traditional term in prose or Notes.
-5. **Capitalization**: manuscripts of the period have no case distinction. No capitals added to πνεῦμα ἅγιον / רוּחַ ("holy spirit", "espíritu santo"); θεός/אֱלֹהִים → "God/Dios" only where target-language grammar treats it as a name; at contested places (John.1.1c, Heb.1.8, Gen.1.26) show the options instead of deciding by a capital letter; no reverential capitals on pronouns or titles ([fidelity-rules.md](references/fidelity-rules.md) §4).
+4. **No tradition vocabulary on `Literal:`/`Natural:` lines** — any term in [tradition-vocabulary.md](references/tradition-vocabulary.md) for that language (e.g. *church/iglesia* for ἐκκλησία, *baptize/bautizar* for βαπτίζω) is an error there. Use the plain rendering; name and discuss the traditional term in prose or Notes. For a language other than es/en the check cannot run: apply the EN/ES lists by analogy (render the plain meaning, not the church term) and state in Notes that the translation lines were not machine-checked for tradition vocabulary.
+5. **Capitalization**: manuscripts of the period have no case distinction. No capitals added to πνεῦμα ἅγιον / רוּחַ ("holy spirit", "espíritu santo"); θεός/אֱלֹהִים → "God/Dios" only where target-language grammar treats it as a name (e.g. אֱלֹהִים with a singular verb, as in Gen.1.1 and Gen.1.26 — there the contested part is the plural "let us … our", not "God"); where the form is anarthrous and the sense debated (John.1.1c, Heb.1.8) or the word takes plural agreement (Ps.82.6), show the options ("God / divine / a god / gods") instead of deciding by a capital letter; no reverential capitals on pronouns or titles ([fidelity-rules.md](references/fidelity-rules.md) §4).
 6. **Show the options at contested readings** ([contested-readings.md](references/contested-readings.md)): the original, each option with its grammatical/lexical/textual basis, and what the immediate context favors — as evidence, not verdict. Never pick silently, in either direction; never pick what suits a doctrine or an anti-doctrine. "The text allows both" is a valid finding.
 7. **Usage claims only from this session's `lookup.py` output** — occurrence counts, semantic domains, "the LXX uses X where the Hebrew has Y", Josephus/Philo/papyri usage. Report the tool's caveats (LXX/Hebrew figures from `word` are same-verse co-occurrence, not alignment).
 8. **Glosses are hints, not translations.** Lexicon and tool glosses can carry tradition vocabulary or an interpretation (e.g. ἅγιος "saint", ἔθνη "Gentiles", ᾍδης "hell", βαπτίζω "baptize"). Translate from the original form, its morphology and the usage evidence.
@@ -141,10 +142,10 @@ date: 2026-11-18
 - variants, contested readings with options, translation-comparison findings, commands used
 ```
 
-- Frontmatter keys: `passage, language, specialization, audience, template, date`. `language` is `es` or `en`; `specialization` one of `theology | apologetics | evangelistic | teaching | pastoral`; `audience` one of `christian | non-christian | mixed`; `template` is a file name from `templates/` (`big-idea`, `hook-book-look-took`) or `custom`.
-- `template: custom` (skeleton copied from a user's example) adds `sections: Name 1, Name 2, …, Notes` to the frontmatter; each becomes a `##` heading.
+- Frontmatter keys: `passage, language, specialization, audience, template, date`. `language` is a language code (`es`, `en`, `pt`, …); `specialization` one of `theology | apologetics | evangelistic | teaching | pastoral`; `audience` one of `christian | non-christian | mixed`; `template` is a file name from `templates/` (`big-idea`, `hook-book-look-took`) or `custom`.
+- `template: custom` (skeleton copied from a user's example, or any language other than es/en) adds `sections: Name 1, Name 2, …, Notes` to the frontmatter, in the sermon language; each becomes a `##` heading. The **last** listed section is treated as Notes (e.g. `Notas`, `Anotações`).
 - Each quote block: tag line, then `> Literal: …`, then `> Natural: …`. Original-language words in prose should be short (one or two words); anything longer goes in a tagged quote.
-- The last section is **Notes / Notas**: variants (with edition lists), every contested reading quoted with its options, translation-comparison findings (format in [translation-comparison.md](references/translation-comparison.md)), and the `lookup.py` commands used.
+- The last section is **Notes** (in the sermon language: `Notes`, `Notas`, or the last `sections:` name of a custom template): variants (with edition lists), every contested reading quoted with its options, translation-comparison findings (format in [translation-comparison.md](references/translation-comparison.md)), and the `lookup.py` commands used.
 
 ## References
 

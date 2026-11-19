@@ -264,25 +264,19 @@ def check(path, conn):
     for k in REQUIRED_KEYS:
         if not fm.get(k):
             out.append(Finding("ERROR", 1, f"missing frontmatter key: {k}"))
+    # Any language may be written; tradition vocabulary is only machine-checked where the
+    # reference table has terms for it (es, en). Other languages get a WARN, quotes are still verified.
     raw_lang = (fm.get("language") or "en").strip().lower()
-    lang = LANGS.get(raw_lang) or LANGS.get(re.split(r"[-_]", raw_lang)[0])
-    if lang is None:
-        out.append(Finding("ERROR", 1, f"unsupported language {fm.get('language')!r}: use es or en (tradition vocabulary is per language)"))
-    elif not references.tradition_terms(lang):
-        out.append(Finding("ERROR", 1, f"no tradition vocabulary for language {lang!r}"))
-    lang = lang or "en"
+    lang = LANGS.get(raw_lang) or LANGS.get(re.split(r"[-_]", raw_lang)[0]) or re.split(r"[-_]", raw_lang)[0]
+    if not references.tradition_terms(lang):
+        out.append(Finding("WARN", 1, f"tradition vocabulary not checked for {lang} (only "
+                           f"{', '.join(sorted(set(LANGS.values())))} have a list): review Literal:/Natural: lines by hand"))
 
-    # headings / notes section
     headings = [(i + 1, m.group(1)) for i in range(body_start, len(lines)) if (m := H2_RE.match(lines[i]))]
-    notes_lines, notes_range = [], None
-    for idx, (ln, h) in enumerate(headings):
-        if re.match(r"(notes|notas)\b", h, re.IGNORECASE):
-            end = headings[idx + 1][0] - 1 if idx + 1 < len(headings) else len(lines)
-            notes_range = (ln, end)
-            notes_lines = lines[ln:end]
-            break
-
+    pairs = []
     if fm.get("template"):
+        # named templates: localized `sections_<lang>` if the template has them, else the English names;
+        # `custom`: the `sections:` list as written (any language)
         pairs, err = required_sections(fm, lang)
         if err:
             out.append(Finding("ERROR", 1, err))
@@ -290,6 +284,16 @@ def check(path, conn):
             ok = any(h.lower().startswith(loc.lower()) or h.lower().startswith(en.lower()) for _, h in headings)
             if not ok:
                 out.append(Finding("ERROR", 1, f"missing section: ## {loc}" + (f" ({en})" if loc != en else "")))
+
+    # notes section: a heading starting with Notes/Notas, or with the template's last section name
+    notes_names = {n.lower() for n in (pairs[-1] if pairs else ())}
+    notes_lines, notes_range = [], None
+    for idx, (ln, h) in enumerate(headings):
+        if re.match(r"(notes|notas)\b", h, re.IGNORECASE) or any(h.lower().startswith(n) for n in notes_names):
+            end = headings[idx + 1][0] - 1 if idx + 1 < len(headings) else len(lines)
+            notes_range = (ln, end)
+            notes_lines = lines[ln:end]
+            break
 
     notes_verses = refs_in_text("\n".join(notes_lines))
     contested = contested_verses()
