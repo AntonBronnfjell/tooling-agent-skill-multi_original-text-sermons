@@ -574,6 +574,14 @@ class FinalReview(Base):
         self.assertTrue(w("Words " + "\n".join(five) + "\nhere."))
         self.assertTrue(w("Words " + five[0] + " (" + five[1] + ") \u2014 " + ", ".join(five[2:]) + "."))
         self.assertFalse(w("Run `word " + "`, `word ".join(five) + "` here."))  # command snippets do not count
+        self.assertFalse(w("Run `python3 scripts/lookup.py verse John.1.1` and `lookup.py word " + " ".join(five) + "`."))
+        eleven = five + ["\u03bb\u03cc\u03b3\u03bf\u03c2", "\u1f00\u03c1\u03c7\u03ae", "\u1f41", "\u03c4\u03cc", "\u03c0\u03c1\u03cc\u03c2", "\u1f26\u03bd"]
+        # backticked words count like plain ones
+        self.assertTrue(w("Words " + " ".join("`%s`" % x for x in eleven) + "."))
+        self.assertTrue(w("Words " + ", ".join("`%s`" % x for x in five) + "."))
+        self.assertTrue(w("Words " + " \u2014 ".join("`%s`" % x for x in eleven) + "."))
+        self.assertTrue(w("Words `" + ", ".join(eleven) + "`."))
+        self.assertTrue(w("Run `word x` then " + ", ".join(five) + "."))  # a command does not exempt the rest of the line
         # wrapped bullet lines count together; a new bullet starts a fresh count
         self.assertTrue(w("- " + " \u2014 ".join(five[:3]) + "\n  " + " \u2014 ".join(five[3:])))
         self.assertFalse(w("- " + " \u2014 ".join(five[:3]) + "\n- " + " \u2014 ".join(five[3:])))

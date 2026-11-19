@@ -86,7 +86,7 @@ class CheckSblgnt(unittest.TestCase):
         words = DB["Rom.16.22"].split()
         rows = dict(DB, **{"Rom.16.22": " ".join(words[:4]),
                            "Rom.16.23": " ".join(words[4:]) + " " + DB["Rom.16.23"]})
-        self.assertEqual(cs.check(make_db(rows), SOURCES / "sblgnt", stream_chapters={("Rom", 16)})["mismatches"], [])
+        self.assertEqual(cs.check(make_db(rows), SOURCES / "sblgnt", shifts={("Rom", 16): {22: len(words) - 4}})["mismatches"], [])
 
     def test_word_moved_across_verse_boundary_flagged_outside_allowlist(self):
         words = DB["Rom.16.22"].split()
@@ -94,8 +94,9 @@ class CheckSblgnt(unittest.TestCase):
                            "Rom.16.23": " ".join(words[4:]) + " " + DB["Rom.16.23"]})
         mm = cs.check(make_db(rows), SOURCES / "sblgnt")["mismatches"]
         self.assertEqual([m["ref"] for m in mm], ["Rom.16.22", "Rom.16.23"])
-        self.assertIn("3John", {b for b, _ in cs.STREAM_CHAPTERS})
-        self.assertTrue({("3John", 1), ("Acts", 19), ("2Cor", 13), ("Rev", 12), ("Rev", 13), ("Phil", 1)} <= cs.STREAM_CHAPTERS)
+        self.assertTrue({("3John", 1), ("Acts", 19), ("2Cor", 13)} <= set(cs.SHIFTS))
+        for ch in (("Phil", 1), ("Rev", 12), ("Rev", 13)):  # handled by FL_TO_KJV, not by an offset
+            self.assertNotIn(ch, cs.SHIFTS)
 
     def test_db_chapter_absent_from_faithlife_reported(self):
         rows = dict(DB, **{"Rom.17.1": "καὶ ἄλλα"})
@@ -175,6 +176,24 @@ class RealData(unittest.TestCase):
             rep = cs.check(c, REAL_SOURCES / "sblgnt")
             c.close()
         self.assertEqual({m["ref"] for m in rep["mismatches"]}, {"John.3.16", "John.3.17"})
+
+    def test_moved_word_inside_allowlisted_chapter_caught_on_real_db(self):
+        import shutil
+        import tempfile
+        with tempfile.TemporaryDirectory() as t:
+            copy = Path(t) / "b.db"
+            shutil.copy(REAL_DB, copy)
+            c = sqlite3.connect(copy)
+            self.assertIn(("Acts", 2), cs.SHIFTS)
+            (a,) = c.execute("SELECT text FROM verses WHERE corpus='grnt' AND witness='SBL' AND ref='Acts.2.4'").fetchone()
+            (b,) = c.execute("SELECT text FROM verses WHERE corpus='grnt' AND witness='SBL' AND ref='Acts.2.5'").fetchone()
+            head, _, last = a.rstrip().rpartition(" ")
+            for ref, text in (("Acts.2.4", head), ("Acts.2.5", last + " " + b)):
+                c.execute("UPDATE verses SET text=? WHERE corpus='grnt' AND witness='SBL' AND ref=?", (text, ref))
+            c.commit()
+            rep = cs.check(c, REAL_SOURCES / "sblgnt")
+            c.close()
+        self.assertEqual({m["ref"] for m in rep["mismatches"]}, {"Acts.2.4", "Acts.2.5"})
 
 
 if __name__ == "__main__":

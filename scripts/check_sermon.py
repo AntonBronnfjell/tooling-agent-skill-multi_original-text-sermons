@@ -347,6 +347,8 @@ def ext_bracketed(conn, witness, refs, original):
     return hit
 
 
+# A backtick span that is a lookup command (`lookup.py verse ...`, `word καί`): exempt from the list cap.
+COMMAND_SPAN = re.compile(r"`\s*(?:python3 |\S*lookup\.py |(?:verse|interlinear|variants|word|usage|compare|dss|lxx|search) )[^`]*`")
 LIST_SEP = re.compile("[,;/\u00b7\u037e\u0387]")
 
 
@@ -387,8 +389,7 @@ def inline_quotes(lines, start, block_quotes):
         if lines[i].lstrip().startswith(">"):
             continue
         text = nfc(lines[i])
-        code = [(m.start(), m.end()) for m in re.finditer(r"`[^`]*`", text)]  # command snippets do not count toward the cap
-        groups, in_code, prev_end = [], set(), None  # untagged runs; runs joined only by a `/` form one list
+        groups, prev_end = [], None  # untagged runs; runs joined only by a `/` form one list
         for m in SCRIPT_RUN.finditer(text):
             t = INLINE_TAG.search(text[:m.start()])
             if t:
@@ -400,21 +401,24 @@ def inline_quotes(lines, start, block_quotes):
                 groups[-1].append(m.group(0))
             else:
                 groups.append([m.group(0)])
-            if any(a <= m.start() < b for a, b in code):
-                in_code.add(len(groups) - 1)
             prev_end = m.end()
-        for gi, g in enumerate(groups):  # untagged: pieces split on , ; / \u00b7 are judged alone (a lemma list is not a quote)
+        bad = False
+        for g in groups:  # untagged: pieces split on , ; / \u00b7 are judged alone (a lemma list is not a quote)
             pieces = [x for run in g for x in LIST_SEP.split(run) if SCRIPT_TOKEN.search(x)]
             for piece in pieces:
                 if len(SCRIPT_TOKEN.findall(piece)) >= 2 and not quoted_already(piece, block_quotes + out, i + 1):
                     problems.append((i + 1, "untagged original-language text: tag it inline "
                                             "`[CORPUS[:WITNESS] Ref] <original>` right before the words, or quote it"))
+                    bad = True
                     break
-            else:
-                before, block_n = block_n, block_n + (0 if gi in in_code else len(pieces))
-                if before < 5 <= block_n:
-                    warns.append((i + 1, f"{block_n} separated original-language words in one run \u2014 tag it "
-                                         "as a quote if it is text, or keep lemma lists short"))
+        if not bad:  # count untagged pieces on the line (any separator), skipping tool-command snippets
+            plain = COMMAND_SPAN.sub(lambda m: " " * len(m.group(0)), text)
+            n = sum(len([x for x in LIST_SEP.split(m.group(0)) if SCRIPT_TOKEN.search(x)])
+                    for m in SCRIPT_RUN.finditer(plain) if not INLINE_TAG.search(text[:m.start()]))
+            before, block_n = block_n, block_n + n
+            if before < 5 <= block_n:
+                warns.append((i + 1, f"{block_n} separated original-language words in one run \u2014 tag it "
+                                     "as a quote if it is text, or keep lemma lists short"))
     return out, list(dict.fromkeys(problems)), warns
 
 

@@ -4,8 +4,8 @@
 The SBL verse rows are built from MACULA Greek (scripts/loaders/macula.py) and re-keyed to KJV
 verse numbers. Faithlife's plain-text SBLGNT (sources/sblgnt/<Book>.txt.xz, SBL numbering) is the
 authority for the text. The two numberings differ in a few places (3John 14/15, Rev 12:18, Acts 19:40/41,
-2Cor 13:12-14 ...), so those chapters (STREAM_CHAPTERS) are compared as one word stream; every other chapter is compared
-verse by verse, so a word moved across a verse boundary is caught. Words are Greek match_key (no
+2Cor 13:12-14 ...), so SHIFTS records the exact known offset per chapter; the Faithlife stream is re-cut with it and compared
+verse by verse, so any other difference (including a word moved across a boundary) is caught. Words are Greek match_key (no
 punctuation, case, brackets or apparatus marks). A chapter present in the DB but not in Faithlife is
 reported (and its verses count as mismatches).
 
@@ -37,17 +37,23 @@ _MARKS = re.compile("[\u2e00-\u2e0f]\\d*|[\u27e6\u27e7\\[\\]\u2014()\u037e\u0387
 # KJV Rev 13:1 (it crosses a chapter boundary). Everything else (3John 14/15, Acts 19:40/41, 2Cor 13:12-14 ...)
 # stays inside one chapter and needs no mapping.
 FL_TO_KJV = {("Phil", 1, 16): ("Phil", 1, 17), ("Phil", 1, 17): ("Phil", 1, 16), ("Rev", 12, 18): ("Rev", 13, 1)}
-# Chapters whose verse boundaries differ between Faithlife (SBL numbering) and the KJV-keyed DB, so they are
-# compared as one word stream; every other chapter is compared verse by verse. The six named in the gap-closure
-# plan (3John 1, Acts 19, 2Cor 13, Rev 12/13, Phil 1) plus the other chapters where a clause sits in a different
-# verse (a one-time audit: every one of these has an identical word stream, verified against the real data).
-# Add a chapter here only after confirming the shift is a versification difference, not a text change.
-STREAM_CHAPTERS = frozenset({
-    ("1John", 2), ("1Pet", 3), ("1Thess", 1), ("1Thess", 2), ("2Cor", 8), ("2Cor", 10), ("2Cor", 13), ("3John", 1),
-    ("Acts", 2), ("Acts", 3), ("Acts", 4), ("Acts", 5), ("Acts", 9), ("Acts", 13), ("Acts", 19), ("Acts", 24),
-    ("Col", 1), ("Eph", 2), ("Eph", 5), ("Gal", 2), ("Heb", 3), ("Heb", 7), ("Heb", 12), ("Luke", 1), ("Luke", 6),
-    ("Luke", 7), ("Mark", 3), ("Mark", 12), ("Matt", 17), ("Matt", 20), ("Phil", 1), ("Phil", 2), ("Rev", 2),
-    ("Rev", 12), ("Rev", 13), ("Rev", 17), ("Rom", 1), ("Rom", 3), ("Rom", 7), ("Rom", 9)})
+# Known verse-boundary differences between Faithlife (SBL numbering) and the KJV-keyed DB, one entry per chapter:
+# {verse: n} means that at the boundary after that verse, Faithlife's running word count minus the DB's is n
+# (n > 0: the last n words of the Faithlife verse sit at the start of the next DB verse; n < 0: the first |n|
+# words of the next Faithlife verse sit at the end of this DB verse). Derived once by auditing the real data
+# (every listed chapter has an identical chapter word stream); the check re-cuts the Faithlife stream with
+# these offsets and compares verse by verse, so any other difference, including a different word moved across
+# one of these boundaries, is flagged. Phil 1 and Rev 12/13 are handled by FL_TO_KJV. Add an entry only after
+# confirming the shift is a versification difference, not a text change.
+SHIFTS = {
+    ("1John", 2): {13: -7}, ("1Pet", 3): {15: -5}, ("1Thess", 1): {2: 1}, ("1Thess", 2): {6: -7, 11: -6},
+    ("2Cor", 8): {13: 3}, ("2Cor", 10): {4: 2}, ("2Cor", 13): {12: 5, 13: 20}, ("3John", 1): {14: -11},
+    ("Acts", 2): {10: -4}, ("Acts", 3): {19: -9}, ("Acts", 4): {5: 2}, ("Acts", 5): {39: 3}, ("Acts", 9): {28: 6},
+    ("Acts", 13): {38: 10}, ("Acts", 19): {40: 6}, ("Acts", 24): {18: -6}, ("Col", 1): {21: -3},
+    ("Eph", 2): {14: 6}, ("Eph", 5): {13: -6}, ("Gal", 2): {19: 2}, ("Heb", 3): {9: -2}, ("Heb", 7): {20: 8},
+    ("Heb", 12): {22: 1}, ("Luke", 1): {73: 3}, ("Luke", 6): {17: -10}, ("Luke", 7): {18: 9}, ("Mark", 3): {19: -4},
+    ("Mark", 12): {14: 4}, ("Matt", 17): {14: -2}, ("Matt", 20): {4: -3}, ("Phil", 2): {7: 5}, ("Rev", 2): {27: -7},
+    ("Rev", 17): {9: 4}, ("Rom", 1): {9: -5}, ("Rom", 3): {25: -5}, ("Rom", 7): {9: -3}, ("Rom", 9): {11: -7}}
 DEFAULT_STATUS = ("Rom.16.24", "Rom.16.25", "Rom.16.26", "Rom.16.27")
 
 
@@ -86,7 +92,7 @@ def _ref(b, c, v):
     return f"{b}.{c}.{v}"
 
 
-def check(conn, sblgnt_dir, status_refs=DEFAULT_STATUS, stream_chapters=STREAM_CHAPTERS):
+def check(conn, sblgnt_dir, status_refs=DEFAULT_STATUS, shifts=SHIFTS):
     raw = load_faithlife(sblgnt_dir)
     fl = {}
     for k in sorted(raw):  # KJV-keyed; a verse that gains text from another Faithlife verse is joined in file order
@@ -119,23 +125,20 @@ def check(conn, sblgnt_dir, status_refs=DEFAULT_STATUS, stream_chapters=STREAM_C
         return touched
 
     for ch in sorted(set(fl_by) | set(db_by)):
-        if ch in stream_chapters:  # verse boundaries known to shift: compare the chapter as one word stream
-            fa, fo = _stream([(_ref(*k), fl[k]) for k in fl_by.get(ch, [])])
-            da, do = _stream([(_ref(*k), db[k]) for k in db_by.get(ch, [])])
-            if fa == da:
-                continue
-            touched = diff(fa, da, fo, do)
-            for k in db_by.get(ch, []):  # a DB verse with no words at all still counts (empty row)
-                if k not in fl and not _words(db[k]):
-                    touched.setdefault(_ref(*k), ("", ""))
-        else:  # everywhere else a word moved across a verse boundary is a difference
-            touched = {}
-            for k in sorted(set(fl_by.get(ch, [])) | set(db_by.get(ch, []))):
-                ref = _ref(*k)
-                fa, fo = _stream([(ref, fl[k])] if k in fl else [])
-                da, do = _stream([(ref, db[k])] if k in db else [])
-                if fa != da:
-                    touched.update(diff(fa, da, fo, do) or {ref: ("", "")})
+        touched = {}
+        shift = shifts.get(ch, {})
+        verses = sorted(set(fl_by.get(ch, [])) | set(db_by.get(ch, [])))
+        fa, _ = _stream([(_ref(*k), fl[k]) for k in fl_by.get(ch, [])])
+        pos = fcum = 0
+        for n, k in enumerate(verses):
+            ref = _ref(*k)
+            fcum += len(_words(fl[k])) if k in fl else 0
+            end = len(fa) if n == len(verses) - 1 else fcum - shift.get(k[2], 0)
+            exp = fa[pos:end]  # the Faithlife words that belong to this verse under the known shift
+            pos = max(pos, end)
+            da = _words(db[k]) if k in db else []
+            if exp != da:
+                touched[ref] = diff(exp, da, [ref] * len(exp), [ref] * len(da)).get(ref, ("", ""))
         for ref in sorted(touched, key=lambda r: tuple(int(x) if x.isdigit() else x for x in r.split("."))):
             add(ref, *touched[ref])
     status = {}
