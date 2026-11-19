@@ -161,14 +161,14 @@
       "id": 12,
       "name": "usage-ekklesia-word-study-en",
       "prompt": "Give me a short word study in English (answer in chat, no file needed) on ekklesia: how was the word used in the first century, before and around the New Testament? Audience: a christian Bible class, specialization: teaching. Use the evidence, not a dictionary summary.",
-      "expected_output": "The response runs `lookup.py usage ἐκκλησία`, reports the counts per corpus (NT 117, LXX 77, Josephus/ext 71) and quotes sample uses from the LXX and Josephus (and notes the papyri/lexicon excerpt with its noisy-OCR caveat if shown), and claims nothing beyond what those examples show.",
+      "expected_output": "The response runs `lookup.py usage ἐκκλησία`, reports the counts per corpus as the tool gives them (NT per edition: SBL/NA/THGNT/WH 114, Byz 113, TR 116, any edition 117; LXX 77; ext Josephus 48 + Philo 23) and quotes sample uses from the LXX and Josephus (and notes the papyri/lexicon excerpt with its noisy-OCR caveat if shown), and claims nothing beyond what those examples show.",
       "files": [],
       "assertions": [
         "The transcript shows `lookup.py usage` was run for ἐκκλησία",
         "The response cites LXX usage of ἐκκλησία with at least one reference and quote from the lookup output (e.g. Deut.4.10, Deut.9.10, Deut.23.1-2)",
         "The response cites Josephus usage of ἐκκλησία with at least one reference and quote from the lookup output (e.g. Ant.3.84, Ant.3.188)",
         "If the papyri/lexicon excerpt is mentioned, it is flagged as noisy OCR/unverified and is not quoted as verified text",
-        "The response reports the corpus counts as given by the tool (grnt 117, lxx 77, ext 71) without inventing other counts",
+        "The response reports the corpus counts as given by the tool (grnt per edition, e.g. SBL 114 / TR 116 / all_editions 117 — naming the edition for any NT number; lxx 77; ext Josephus 48, Philo 23) without inventing other counts",
         "The response draws no conclusion that goes beyond the cited examples (it states what the examples show and says what they do not show)"
       ]
     }

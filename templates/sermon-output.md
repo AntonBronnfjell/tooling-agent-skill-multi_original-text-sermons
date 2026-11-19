@@ -35,7 +35,7 @@ Jesús habla de noche con Nicodemo, un maestro respetado de Israel que vino con 
 > Literal: sino para-que sea-salvado el mundo por-medio-de él
 > Natural: sino para que el mundo sea rescatado por medio de él.
 
-Fíjense: el texto griego dice "el hijo", sin "su". Muchas Biblias escriben "su Hijo", con mayúscula. Algunos manuscritos tardíos sí añaden "su"; las ediciones basadas en los manuscritos más antiguos no. El sentido no cambia, pero es bueno saber qué dice el texto y qué añadimos nosotros.
+Fíjense: el texto griego dice "el hijo", sin "su". Muchas Biblias escriben "su Hijo", con mayúscula. Tres de las ediciones griegas que consultamos (Tregelles, el Texto Recibido y el Bizantino) sí traen αὐτοῦ, "su"; las otras cuatro (SBL, NA, WH y THGNT) no. El sentido no cambia, pero es bueno saber qué dice el texto y qué añadimos nosotros.
 
 ## Idea central
 
@@ -63,7 +63,7 @@ Y el historiador judío Josefo, que escribió en el mismo siglo que Juan, la usa
 > Literal: a-Isaac y el padre Abraham amaba-sobremanera, único siendo
 > Natural: Abraham, su padre, amaba muchísimo a Isaac, que era su hijo único.
 
-Pero Abraham también había tenido a Ismael (Génesis 16:15). Para Josefo, entonces, la palabra no puede querer decir "el único que Abraham engendró"; en la misma frase dice que Isaac le había nacido κατὰ δωρεὰν … τοῦ θεοῦ, "como regalo de Dios". Esa es la evidencia de uso que muestran nuestros datos, y por eso traduzco "el único". "Unigénito" descansa en otra lectura de la palabra, y ustedes la encontrarán en muchas Biblias. Lo que ninguna de las dos lecturas cambia es el verbo: Dios dio al hijo.
+Pero Abraham también había tenido a Ismael (Génesis 16:15). Para Josefo, entonces, la palabra no parece querer decir "el único que Abraham engendró"; en la misma frase dice que Isaac le había nacido [EXT:Josephus Ant.1.222] κατὰ δωρεὰν … τοῦ θεοῦ, "como regalo de Dios". Esa es la evidencia de uso que muestran nuestros datos, y por eso traduzco "el único". "Unigénito" descansa en otra lectura de la palabra, y ustedes la encontrarán en muchas Biblias. Lo que ninguna de las dos lecturas cambia es el verbo: Dios dio al hijo.
 
 ## Punto 2
 
@@ -99,13 +99,13 @@ Para que todo el que confía en él no se pierda, sino que tenga vida eterna.
 
 ## Notas
 
-- Variante, John.3.16 y John.3.17, después de τὸν υἱὸν: αὐτοῦ "su" — Treg+TR+Byz; ausente en SBL, NA, WH, THGNT. La herramienta la etiqueta "early" solo por Tregelles. Sentido: sin cambio. KJV "his", BSB "His", RV1909 "su".
+- Variante, John.3.16 y John.3.17, después de "el hijo": αὐτοῦ "su" — Treg+TR+Byz ([GRC:TR John.3.16] τὸν υἱὸν αὐτοῦ τὸν μονογενῆ); ausente en SBL, NA, WH, THGNT. La herramienta la etiqueta "early" solo por Tregelles. Sentido: sin cambio. KJV "his", BSB "His", RV1909 "su".
 - Variante ortográfica, John.3.16: ἀλλὰ (SBL, WH, Treg, TR, Byz) / ἀλλ᾽ (NA, THGNT). Sin cambio de sentido.
 - Lectura disputada, John.3.16 μονογενῆ: (a) "único, único en su clase" — glosa del léxico (`word μονογενής`) "unique"; uso: Luke.7.12, LXX Judg.11.34, Josefo Ant.1.222 (Isaac, aunque Abraham tuvo a Ismael, Gen.16.15); (b) "unigénito, único engendrado" — glosa del versículo (`interlinear John.3.16`) "only begotten"; lectura de -γενής como relacionada con γεννάω. Ambas en circulación; el sermón usa (a) por la evidencia de uso, y lo dice.
 - John.3.16 Οὕτως: dominios 61.9/61.10 (manera) y 78.4 (grado) en `word οὕτω`; aquí etiquetado 61.10 (manera). Opciones: "de esta manera" / "tanto".
 - John.3.16 αἰώνιον: "eterna" (KJV "everlasting", BSB, WEB, RV1909) / "de la era" (YLT "age-during"). En la LXX, αἰώνιος co-ocurre con עוֹלָם 100 veces (mismo versículo, no alineación).
 - Comparación, John.3.16 μονογενῆ: KJV, YLT "only begotten", RV1909 "unigénito"; BSB "one and only"; WEB "only born" [paraphrase: cada una elige una opción].
-- Comparación, John.3.16–17 "His Son / su Hijo", "He gave" (BSB) [capitalization]; posesivo: ver variante [late-reading o added-words].
+- Comparación, John.3.16–17 "His Son / su Hijo", "He gave" (BSB) [capitalization]; posesivo: ver variante [added-words: diferencia de ediciones, Treg+TR+Byz].
 - Comparación, John.3.17 κρίνῃ: KJV "condemn", BSB "condemn", RV1909 "condene"; WEB, YLT "judge" [paraphrase: κρίνω abarca ambos; John.3.18 usa κέκριται "ha sido juzgado"].
 - Comparación, John.3.17 ἵνα σωθῇ ὁ κόσμος (pasiva): BSB "to save the world" (activa) [paraphrase].
 - Comparación, John.3.16 πιστεύων: RV1909 "cree", WEB "believes", YLT "is believing" — el participio presente no exige "sigue creyendo"; no se predicó ese matiz.

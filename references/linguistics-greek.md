@@ -27,9 +27,9 @@ Active, passive, and **middle** (subject acts on/for itself, or has something do
 
 > [GRC Acts.22.16] ἀναστὰς βάπτισαι καὶ ἀπόλουσαι τὰς ἁμαρτίας σου
 > Literal: having-arisen be-immersed/washed (middle) and wash-away/get-washed-away the sins of-you
-> Natural: get up, be immersed (or: washed) and have your sins washed away
+> Natural: get up, let yourself be immersed (or: washed) and let your sins be washed away / get up, immerse (or: wash) yourself and wash away your sins
 
-Both imperatives are aorist **middle** (`V-AMM-2S`): permissive/causative ("let yourself be…") or reflexive ("…yourself"). Show the range; do not build doctrine on one sense of the voice.
+Both imperatives are aorist **middle** (`V-AMM-2S`): permissive/causative ("let yourself be…") or direct reflexive ("…yourself"); the Natural line above shows both. Show the range; do not build doctrine on one sense of the voice.
 
 ## 3. The article — and Colwell (contested)
 
@@ -64,7 +64,7 @@ Check tense (aspect relative to the main verb), and function: attributive, subst
 > Literal: having-gone therefore make-disciples all the nations
 > Natural: so go and make disciples of all the nations
 
-πορευθέντες is an aorist participle (`V-AOP-NPM`) before an aorist imperative: commonly attendant circumstance ("go and…"), carrying the imperative's force. "As you go" would need a present participle — don't preach a nuance the form doesn't have. βαπτίζοντες (present) after the main verb is usually manner/means.
+πορευθέντες is an aorist participle (`V-AOP-NPM`) before an aorist imperative: commonly attendant circumstance ("go and…"), carrying the imperative's force. "As you go" would need a present participle — don't preach a nuance the form doesn't have. βαπτίζοντες (present) after the main verb: an adverbial participle whose relation the form leaves open — manner/means ("by immersing"), attendant circumstance ("and immerse"), or time ("while immersing"). List the options; don't pick one by default.
 
 ## 6. Conditional sentences
 
@@ -92,12 +92,14 @@ NT and LXX Greek carry Hebrew/Aramaic idiom. Read them by Hebrew logic:
 
 The LXX was the Greek scripture of most NT writers; its usage is the closest evidence for what a NT word meant to them. Use `lookup.py word <lemma>` (counts + Hebrew co-occurrence) and `usage <lemma>` (LXX, Josephus, Philo, papyri contexts). The Hebrew list is **same-verse co-occurrence, not alignment** — report it as such. From `word` output:
 
-| Greek | NT | LXX | top Hebrew co-occurrence in LXX verses |
+| Greek | NT (SBL / TR / any edition) | LXX | top Hebrew co-occurrence in LXX verses |
 |---|---|---|---|
-| ἐκκλησία | 117 | 77 | קָהָל 66 |
-| πιστεύω | 245 | 48 | אָמַן 43 |
-| ἔλεος | 27 | 239 | חֶסֶד 202 |
-| κρίνω | 115 | 184 | שָׁפַט 105 |
+| ἐκκλησία | 114 / 116 / 117 | 77 | קָהָל 66 |
+| πιστεύω | 235 / 233 / 245 | 48 | אָמַן 43 |
+| ἔλεος | 27 / 23 / 27 | 239 | חֶסֶד 202 |
+| κρίνω | 113 / 108 / 115 | 184 | שָׁפַט 105 |
+
+NT counts differ by edition: `word` gives `nt_by_edition` (TAGNT rows tagged for that edition) and `nt_all_editions` (rows in any edition). Name the edition with the number.
 | αἰώνιος | 71 | 115 | עוֹלָם 100 |
 | ἀποστέλλω | 134 | 521 | שָׁלַח 456 |
 

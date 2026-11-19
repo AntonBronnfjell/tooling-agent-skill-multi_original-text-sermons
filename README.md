@@ -2,7 +2,7 @@
 
 An LLM-agnostic agent skill (Claude Code, Cursor, Copilot, or any agent that reads markdown and runs `python3`) that writes **concise, preachable sermons straight from the Hebrew/Aramaic and Greek texts**, translated fresh into any language — Spanish and English fully validated (tradition-vocabulary check and localized templates), others with a custom localized template and a warning that tradition vocabulary was not machine-checked — instead of leaning on published translations whose wording carries later doctrine and church tradition.
 
-- **Every original-language quote comes from local data**, never from model memory, and is mechanically verified by `scripts/check_sermon.py`.
+- **Every original-language quote comes from local data**, never from model memory, and is mechanically verified by `scripts/check_sermon.py`: quote blocks and inline-tagged phrases are matched against the DB, and any untagged run of two or more Greek/Hebrew words — in the body or in Notes — is an error (single words, e.g. a lemma in a word study, are allowed).
 - **Two-layer translation**: a literal word-for-word line, then a natural line; later church vocabulary (*church*, *baptize*, *iglesia*…) is not allowed on either.
 - **Contested readings show the options** (John 1:1c, *pistis Christou*, Gen 1:26 …) with their grammatical, lexical and textual basis — never resolved silently, in either direction.
 - **Evidence from the 1st century**: LXX as the lexicon of NT Greek, Dead Sea Scrolls, Josephus, Philo and papyri usage; early vs late manuscripts (SBL/NA/THGNT/WH vs Byz/TR); where published translations diverge.

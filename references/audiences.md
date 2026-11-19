@@ -36,7 +36,7 @@ Terms to explain or replace (English / Spanish):
 | righteous, justified / justo, justificado | in the right; made or declared right — say which the context shows |
 | amen / amén | "so it is", "truly" |
 | hallelujah / aleluya | "praise Yah" |
-| Lord / Señor | master; or the divine name YHWH — say which |
+| Lord / Señor | sir, master, lord; in an OT quotation it may stand where the Hebrew has the divine name YHWH — report what `lxx`/`verse` print for that verse and the `usage κύριος` range, show the options, no verdict (fidelity-rules.md §4) |
 | Messiah / Mesías | anointed one, expected king |
 | heaven / cielo | the sky; God's realm |
 | hell / infierno | name the word: Hades (world of the dead), Gehenna (valley outside Jerusalem, image of judgment) |

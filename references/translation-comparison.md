@@ -18,7 +18,7 @@ Purpose: show the listener where published translations say more, less, or other
 | `capitalization` | capitals that decide a reading the original leaves open (pronouns, *Spirit*, *Son*, *Word*, *God* vs *god*) | BSB John.3.16 "**He** gave **His** one and only **Son**"; RV1909 John.1.1 "el **Verbo**" |
 | `tradition-vocabulary` | a later church term where the text has a plain word (`tradition-vocabulary.md`) | Matt.16.18 KJV/BSB "church", RV1909 "iglesia" — WEB and YLT "assembly"; Acts.2.4 KJV "Holy Ghost" |
 | `late-reading` | translation follows a reading found only in late witnesses (TR/Byz) | KJV and RV1909 1John.5.7 "in heaven, the Father, the Word, and the Holy Ghost" — TR only; BSB/WEB "For there are three that testify:" |
-| `paraphrase` | meaning restated so that grammar, voice, image or a contested option is lost or chosen | BSB John.3.17 "**to save** the world" for passive ἵνα σωθῇ ὁ κόσμος "that the world may be saved"; KJV Gal.2.16 "faith **of** Jesus" vs BSB/WEB "faith **in** Jesus" (each picks one option of a contested genitive) |
+| `paraphrase` | meaning restated so that grammar, voice, image or a contested option is lost or chosen | BSB John.3.17 "**to save** the world" for passive [GRC John.3.17] ἵνα σωθῇ ὁ κόσμος "that the world may be saved"; KJV Gal.2.16 "faith **of** Jesus" vs BSB/WEB "faith **in** Jesus" (each picks one option of a contested genitive) |
 
 A contested option chosen by a translation is reported as `paraphrase` (or `capitalization`) **and** the options are shown per `contested-readings.md` — never "translation X is wrong".
 
@@ -26,7 +26,7 @@ A contested option chosen by a translation is reported as `paraphrase` (or `capi
 
 ```
 - John.3.16 μονογενῆ — KJV, YLT "only begotten", RV1909 "unigénito"; BSB "one and only"; WEB "only born" [paraphrase: each picks an option; see contested readings]
-- John.3.16 τὸν υἱὸν — KJV, BSB "his Son", RV1909 "su Hijo": possessive matches TR/Byz αὐτοῦ, absent in SBL [late-reading or added-words]; capital S/H [capitalization]
+- John.3.16 υἱὸν — KJV, BSB "his Son", RV1909 "su Hijo": possessive matches [GRC:TR John.3.16] τὸν υἱὸν αὐτοῦ (Treg+TR+Byz; `variants` class early because of Treg), absent in SBL, NA, WH, THGNT [added-words: an edition difference, name the editions]; capital S/H [capitalization]
 ```
 
 One bullet per finding: ref, Greek/Hebrew word(s) copied from lookup output, version(s) and their rendering (quoted from `compare`), class in brackets. When the source of a divergence is ambiguous (e.g. a possessive could be idiom or a TR reading), name both classes and say why.

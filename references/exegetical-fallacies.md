@@ -7,7 +7,7 @@ Check every word study and every "the Greek really means…" sentence against th
 Meaning drawn from a word's components.
 
 - **Wrong:** "ἐκκλησία is ἐκ + καλέω, so it means 'the called-out ones', a people separated from the world."
-- **Right:** `usage ἐκκλησία` counts 77 LXX occurrences (`word ἐκκλησία`: same-verse co-occurrence with קָהָל 66 times — not alignment). The contexts cited here name an assembly or gathering: Josephus for Moses gathering the people (Ant.3.84 συγκαλεῖ τὸ πλῆθος εἰς ἐκκλησίαν) and Acts.19.32 for a confused civic crowd in Ephesus (ἦν γὰρ ἡ ἐκκλησία συγκεχυμένη). "Called out" is not in any context the tool returned.
+- **Right:** `usage ἐκκλησία` counts 77 LXX occurrences (`word ἐκκλησία`: same-verse co-occurrence with קָהָל 66 times — not alignment). The contexts cited here name an assembly or gathering: Josephus for Moses gathering the people (Ant.3.84 [EXT:Josephus Ant.3.84] συγκαλεῖ τὸ πλῆθος εἰς ἐκκλησίαν) and Acts.19.32 for a confused civic crowd in Ephesus ([GRC Acts.19.32] ἦν γὰρ ἡ ἐκκλησία συγκεχυμένη). "Called out" is not in any context the tool returned.
 
 ## 2. Etymological fallacy
 
@@ -46,11 +46,11 @@ Treating a word and a concept as the same thing: assuming an idea is absent beca
 Citing only the occurrences that support the point.
 
 - **Wrong:** "ἀγάπη/ἀγαπάω always means selfless divine love."
-- **Right:** run `usage`/`search` and report the counter-cases: LXX 2Sam.13.15 uses ἀγάπη and ἠγάπησεν of Amnon's desire for Tamar, which turns to hatred; 2Tim.4.10 says Demas left ἀγαπήσας τὸν νῦν αἰῶνα, "having loved the present age". The word means "love"; its quality comes from context.
+- **Right:** run `usage`/`search` and report the counter-cases: LXX 2Sam.13.15 uses ἀγάπη and ἠγάπησεν of Amnon's desire for Tamar, which turns to hatred; 2Tim.4.10 says Demas left [GRC 2Tim.4.10] ἀγαπήσας τὸν νῦν αἰῶνα, "having loved the present age". The word means "love"; its quality comes from context.
 
 The mirror error is a conclusion wider than the examples — even a correct one.
 
-- **Wrong:** "ἐκκλησία never meant 'the called-out ones'; everyone in the 1st century heard 'assembly'." (Built on ~10 sampled uses of 117 NT + 77 LXX; and no tool shows what hearers thought.)
+- **Wrong:** "ἐκκλησία never meant 'the called-out ones'; everyone in the 1st century heard 'assembly'." (Built on ~10 sampled uses of 114 NT (SBL) + 77 LXX; and no tool shows what hearers thought.)
 - **Right:** "In the 10 NT and LXX contexts `usage ἐκκλησία` shows (Acts.5.11–9.31, Deut.4.10–23.2), the word names a gathering or a group of people; none shows 'called out'. These examples don't tell us how every hearer understood it."
 
 ## 7. Overspecification

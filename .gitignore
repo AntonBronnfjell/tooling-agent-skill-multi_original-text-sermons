@@ -3,3 +3,4 @@
 /sources/user/*
 !/sources/user/README.md
 __pycache__/
+/graphify-out/
