@@ -32,7 +32,8 @@ WORD_COLS = ("pos", "surface", "lemma", "strongs", "morph", "gloss", "domain", "
 STRONGS_RE = re.compile(r"^([GH])0*(\d+)([A-Za-z]?)$")
 EDITIONS = {"NA28", "NA27", "Tyn", "SBL", "WH", "Treg", "TR", "Byz"}
 DSS_NOTE = ("dss text holds extant letters only; letters in [brackets] inside word surfaces are "
-            "editor-reconstructed, not on the scroll")
+            "editor-reconstructed, not on the scroll; `…` in the text marks lost (fully reconstructed) words - "
+            "a quote may cross it only with its own `…`")
 OCR_LABEL = "OCR of a printed lexicon (noisy, unverified) - do not quote as verified text"
 ENDPUNCT = ".,;·:׃׀()[]“”\"'’"
 
@@ -502,7 +503,7 @@ _NIQQUD = re.compile("[֑-ׇ]")
 
 def cons(s):
     """Hebrew consonantal skeleton, tokens split on spaces and maqaf."""
-    return _NIQQUD.sub("", s.replace("־", " ")).split()
+    return [t for t in _NIQQUD.sub("", s.replace("־", " ")).split() if t != "…"]
 
 
 def diff_ops(a_tokens, b_tokens, key="base"):

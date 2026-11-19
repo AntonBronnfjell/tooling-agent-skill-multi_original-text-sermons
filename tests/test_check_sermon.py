@@ -318,6 +318,13 @@ class Rulings(Base):
         q = "> [DSS:1QIsaa Isa.53.11] יראה אור וישבע\n> Literal: a\n> Natural: b\n"
         self.assertEqual(self.errs(fm(passage="Isa.53.11") + body(quote=q, notes="- Isa.53.11 noted")), [])
 
+    def test_dss_quote_cannot_bridge_lacuna(self):
+        mk = lambda t: f"> [DSS:4Q58 Isa.53.11] {t}\n> Literal: a\n> Natural: b\n"
+        f = fm(passage="Isa.53.11")
+        n = "- Isa.53.11 noted"
+        self.assertTrue(any("not found" in m for m in self.errs(f + body(quote=mk("עבדי לר הוא יסבול"), notes=n))))
+        self.assertEqual(self.errs(f + body(quote=mk("עבדי לר … הוא יסבול"), notes=n)), [])
+
     def test_ext_witness_required_and_ok(self):
         q = "> [EXT Ant.18.63] x\n> Literal: a\n> Natural: b\n"
         self.assertTrue(any("requires a witness" in m for m in self.errs(fm() + body(quote=q))))

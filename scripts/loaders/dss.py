@@ -9,6 +9,9 @@ nodes, never from the word `glyph` (which silently includes reconstructed and re
                Signs flagged unc (uncertain but physically present) and cor (correction) are kept.
   words.surface  the word's letters with reconstructed ones bracketed `או[ר]`, removed ones omitted.
   words.editions comma-separated flags present in the word: rec, unc, cor, rem, alt, vac.
+  lacunae      a word whose letters are all lost (reconstructed `rec` or `missing` signs) leaves `…` in the verse
+               text and match_key, so a contiguous quote cannot bridge the gap; only a quote that itself uses
+               `…` can cross it. Leading/trailing lost words leave a leading/trailing `…`.
 Witness = scroll siglum (scroll node containing the word's first slot) with punctuation/spaces
 removed and the book letter following `<n>Q` capitalised: 1Qisaa -> 1QIsaa, 4Qisad -> 4QIsad.
 Words whose `book` is not a biblical-book acronym (manuscript names such as 4Q56, Mur88) are skipped.
@@ -62,6 +65,18 @@ def _render(slots, f):
             k += 1
     text = "".join(c for c, rec in chars if not rec)
     return "".join(surface), text, ",".join(n for n in _FLAGS if n in flags)
+
+
+LACUNA = "…"
+
+
+def _lost(slots, f):
+    """True if the word has letters the scroll does not preserve (reconstructed or missing signs)."""
+    for s in slots:
+        typ = f["type"].get(s)
+        if typ == "missing" or (typ in ("cons", "numr") and s in f["rec"]):
+            return True
+    return False
 
 
 def load(conn, sources_dir):
@@ -118,32 +133,44 @@ def load(conn, sources_dir):
             continue
         witness = runs[k][2]
         surface, text, flags = _render(slots, f)
-        if not surface.strip():
-            continue
         osis = _ACRONYM.get(book[w], book[w])
         ref = canonical(conn, "hebrew", f"{osis}.{int(chapter[w])}.{int(verse[w])}")
         key = (witness, ref)
+        v = verses.setdefault(key, {"text": "", "gap": False, "lost": False})
+        piece = text.strip()
+        if not piece and _lost(slots, f):
+            v["lost"] = True
+        if not surface.strip():
+            continue
         pos[key] = pos.get(key, 0) + 1
         word_rows.append(("dss", witness, ref, pos[key], norm.nfc(surface), norm.nfc(re.sub(r"_\w+$", "", lex.get(w, ""))),
                           "", "", "", flags, "", ""))
-        v = verses.setdefault(key, {"text": "", "gap": False})
-        piece = text.strip()
         if piece:
-            if v["gap"] and v["text"]:
+            if v["lost"]:
+                v["text"] += f" {LACUNA} " if v["text"] else f"{LACUNA} "
+            elif v["gap"] and v["text"]:
                 v["text"] += " "
             v["text"] += piece
             v["gap"] = w in after
+            v["lost"] = False
         elif w in after:  # a lost word still separates its neighbours
             v["gap"] = True
     conn.executemany("INSERT INTO words VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", word_rows)
     vrows = []
+    lacunae = {"inner": 0, "edge": 0}
     for (witness, ref), v in verses.items():
+        if v["lost"] and v["text"]:
+            v["text"] += f" {LACUNA}"
         text = norm.display(v["text"], "heb")
         if not text:
             continue
+        inner = text.strip(f" {LACUNA}")
+        lacunae["inner"] += LACUNA in inner
+        lacunae["edge"] += text != inner
         vrows.append(("dss", witness, ref, text, norm.match_key(text, "heb")))
     conn.executemany("INSERT INTO verses VALUES (?,?,?,?,?)", vrows)
     print(f"dss: {len(word_rows)} words, {len(vrows)} verses, {len({r[1] for r in vrows})} witnesses; skipped "
           f"{skipped_book_words} words with non-book `book` ({len(skipped_book)} values), {skipped_ref} biblical words "
-          f"without numeric chapter/verse, {skipped_scroll} words without a scroll")
+          f"without numeric chapter/verse, {skipped_scroll} words without a scroll; lacuna markers: "
+          f"{lacunae['inner']} verses mid-verse, {lacunae['edge']} verses at an edge")
     return len(word_rows) + len(vrows)

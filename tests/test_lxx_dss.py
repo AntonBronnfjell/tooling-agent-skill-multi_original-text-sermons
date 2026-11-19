@@ -205,6 +205,14 @@ class Dss(Loaded):
         self.assertIn("או ", t)
         self.assertIn("שבע", t)
 
+    def test_lost_word_leaves_lacuna_marker(self):
+        # 4Q58 Isa 53:11: [ו][עונתם] fully reconstructed between לר and הוא
+        t = self.text("dss", "4Q58", "Isa.53.11")
+        self.assertIn("לר … הוא יסבול", t)
+        mk = self.q("select match_key from verses where corpus='dss' and witness='4Q58' and ref='Isa.53.11'")[0]
+        self.assertIn("לר … הוא", mk)
+        self.assertNotIn("…", self.text("dss", "1QIsaa", "Isa.53.11"))
+
     def test_4q58_word_surface_brackets_and_flags(self):
         rows = self.conn.execute("select surface, editions from words where corpus='dss' and witness='4Q58' "
                                  "and ref='Isa.53.11'").fetchall()
