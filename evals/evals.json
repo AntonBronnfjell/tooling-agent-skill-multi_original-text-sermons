@@ -1,0 +1,175 @@
+{
+  "skill_name": "original-text-sermons",
+  "evals": [
+    {
+      "id": 1,
+      "name": "quote-fidelity-romans-es",
+      "prompt": "Prepara un sermón de enseñanza en español para una congregación cristiana sobre Romanos 12:1-2. Plantilla por defecto, audiencia: cristiana, especialización: enseñanza/discipulado. Guarda el sermón en ./sermons/.",
+      "expected_output": "A Spanish sermon file in ./sermons/ using the default big-idea template, with every Greek quote tagged [GRC Rom.12.x ...] copied verbatim from this session's lookup.py output, each with Literal and Natural lines.",
+      "files": [],
+      "assertions": [
+        "A sermon file exists under ./sermons/ and `python3 scripts/check_sermon.py` on it exits 0 with 0 ERROR lines",
+        "The sermon contains at least one tagged Greek quote from Rom.12.1 or Rom.12.2, each followed by a Literal and a Natural line",
+        "The transcript shows lookup.py `verse` (or equivalent) was run for Rom.12.1-2 before the sermon was written (quotes are not from memory)",
+        "The sermon frontmatter has language: es and audience: christian"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "tradition-traps-matt16-acts2-en",
+      "prompt": "I'm a teaching pastor preparing a Bible study for a Christian audience, in English. Write it on three texts: Matthew 16:18, Acts 2:4 and Acts 2:38. Show the Greek, a Literal and a Natural translation line for each, and save the study in ./sermons/. Use the default template.",
+      "expected_output": "English study whose translation lines render ekklesia and baptizo with plain words (assembly / immerse), and Acts 2:4 pneuma hagion without added capitals; any tradition wording is discussed in prose, not on translation lines.",
+      "files": [],
+      "assertions": [
+        "The Matt 16:18 Literal and Natural lines render ἐκκλησία with a plain word such as \"assembly\" or \"gathering\" and do not use \"church\" on those translation lines",
+        "The Acts 2:38 Literal and Natural lines render βαπτισθήτω with a plain word such as \"immerse\" or \"immersed\" and do not use \"baptize\"/\"baptized\"/\"baptism\" on those translation lines",
+        "The Acts 2:4 translation lines render πνεύματος ἁγίου without capitalizing \"Holy Spirit\" (e.g. \"holy spirit\" or \"a holy breath/spirit\")",
+        "The sermon file passes check_sermon.py with 0 errors (no tradition-vocabulary error on translation lines)",
+        "Where the response mentions the traditional wording (church, baptize, Holy Spirit), it does so in prose or notes and labels it as a tradition/translation choice, not on a Literal/Natural line"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "contested-readings-john1-gal2-gen1",
+      "prompt": "Quiero un sermón en inglés (language: en) para un grupo mixto de gente de iglesia y gente que no va, especialización: enseñanza, que recorra tres textos: John 1:1c, Galatians 2:16 y Genesis 1:26. Guárdalo en ./sermons/. No me digas qué postura tomar: muéstrame lo que dice el texto.",
+      "expected_output": "For each of the three texts the Greek/Hebrew is shown with a verified quote, at least two legitimate options are laid out (e.g. 'God was the word' / 'the word was God' / 'the word was divine'; 'faith in Christ' / 'faithfulness of Christ'; 'us' as plurality of majesty / deliberation / heavenly court / other), with a context note for each. No option is declared the winner.",
+      "files": [],
+      "assertions": [
+        "John 1:1c is shown in Greek (καὶ θεὸς ἦν ὁ λόγος) as a tagged quote, with at least two distinct renderings or readings listed and a note about the context (e.g. article, word order, John 1:1b/1:18)",
+        "Galatians 2:16 shows πίστεως Ἰησοῦ Χριστοῦ in Greek with at least two options for the genitive (objective vs subjective or equivalent) and a context note",
+        "Genesis 1:26 shows the Hebrew (נַעֲשֶׂה / אֱלֹהִים) as a tagged quote with at least two options for the plural \"us\" and a context note",
+        "Each of the three contested places is presented as options with evidence; the response does not state that one option is the only correct one",
+        "The sermon file passes check_sermon.py with 0 errors"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "text-criticism-comma-mark16-john8",
+      "prompt": "I need a short text-criticism handout in English, for a church adult class (audience: christian, specialization: teaching). Cover 1 John 5:7-8 (the Comma Johanneum), Mark 16:9-20 and John 7:53-8:11. For each: what the main early witnesses show and what the later ones show. Save it in ./sermons/ with the default template.",
+      "expected_output": "For each of the three passages, the variant evidence from lookup.py variants is reported, naming the witnesses and indicating which are later; the handout shows the evidence and does not tell the class what to preach.",
+      "files": [],
+      "assertions": [
+        "For 1 John 5:7-8 the response names the witnesses that include or omit the extra words (e.g. TR vs SBL/NA/early editions per lookup.py variants output) and reports the extra clause as a late reading",
+        "For Mark 16:9-20 the response names the witnesses that lack or contain the ending and reports it as late/absent in the earliest witnesses per the data",
+        "For John 7:53-8:11 the response names the witnesses that lack or contain the passage and reports it as late/absent in the earliest witnesses per the data",
+        "The transcript shows lookup.py `variants` was run for each of the three passages",
+        "Every witness cited in the handout is one that appears in the lookup.py output of that session",
+        "Any Greek quotes in the file pass check_sermon.py with 0 errors"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "fallacies-dynamis-aorist-en",
+      "prompt": "I'm writing a sermon in English for my church (audience: christian, specialization: theology) and I want two illustrations. First: Romans 1:16 says the gospel is the dynamis of God, and dynamis gives us the word dynamite, so the gospel is explosive power. Second: Jesus said 'it is finished' with a Greek aorist, so the aorist means it was done once for all and can never be repeated. Please work both into the sermon outline.",
+      "expected_output": "The skill declines to build on either argument as stated, names the fallacy (etymological / anachronistic word-origin fallacy for dynamis=dynamite; aspect-confused-with-time or 'aorist = once for all' overreach), explains with data (e.g. lookup.py word usage for dynamis) and offers what the text does support.",
+      "files": [],
+      "assertions": [
+        "The response says the dynamis = dynamite argument does not hold and names the fallacy (etymological fallacy / anachronism / root fallacy or equivalent label)",
+        "The response gives a concrete reason for dynamis (dynamite is a 19th-century word, or the 1st-century usage of δύναμις shown from lookup.py word/usage output)",
+        "The response says the aorist does not by itself mean 'once for all' and names the fallacy (e.g. aspect/tense overreach, 'aorist = once-for-all' fallacy)",
+        "The response does not write the dynamite illustration or the 'once for all' claim into the sermon outline as if they were valid",
+        "The response offers an alternative the text does support, citing the Greek (e.g. δύναμις as ability/power in Rom 1:16 context)"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "lxx-usage-phil2-isa45-en",
+      "prompt": "I'm preparing a teaching on Philippians 2:10-11 for a Christian audience, in English (specialization: teaching). Paul seems to be alluding to Isaiah 45:23. Show me the Hebrew and the Septuagint of Isaiah 45:21-25 so I can see what the texts actually say, and save the result in ./sermons/.",
+      "expected_output": "Both the Masoretic Hebrew (WLC) and the Rahlfs LXX of Isa 45:21-25 shown from lookup.py output, with the divine-name/θεός/κύριος distribution reported exactly as the data shows: WLC has יְהוָה in vv. 21, 24, 25 (and no divine name in v. 23); Rahlfs has ὁ θεός in 21, no divine name in 24, κυρίου in 25 (also τῷ θεῷ in 25), and τῷ θεῷ in 23. No link is claimed between Phil 2:10-11 and the data beyond what is shown.",
+      "files": [],
+      "assertions": [
+        "The response shows the Hebrew text (WLC) of Isa 45:21-25 and the Rahlfs LXX text of Isa 45:21-25, both taken from lookup.py output (tagged [HEB Isa.45.x] and [LXX Isa.45.x] quotes or equivalent)",
+        "The response reports that the Hebrew (WLC) has יְהוָה in Isa 45:21, 45:24 and 45:25",
+        "The response reports that Isa 45:23 in the LXX ends with τῷ θεῷ",
+        "The response reports that the LXX has ὁ θεός in 45:21, no divine name in 45:24, and κυρίου in 45:25",
+        "The response does not claim that the LXX has κύριος in 45:23, and does not assert a link between Phil 2:10-11 and Isa 45 other than what the shown texts support (it reports Paul's wording alongside the data, or states what the data does not show)",
+        "Any Hebrew/Greek quotes in the saved file pass check_sermon.py with 0 errors"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "dss-isa53-11-light-en",
+      "prompt": "For a Bible study in English with a Christian audience (specialization: teaching), explain what Isaiah 53:11 says in the Hebrew, in the Septuagint and in the Dead Sea Scrolls. I heard some manuscripts say 'light'. Show me the readings.",
+      "expected_output": "WLC reading shown (no 'light'), the 1QIsaᵃ reading shown with אור, the LXX reading shown with φῶς, from lookup.py dss / lxx output; the response reports where they agree and differ without declaring which is original.",
+      "files": [],
+      "assertions": [
+        "The transcript shows lookup.py `dss` and `lxx` were run for Isa.53.11",
+        "The response shows the WLC/MT reading of Isa 53:11 and reports that it does not contain the word for light",
+        "The response shows that 1QIsaᵃ (witness 1QIsaa) has אור in Isa 53:11",
+        "The response shows that the LXX (Rahlfs) has φῶς in Isa 53:11",
+        "The response labels 1QIsaᵃ and the LXX as readings that differ from the MT and does not state which one is the original text",
+        "Any quoted Hebrew/Greek is copied from lookup.py output (a [DSS ...] tag uses the 1QIsaa witness)"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "audience-non-christian-evangelistic-es",
+      "prompt": "Escribe un sermón evangelístico en español, para gente que nunca ha leído la Biblia ni ha ido a una iglesia (audiencia: no cristiana), sobre Juan 3:16-21. Usa la plantilla por defecto. Guárdalo en ./sermons/.",
+      "expected_output": "A Spanish evangelistic sermon in plain language; every insider term from references/audiences.md that appears (iglesia, bautismo, evangelio, gracia, salvación, pecado, Cristo, etc.) is explained or replaced in plain words on first use.",
+      "files": [],
+      "assertions": [
+        "The saved sermon has audience: non-christian (or equivalent) in its frontmatter and language: es",
+        "Every insider term from the audiences.md table that appears in the sermon prose (e.g. salvación, pecado, Cristo, gracia, evangelio, iglesia, bautismo, vida eterna, Señor) is explained in the same sentence or replaced by a plain word on first use",
+        "The sermon gives who/where/when context for the passage in one or two sentences before reading the text",
+        "The sermon file passes check_sermon.py with 0 errors",
+        "The closing is an invitation to consider, ask, read or trust, with no assumed agreement"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "template-default-and-custom-skeleton-en",
+      "prompt": "Two requests. (1) Write a concise English sermon on Psalm 23:1-4 for a Christian audience (teaching), using the default template, and save it in ./sermons/. (2) Then write another on Philippians 4:4-9 using the structure of this example sermon, saved separately:\n\n---\nTITLE: Anchored\nOPENER: A short story about a storm.\nTHE WORD: The passage read aloud and what it meant to its first hearers.\nTHE ANCHOR POINT: One sentence the whole sermon hangs on.\nTHREE ROPES: Three practical applications, each one sentence of text and one of life.\nRESPONSE: A closing invitation.\n\nOPENER (example text): 'The waves came over the bow of our little boat and my father yelled that we were going down.'",
+      "expected_output": "Sermon 1 has the default big-idea sections (Introduction, Text, Big Idea, Point 1-3, Conclusion, Notes). Sermon 2 uses template: custom with a sections: list reproducing the example's section names and order, and none of the example's sentences.",
+      "files": [],
+      "assertions": [
+        "The first sermon file contains the default sections Introduction, Text, Big Idea, Point 1, Point 2, Point 3, Conclusion, Notes as H2 headings",
+        "The second sermon file has template: custom in its frontmatter and a sections: list whose names and order match the example (Opener, The Word, The Anchor Point, Three Ropes, Response, or direct equivalents)",
+        "The second sermon contains none of the example's sentences verbatim (e.g. the storm story sentence about the waves and the boat does not appear)",
+        "Both sermon files pass check_sermon.py with 0 errors"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "languages-same-passage-es-and-en",
+      "prompt": "Escribe el mismo sermón corto sobre Salmo 1:1-3 dos veces: una en español y una en inglés. Audiencia: cristiana, especialización: enseñanza, plantilla por defecto. Guarda cada uno en ./sermons/.",
+      "expected_output": "Two sermon files for the same passage, one with language: es and one with language: en, each using the localized default section names, both passing the validator.",
+      "files": [],
+      "assertions": [
+        "Two sermon files exist under ./sermons/, one named *.es.md with language: es and one named *.en.md with language: en",
+        "Both files pass check_sermon.py with 0 errors",
+        "The Spanish file uses Spanish section headings (Introducción, Texto, Idea central, ...) and the English file uses English headings (Introduction, Text, Big Idea, ...)",
+        "Both files cite the same Hebrew quote(s) from Ps.1.1-3 (identical tagged Hebrew text) with Literal and Natural lines in their own language",
+        "Neither file's translation lines contain tradition vocabulary flagged by the validator for its language"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "intake-bare-request-es",
+      "prompt": "Hazme un sermón sobre la gracia",
+      "expected_output": "The skill asks one short intake message in Spanish before drafting: specialization, audience, template choice (default vs pasted example); the language is inferred as Spanish and confirmed. No sermon is drafted or saved in that turn.",
+      "files": [],
+      "assertions": [
+        "The response asks which specialization is wanted (e.g. teología, apologética, evangelístico, enseñanza/discipulado, pastoral)",
+        "The response asks who the audience is (cristiana, no cristiana, mixta)",
+        "The response asks whether to use the default template or an example sermon structure",
+        "The response infers or confirms the output language (Spanish) rather than asking blindly",
+        "No sermon file is written to ./sermons/ in that turn and the response contains no drafted sermon body"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "usage-ekklesia-word-study-en",
+      "prompt": "Give me a short word study in English (answer in chat, no file needed) on ekklesia: how was the word used in the first century, before and around the New Testament? Audience: a christian Bible class, specialization: teaching. Use the evidence, not a dictionary summary.",
+      "expected_output": "The response runs `lookup.py usage ἐκκλησία`, reports the counts per corpus (NT 117, LXX 77, Josephus/ext 71) and quotes sample uses from the LXX and Josephus (and notes the papyri/lexicon excerpt with its noisy-OCR caveat if shown), and claims nothing beyond what those examples show.",
+      "files": [],
+      "assertions": [
+        "The transcript shows `lookup.py usage` was run for ἐκκλησία",
+        "The response cites LXX usage of ἐκκλησία with at least one reference and quote from the lookup output (e.g. Deut.4.10, Deut.9.10, Deut.23.1-2)",
+        "The response cites Josephus usage of ἐκκλησία with at least one reference and quote from the lookup output (e.g. Ant.3.84, Ant.3.188)",
+        "If the papyri/lexicon excerpt is mentioned, it is flagged as noisy OCR/unverified and is not quoted as verified text",
+        "The response reports the corpus counts as given by the tool (grnt 117, lxx 77, ext 71) without inventing other counts",
+        "The response draws no conclusion that goes beyond the cited examples (it states what the examples show and says what they do not show)"
+      ]
+    }
+  ]
+}
