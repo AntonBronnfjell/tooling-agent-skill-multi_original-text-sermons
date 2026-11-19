@@ -39,6 +39,15 @@ class Versification(unittest.TestCase):
     def test_title_is_verse_zero(self):
         self.assertEqual(canonical(self.c, "lxx", "Ps.50.1"), "Ps.51.0")
 
+    def test_lxx_starred_rows(self):
+        self.assertEqual(canonical(self.c, "lxx", "Jer.32.1"), "Jer.25.15")
+        self.assertEqual(canonical(self.c, "lxx", "Jer.26.2"), "Jer.46.2")
+        self.assertEqual(canonical(self.c, "lxx", "Exod.20.15"), "Exod.20.13")
+
+    def test_hebrew_multi_verse_cell(self):
+        self.assertEqual(canonical(self.c, "hebrew", "Ps.52.1"), "Ps.52.0")
+        self.assertEqual(canonical(self.c, "hebrew", "Ps.52.2"), "Ps.52.0")
+
     def test_identity(self):
         self.assertEqual(canonical(self.c, "lxx", "Gen.1.1"), "Gen.1.1")
         self.assertEqual(canonical(self.c, "hebrew", "Gen.1.1"), "Gen.1.1")

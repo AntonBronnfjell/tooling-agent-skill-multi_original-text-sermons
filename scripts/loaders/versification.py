@@ -1,8 +1,10 @@
 """Versification loader: TVTMS -> `versification` rows for schemes `hebrew` and `lxx`.
 
 # ponytail: only hebrew/lxx schemes; add Vulgate etc. if ever needed. The Expanded
-# `Tests` column is not evaluated (SourceType picks the tradition); starred actions
-# (`Renumber verse*`) and non-renumber actions are ignored.
+# `Tests` column is not evaluated (SourceType picks the tradition). Starred renumber
+# actions (`Renumber verse*`, conditional/uncertain rows) are accepted. Conflicts on one
+# source ref are resolved by SourceType rank (Rahlfs `Greek`/`Latin+Greek` over `Greek2`,
+# `Greek3`, ...), then file order.
 """
 import lzma
 import re
@@ -12,6 +14,10 @@ from otslib.refs import RefError, parse_ref, to_osis
 
 _TOKEN = re.compile(r"^\*?\s*([0-9A-Za-z]+)\.(\d+):(\w+?)(?:!\w+)?\s*$")
 _ACTIONS = {"Renumber verse", "Renumber title"}
+
+
+def _rank(source_type):
+    return 0 if "Greek" in [t.strip() for t in source_type.split("+")] else 1
 
 
 def _osis(text, chapter_hint=None):
@@ -64,7 +70,7 @@ def _sections(path):
         if len(c) > 1 and c[0].strip():
             simple.append((c[0], c[1]))
     expanded = [l.split("\t") for l in lines[exp[0] + 1:end[0]]]
-    return simple, [c for c in expanded if len(c) > 4 and c[3] in _ACTIONS and "Greek" in c[0]]
+    return simple, [c for c in expanded if len(c) > 4 and c[3].rstrip("*") in _ACTIONS and "Greek" in c[0]]
 
 
 def load(conn, sources_dir):
@@ -91,13 +97,19 @@ def load(conn, sources_dir):
             skipped += 1
         for s in srcs:
             add("hebrew", s, can)
-    for c in greek:
+    parsed = []
+    for n, c in enumerate(greek):
         try:
-            add("lxx", _osis(c[1]), _osis(c[2]))
+            parsed.append((_rank(c[0]), n, _osis(c[1]), _osis(c[2])))
         except RefError:
             skipped += 1
+    conflicts = 0
+    for _, _, src, can in sorted(parsed):
+        if src in rows["lxx"] and rows["lxx"][src] != can:
+            conflicts += 1
+        add("lxx", src, can)
     conn.executemany("INSERT INTO versification VALUES (?, ?, ?)",
                      [(s, a, b) for s, m in rows.items() for a, b in m.items()])
     print(f"versification: hebrew={len(rows['hebrew'])} lxx={len(rows['lxx'])} "
-          f"skipped={skipped} duplicate-source-refs-dropped={dup}")
+          f"skipped={skipped} duplicate-source-refs-dropped={dup} lxx-conflicts(differing target)={conflicts}")
     return sum(len(m) for m in rows.values())
