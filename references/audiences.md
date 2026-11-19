@@ -21,19 +21,19 @@ Terms to explain or replace (English / Spanish):
 | term | say instead / explain as |
 |---|---|
 | church / iglesia | assembly, gathering of people |
-| baptize, baptism / bautizar, bautismo | immerse, immersion (in water) |
-| repent / arrepentirse | change your mind, turn around |
+| baptize, baptism / bautizar, bautismo | immerse/wash, immersion/washing (in water) — say which the passage shows |
+| repent / arrepentirse | explain in plain words — turn (back), change one's mind — using the sense the passage shows (`fidelity-rules.md` §2) |
 | gospel / evangelio | good news |
 | Christ / Cristo | the Anointed, the Messiah — the king Israel expected |
 | grace / gracia | gift, favor you didn't earn |
-| sin / pecado | wrong, missing the mark |
+| sin / pecado | wrong, wrongdoing — explain from the passage |
 | salvation, saved / salvación, salvo | rescue, rescued |
 | saint / santo (as a title) | holy one, person set apart |
 | apostle / apóstol | sent one, envoy |
 | holy spirit / espíritu santo | God's breath/spirit — say what the passage says it does |
 | born again / nacer de nuevo | born from above / born again (both are possible for ἄνωθεν — explain) |
 | eternal life / vida eterna | life of the age to come, life without end (explain the phrase) |
-| righteous, justified / justo, justificado | in the right, declared in the right |
+| righteous, justified / justo, justificado | in the right; made or declared right — say which the context shows |
 | amen / amén | "so it is", "truly" |
 | hallelujah / aleluya | "praise Yah" |
 | Lord / Señor | master; or the divine name YHWH — say which |

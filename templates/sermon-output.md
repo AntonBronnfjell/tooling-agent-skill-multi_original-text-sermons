@@ -51,7 +51,7 @@ La primera palabra, Οὕτως, significa "así" o "de esta manera". La palabra
 
 ¿Y a quién amó? Al κόσμος, al mundo. En estas dos frases ese mundo es amado, podría ser juzgado y puede ser rescatado. No se trata del planeta ni de las estrellas: es la humanidad, nosotros, con todo lo que tenemos de bueno y de torcido.
 
-Luego viene una palabra que muchos conocen como "unigénito": μονογενῆ. Aquí hay dos lecturas honestas. Una la entiende como "único engendrado", y de ahí "unigénito". La otra la entiende como "único, el único de su clase". ¿Cómo usaba la gente esta palabra en el siglo primero? Lucas la usa para el hijo único de una viuda (Lucas 7:12). La traducción griega del Antiguo Testamento la usa para la hija de Jefté:
+Luego viene una palabra que muchos conocen como "unigénito": μονογενῆ. Aquí hay dos lecturas honestas, y hasta nuestra herramienta las muestra las dos: su léxico la glosa "único" y su glosa de este versículo dice "unigénito". Una lectura la entiende como "único engendrado", y de ahí "unigénito". La otra la entiende como "único, el único de su clase". ¿Cómo usaba la gente esta palabra en el siglo primero? Lucas la usa para el hijo único de una viuda (Lucas 7:12). La traducción griega del Antiguo Testamento la usa para la hija de Jefté:
 
 > [LXX Judg.11.34] ἦν αὕτη μονογενής οὐκ ἦν αὐτῷ ἕτερος υἱὸς ἢ θυγάτηρ
 > Literal: era ella única; no había para-él otro hijo o hija
@@ -63,19 +63,19 @@ Y el historiador judío Josefo, que escribió en el mismo siglo que Juan, la usa
 > Literal: a-Isaac y el padre Abraham amaba-sobremanera, único siendo
 > Natural: Abraham, su padre, amaba muchísimo a Isaac, que era su hijo único.
 
-Pero Abraham también había tenido a Ismael (Génesis 16:15). Para Josefo, entonces, "único" no significa "el único que engendró", sino "el hijo único en su clase, el de la promesa". Esa es la evidencia de uso que muestran nuestros datos, y por eso traduzco "el único". "Unigénito" descansa en otra lectura de la palabra, y ustedes la encontrarán en muchas Biblias. Lo que ninguna de las dos lecturas cambia es esto: Dios dio lo más querido que tenía.
+Pero Abraham también había tenido a Ismael (Génesis 16:15). Para Josefo, entonces, la palabra no puede querer decir "el único que Abraham engendró"; en la misma frase dice que Isaac le había nacido κατὰ δωρεὰν … τοῦ θεοῦ, "como regalo de Dios". Esa es la evidencia de uso que muestran nuestros datos, y por eso traduzco "el único". "Unigénito" descansa en otra lectura de la palabra, y ustedes la encontrarán en muchas Biblias. Lo que ninguna de las dos lecturas cambia es el verbo: Dios dio al hijo.
 
 ## Point 2
 
 **Un amor que se recibe confiando.**
 
-"Todo el que cree en él": ὁ πιστεύων. Es la manera griega de decir "el creyente", "el que confía". En la traducción griega del Antiguo Testamento, este verbo aparece una y otra vez en los mismos versículos que el verbo hebreo de la firmeza, el que está detrás de "amén": apoyarse en algo que no se cae. Creer, aquí, no es aprobar una lista de ideas; es apoyar el peso de la vida en alguien.
+"Todo el que cree en él": ὁ πιστεύων. Es la manera griega de decir "el que cree", "el que confía": nuestra herramienta glosa el verbo "confiar (en)". En la traducción griega del Antiguo Testamento, este verbo aparece sobre todo en versículos donde el texto hebreo tiene la palabra אָמַן. Y aquí lleva un complemento: εἰς αὐτὸν, "en él". La confianza de la que habla el texto tiene una persona como destino.
 
 Y fíjense en la palabra "todo". No hay letra pequeña: πᾶς, todo el que confía.
 
 ¿Qué evita esa confianza? Que la persona "se pierda" o "perezca": ἀπόληται. Es el mismo verbo que Jesús usa para la oveja perdida (Lucas 15:4). Aquí, en contraste con "tener vida", el sentido es perderse del todo, perecer.
 
-¿Y qué recibe? ζωὴν αἰώνιον. Solemos traducir "vida eterna", y es correcto. Pero la palabra tiene también un sabor de "vida de la era", la vida de la era que Dios prometió, que empieza ahora y no termina. Una traducción inglesa antigua lo dice así: "vida que dura por la era". Las dos ideas caben en la palabra: una vida distinta, y una vida sin fin.
+¿Y qué recibe? ζωὴν αἰώνιον. Solemos traducir "vida eterna". Otra traducción posible es "vida de la era": una traducción inglesa antigua dice "vida que dura por la era". En la traducción griega del Antiguo Testamento, αἰώνιος aparece sobre todo en versículos donde el hebreo tiene עוֹלָם, palabra que nuestra herramienta glosa "para siempre, duradero". Las dos traducciones están en circulación; aquí dejo "eterna" y anoto la otra.
 
 ## Point 3
 
@@ -91,7 +91,7 @@ Muchos viven con la idea de un Dios que está esperando el error para caer encim
 
 Volvamos a la pregunta: cuando Dios mira al mundo, ¿qué tiene en mente? El texto contesta con tres verbos: amó, dio, envió. Y con una negación: no para condenar, sino para rescatar.
 
-Si hoy estás explorando y nunca has confiado en Jesús, la invitación es sencilla, y sale de la palabra del texto: confía. Apoya el peso de tu vida en el hijo que Dios dio. No necesitas entenderlo todo hoy; Nicodemo tampoco lo entendía todo.
+Si hoy estás explorando y nunca has confiado en Jesús, la invitación es sencilla, y sale de la palabra del texto: confía en el hijo que Dios dio. No necesitas entenderlo todo hoy; Nicodemo tampoco lo entendía todo: "¿Cómo puede ser esto?" (Juan 3:9).
 
 Si ya lo sigues, vive esta semana como alguien rescatado, no como alguien vigilado. Y mira a tu prójimo con los ojos con que Dios mira al mundo: con un amor que da.
 
@@ -101,7 +101,7 @@ Para que todo el que confía en él no se pierda, sino que tenga vida eterna.
 
 - Variante, John.3.16 y John.3.17, después de τὸν υἱὸν: αὐτοῦ "su" — Treg+TR+Byz; ausente en SBL, NA, WH, THGNT. La herramienta la etiqueta "early" solo por Tregelles. Sentido: sin cambio. KJV "his", BSB "His", RV1909 "su".
 - Variante ortográfica, John.3.16: ἀλλὰ (SBL, WH, Treg, TR, Byz) / ἀλλ᾽ (NA, THGNT). Sin cambio de sentido.
-- Lectura disputada, John.3.16 μονογενῆ: (a) "único, único en su clase" — glosa de la herramienta "unique"; uso: Luke.7.12, LXX Judg.11.34, Josefo Ant.1.222 (Isaac, aunque Abraham tuvo a Ismael, Gen.16.15); (b) "unigénito, único engendrado" — lectura de -γενής desde γεννάω. Ambas en circulación; el sermón usa (a) por la evidencia de uso, y lo dice.
+- Lectura disputada, John.3.16 μονογενῆ: (a) "único, único en su clase" — glosa del léxico (`word μονογενής`) "unique"; uso: Luke.7.12, LXX Judg.11.34, Josefo Ant.1.222 (Isaac, aunque Abraham tuvo a Ismael, Gen.16.15); (b) "unigénito, único engendrado" — glosa del versículo (`interlinear John.3.16`) "only begotten"; lectura de -γενής como relacionada con γεννάω. Ambas en circulación; el sermón usa (a) por la evidencia de uso, y lo dice.
 - John.3.16 Οὕτως: dominios 61.9/61.10 (manera) y 78.4 (grado) en `word οὕτω`; aquí etiquetado 61.10 (manera). Opciones: "de esta manera" / "tanto".
 - John.3.16 αἰώνιον: "eterna" (KJV "everlasting", BSB, WEB, RV1909) / "de la era" (YLT "age-during"). En la LXX, αἰώνιος co-ocurre con עוֹלָם 100 veces (mismo versículo, no alineación).
 - Comparación, John.3.16 μονογενῆ: KJV, YLT "only begotten", RV1909 "unigénito"; BSB "one and only"; WEB "only born" [paraphrase: cada una elige una opción].
@@ -109,4 +109,4 @@ Para que todo el que confía en él no se pierda, sino que tenga vida eterna.
 - Comparación, John.3.17 κρίνῃ: KJV "condemn", BSB "condemn", RV1909 "condene"; WEB, YLT "judge" [paraphrase: κρίνω abarca ambos; John.3.18 usa κέκριται "ha sido juzgado"].
 - Comparación, John.3.17 ἵνα σωθῇ ὁ κόσμος (pasiva): BSB "to save the world" (activa) [paraphrase].
 - Comparación, John.3.16 πιστεύων: RV1909 "cree", WEB "believes", YLT "is believing" — el participio presente no exige "sigue creyendo"; no se predicó ese matiz.
-- Comandos: `lookup.py verse John.3.16`, `verse John.3.17`, `verse John.3.16 --witness NA|TR|Byz|WH|THGNT`, `variants John.3.16`, `variants John.3.17`, `interlinear John.3.16-17`, `compare John.3.16-17`, `compare John.3.18`, `word μονογενής`, `usage μονογενής`, `verse Judg.11.34 --corpus lxx`, `verse Ant.1.222 --corpus ext --witness Josephus`, `verse Luke.7.12`, `verse Gen.16.15`, `word οὕτω`, `word πιστεύω`, `word αἰώνιος`, `word κρίνω`, `word ἀποστέλλω`, `verse John.3.18`, `verse Luke.15.4`.
+- Comandos: `lookup.py verse John.3.16`, `verse John.3.17`, `verse John.3.16 --witness NA|TR|Byz|WH|THGNT`, `variants John.3.16`, `variants John.3.17`, `interlinear John.3.16-17`, `compare John.3.16-17`, `compare John.3.18`, `word μονογενής`, `usage μονογενής`, `verse Judg.11.34 --corpus lxx`, `verse Ant.1.222 --corpus ext --witness Josephus`, `verse Luke.7.12`, `verse Gen.16.15`, `word οὕτω`, `word πιστεύω`, `word עוֹלָם`, `word αἰώνιος`, `word κρίνω`, `word ἀποστέλλω`, `verse John.3.18`, `verse Luke.15.4`, `verse John.3.9`, `verse John.3.2`.

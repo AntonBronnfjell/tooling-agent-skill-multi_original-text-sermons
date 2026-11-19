@@ -26,8 +26,8 @@ Greek tense-forms mark how the speaker views an action (whole vs in progress), n
 Active, passive, and **middle** (subject acts on/for itself, or has something done for itself). Many verbs are middle in form with active meaning (δύναται, `V-PNI-3S`, "is able").
 
 > [GRC Acts.22.16] ἀναστὰς βάπτισαι καὶ ἀπόλουσαι τὰς ἁμαρτίας σου
-> Literal: having-arisen be-immersed/get-yourself-immersed and wash-away/get-washed-away the sins of-you
-> Natural: get up, be immersed and have your sins washed away
+> Literal: having-arisen be-immersed/washed (middle) and wash-away/get-washed-away the sins of-you
+> Natural: get up, be immersed (or: washed) and have your sins washed away
 
 Both imperatives are aorist **middle** (`V-AMM-2S`): permissive/causative ("let yourself be…") or reflexive ("…yourself"). Show the range; do not build doctrine on one sense of the voice.
 

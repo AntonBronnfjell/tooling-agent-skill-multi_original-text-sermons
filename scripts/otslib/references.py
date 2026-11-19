@@ -2,7 +2,7 @@
 
 - tradition_terms(lang): left column of references/tradition-vocabulary.md for that language.
 - contested_refs(): `ref` column of references/contested-readings.md (OSIS refs).
-- template_sections(name): `sections:` list from templates/<name>.md frontmatter.
+- template_sections(name, lang=None): `sections:` (or `sections_<lang>:`) list from templates/<name>.md frontmatter.
 """
 from pathlib import Path
 
@@ -52,6 +52,8 @@ def contested_refs() -> set:
     return {r["ref"].strip("`") for r in _table(REFERENCES / "contested-readings.md") if r.get("ref")}
 
 
-def template_sections(name: str) -> list:
-    raw = frontmatter(TEMPLATES / f"{name}.md").get("sections", "")
+def template_sections(name: str, lang: str = None) -> list:
+    """`sections:` of templates/<name>.md; with lang, `sections_<lang>:` if present (same order)."""
+    fm = frontmatter(TEMPLATES / f"{name}.md")
+    raw = (lang and fm.get(f"sections_{lang.lower()}")) or fm.get("sections", "")
     return [s.strip() for s in raw.split(",") if s.strip()]

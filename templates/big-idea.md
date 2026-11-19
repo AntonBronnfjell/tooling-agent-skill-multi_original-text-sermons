@@ -2,12 +2,13 @@
 name: big-idea
 default: true
 sections: Introduction, Text, Big Idea, Point 1, Point 2, Point 3, Conclusion, Notes
+sections_es: Introducción, Texto, Idea central, Punto 1, Punto 2, Punto 3, Conclusión, Notas
 suits: theology, teaching, pastoral, apologetics
 ---
 
 # Template: Big Idea (expository, default)
 
-One sentence from the text carries the whole sermon; three points unfold it in the passage's own order. Each `sections:` entry is a `##` heading in the sermon file, spelled exactly as listed. Target: concise — ~1–2 pages, 500–1,300 words of body prose (quote blocks and Notes excluded), ~15–20 minutes spoken with the readings and pauses. File format: `templates/sermon-output.md`.
+One sentence from the text carries the whole sermon; three points unfold it in the passage's own order. Each `sections:` entry is a `##` heading in the sermon file, spelled exactly as listed; `sections_es:` gives the Spanish headings in the same order. Target: concise — ~1–2 pages, 500–1,300 words of body prose (quote blocks and Notes excluded), ~15–20 minutes spoken with the readings and pauses. File format: `templates/sermon-output.md`.
 
 ## Introduction
 

@@ -24,7 +24,7 @@ Aim: answer real objections to the passage or its claims, from the evidence.
 Aim: make the passage's message understandable to someone outside, and invite a response.
 
 - One clear idea from the text; one call.
-- **Clear call to respond** at the end, worded from the passage's own verbs (e.g. John.3.16 ὁ πιστεύων "the one who trusts" → invite trust; Acts.2.38 Μετανοήσατε → invite a change of mind/turning). Specific, unpressured, no manipulation, no promises the text doesn't make.
+- **Clear call to respond** at the end, worded from the passage's own verbs (e.g. John.3.16 ὁ πιστεύων "the one who believes/trusts" → invite that; Acts.2.38 names two responses, Μετανοήσατε and βαπτισθήτω — invite both, rendered per `tradition-vocabulary.md` and with the options in `contested-readings.md`). Specific, unpressured, no manipulation, no promises the text doesn't make.
 - Pair with `audiences.md` non-christian or mixed rules; the hook-book-look-took template suits it.
 
 ## teaching / discipleship

@@ -2,12 +2,13 @@
 name: hook-book-look-took
 default: false
 sections: Hook, Book, Look, Took, Notes
+sections_es: Gancho, Texto, Mirada, Para llevar, Notas
 suits: evangelistic, non-christian, mixed
 ---
 
 # Template: Hook – Book – Look – Took
 
-Moves from the listener's world into the text and back out to a response. Suits evangelistic sermons and non-christian or mixed audiences. Each `sections:` entry is a `##` heading in the sermon file, spelled exactly as listed. Same length target and file format as the default (`templates/sermon-output.md`).
+Moves from the listener's world into the text and back out to a response. Suits evangelistic sermons and non-christian or mixed audiences. Each `sections:` entry is a `##` heading in the sermon file, spelled exactly as listed; `sections_es:` gives the Spanish headings in the same order. Same length target and file format as the default (`templates/sermon-output.md`).
 
 ## Hook
 

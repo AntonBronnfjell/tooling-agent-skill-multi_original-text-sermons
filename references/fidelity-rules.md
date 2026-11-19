@@ -24,6 +24,7 @@ Every quote block is followed by two lines:
 - `Literal:` word-for-word in the target language, original word order where readable; slashes for real alternatives; square brackets for words the target language needs but the text lacks.
 - `Natural:` fluent target language, faithful in meaning. No added words the text does not imply; mark any that grammar forces.
 - Neither line may contain a term from `tradition-vocabulary.md` for that language (machine-checked). Use the plain rendering; discuss the traditional term in prose or Notes if useful.
+- Standard lexical equivalents are not tradition vocabulary. Example: μετανοέω may be rendered "repent / arrepentirse", "turn", or "change one's mind"; when the sense matters, show its range from usage (`lookup.py word μετανοέω`, `usage μετανοέω`: in LXX verses it co-occurs with נָחַם 14× and שׁוּב 9×) and say which the context shows. Don't define it from its parts (μετά + νοέω) — see `exegetical-fallacies.md` §1. The same applies to δικαιόω ("in the right / made or declared right" — say which the context shows).
 
 ## 3. Contested readings: show the options
 
@@ -34,7 +35,7 @@ Where grammar, vocabulary or the manuscripts honestly allow more than one readin
 Hebrew and Greek manuscripts of the period have no upper/lower case distinction; capitals in a translation are the translator's decision.
 
 - **No capitals added to πνεῦμα ἅγιον / רוּחַ**: write "holy spirit" / "espíritu santo" on `Literal:`/`Natural:` lines. If the sermon discusses how others capitalize it, do so in prose.
-- θεός / אֱלֹהִים is rendered "God" / "Dios" only where the target language's grammar treats the word as a name (e.g. ὁ θεὸς as subject in John.3.16 → "Dios"). Where the form is anarthrous or the referent is debated (John.1.1c, Gen.1.26, 1Sam.28.13 — where אֱלֹהִים takes a plural participle — Ps.82.6, Heb.1.8), show the options ("God / divine / a god") instead of choosing by capital letter.
+- θεός / אֱלֹהִים is rendered "God" / "Dios" only where the target language's grammar treats the word as a name (e.g. ὁ θεὸς as subject in John.3.16 → "Dios"; אֱלֹהִים with a singular verb, as in Gen.1.1 בָּרָא and Gen.1.26 וַיֹּאמֶר → "God"). Where the form is anarthrous and the sense is debated (John.1.1c, Heb.1.8) or the word takes plural agreement (1Sam.28.13 אֱלֹהִים … עֹלִים, Ps.82.6 אֱלֹהִים אַתֶּם), show the options ("God / divine / a god / gods") instead of choosing by capital letter. In Gen.1.26 what is contested is the plural "let us … our", not the rendering of אֱלֹהִים.
 - No reverential capitals on pronouns or titles (he/him, hijo, palabra, él) on translation lines. "Son/Hijo", "Word/Verbo" as capitalized titles are a translation choice; mention them in comparison notes when a published version uses them.
 - Capitalization is not machine-checked (that would force a side on contested readings); this rule is enforced by review and evals.
 

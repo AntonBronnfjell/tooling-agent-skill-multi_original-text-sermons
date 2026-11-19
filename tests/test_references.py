@@ -39,6 +39,19 @@ class ReferenceTableTests(unittest.TestCase):
         self.assertEqual(template_sections("big-idea"),
                          ["Introduction", "Text", "Big Idea", "Point 1", "Point 2", "Point 3", "Conclusion", "Notes"])
 
+    def test_template_sections_localized(self):
+        self.assertEqual(template_sections("big-idea", "es"),
+                         ["Introducción", "Texto", "Idea central", "Punto 1", "Punto 2", "Punto 3", "Conclusión", "Notas"])
+        self.assertEqual(len(template_sections("hook-book-look-took", "es")), 5)
+        # no localized list -> canonical list
+        self.assertEqual(template_sections("hook-book-look-took", "fr"), template_sections("hook-book-look-took"))
+
+    def test_no_standard_lexical_terms(self):
+        for t in ("repent", "repentance"):
+            self.assertNotIn(t, tradition_terms("en"))
+        for t in ("arrepentirse", "arrepentimiento", "gentiles", "consolador"):
+            self.assertNotIn(t, tradition_terms("es"))
+
     def test_template_unknown(self):
         with self.assertRaises(FileNotFoundError):
             template_sections("no-such-template")
