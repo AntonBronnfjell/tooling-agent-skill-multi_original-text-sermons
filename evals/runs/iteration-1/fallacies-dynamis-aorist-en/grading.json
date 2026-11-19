@@ -1,0 +1,76 @@
+{
+  "eval_id": 5,
+  "eval_name": "fallacies-dynamis-aorist-en",
+  "expectations": [
+    {
+      "text": "The response says the dynamis = dynamite argument does not hold and names the fallacy (etymological fallacy / anachronism / root fallacy or equivalent label)",
+      "passed": true,
+      "evidence": "Chat: 'Reading it back is an anachronism'; Notes: 'Fallacy declined (exegetical-fallacies.md §4, anachronism): δύναμις → \"dynamite\"'."
+    },
+    {
+      "text": "The response gives a concrete reason for dynamis (dynamite is a 19th-century word, or the 1st-century usage of δύναμις shown from lookup.py word/usage output)",
+      "passed": true,
+      "evidence": "'Dynamite was invented and named in the 19th century'; plus `word δύναμις` NT 120, LXX 379, co-occurrence חַיִל 147, צָבָא 134 (grader re-ran: exact match) and LXX Exod.7.4 σὺν δυνάμει μου."
+    },
+    {
+      "text": "The response says the aorist does not by itself mean 'once for all' and names the fallacy (e.g. aspect/tense overreach, 'aorist = once-for-all' fallacy)",
+      "passed": true,
+      "evidence": "'The aorist doesn't mean \"once for all\" in any case. John 2:20 uses an aorist for a temple that took 46 years'; Notes: 'Fallacy declined (exegetical-fallacies.md §7, overspecification): \"aorist = once for all\"'."
+    },
+    {
+      "text": "The response does not write the dynamite illustration or the 'once for all' claim into the sermon outline as if they were valid",
+      "passed": true,
+      "evidence": "Point 2: 'You asked me to use the dynamite illustration here. I am not going to'; Point 3 rejects the aorist claim; 'once for all' appears only as the rendering of ἐφάπαξ in [GRC Rom.6.10]."
+    },
+    {
+      "text": "The response offers an alternative the text does support, citing the Greek (e.g. δύναμις as ability/power in Rom 1:16 context)",
+      "passed": true,
+      "evidence": "Replacement: [LXX Exod.7.4] ἐξάξω σὺν δυνάμει μου… 'Not an explosion — an exodus'; δύναμις εἰς σωτηρίαν 'toward rescue'."
+    },
+    {
+      "text": "The response notes that τετέλεσται in John 19:30 is a perfect, not an aorist, citing the tense/morphology from lookup.py output (e.g. `verse John.19.30` or `interlinear`)",
+      "passed": true,
+      "evidence": "[GRC John.19.30] quoted; 'The tool tags Τετέλεσται as a perfect passive (V-RPI-3S)'. Grader re-ran `verse John.19.30`: τετέλεσται V-RPI-3S; John.2.20 οἰκοδομήθη V-API-3S."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_log_entries": 22,
+    "output_chars": 8646,
+    "transcript_chars": 12986,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets (one bullet may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "δύναμις NT 120, LXX 379",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`word δύναμις` counts {'nt': 120, 'lxx': 379}."
+    },
+    {
+      "claim": "John 19:28 uses the same form τετέλεσται",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Tool log: `verse John.19.28` V-RPI-3S."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Declines both moves politely and offers better, data-backed illustrations. Mild homiletic lean in Conclusion ('a report about God, not about us') — not a tradition term. Rom.1.17 genitive and ἐκ πίστεως εἰς πίστιν left open with options. Asked-then-proceeded on the template.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "Strong, discriminating eval (#6 in particular catches the false premise inside the user's prompt)."
+  }
+}

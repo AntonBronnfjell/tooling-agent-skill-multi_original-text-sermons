@@ -1,0 +1,81 @@
+{
+  "eval_id": 2,
+  "eval_name": "tradition-traps-matt16-acts2-en",
+  "expectations": [
+    {
+      "text": "The Matt 16:18 Literal and Natural lines render ἐκκλησία with a plain word such as \"assembly\" or \"gathering\" and do not use \"church\" on those translation lines",
+      "passed": true,
+      "evidence": "[GRC Matt.16.18] Literal: '…I-will-build my the assembly'; Natural: '…on this rock I will build my assembly,'. No 'church' on either line."
+    },
+    {
+      "text": "The Acts 2:38 Literal and Natural lines render βαπτισθήτω with a plain word such as \"immerse\" or \"immersed\" and do not use \"baptize\"/\"baptized\"/\"baptism\" on those translation lines",
+      "passed": true,
+      "evidence": "[GRC Acts.2.38] Literal: 'let-be-immersed each of-you'; Natural: 'let each one of you be immersed'. No baptize/baptized/baptism on translation lines."
+    },
+    {
+      "text": "The Acts 2:4 translation lines render πνεύματος ἁγίου without capitalizing \"Holy Spirit\" (e.g. \"holy spirit\" or \"a holy breath/spirit\")",
+      "passed": true,
+      "evidence": "[GRC Acts.2.4] Literal: 'were-filled all with-holy spirit'; Natural: 'filled with the holy spirit' (lower case); v.4b 'as the spirit was giving'."
+    },
+    {
+      "text": "The sermon file passes check_sermon.py with 0 errors (no tradition-vocabulary error on translation lines)",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-assembly-spirit-immersion.en.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    },
+    {
+      "text": "Where the response mentions the traditional wording (church, baptize, Holy Spirit), it does so in prose or notes and labels it as a tradition/translation choice, not on a Literal/Natural line",
+      "passed": true,
+      "evidence": "Prose: 'The word our Bibles render *church* is ἐκκλησίαν'; 'βαπτισθήτω, which our Bibles render *be baptized*'; '\"Holy Spirit\" with capitals, or the King James \"Holy Ghost\", is a translation decision'. Notes tag KJV/BSB/RV1909 'church', 'baptized', 'Holy Ghost' as [tradition-vocabulary]/[capitalization]."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_log_entries": 12,
+    "output_chars": 12986,
+    "transcript_chars": 15144,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets (one bullet may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "ἐκκλησία LXX 77, co-occurs with קָהָל 66; βαπτίζω LXX 2 (2Kgs.5.14 Naaman)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Grader re-ran `word ἐκκλησία` (77, קָהָל 66); 2Kgs.5.14 LXX in tool log."
+    },
+    {
+      "claim": "'the manuscripts of this period have no capital letters'",
+      "type": "factual",
+      "verified": false,
+      "evidence": "Inaccurate wording: early NT manuscripts are written entirely in capitals (uncials); the correct point (SKILL.md hard rule 5) is that they have no case distinction."
+    },
+    {
+      "claim": "'Hades and Gehenna are different words in the New Testament'",
+      "type": "factual",
+      "verified": true,
+      "evidence": "True, but not from a lookup in the tool log (`word ᾍδης` only)."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Contested readings (this rock; εἰς ἄφεσιν; ἐπὶ/ἐν τῷ ὀνόματι) shown as options with no verdict. Frontmatter 'passage: Matt.16.18' lists only the first of three texts. Slight framing lean in Point 1 ('not a building, and not yet a denomination') — rhetorical rather than doctrinal.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "Multi-passage studies record only the first ref in `passage:`; no assertion or validator rule checks that the frontmatter covers all texts studied."
+      }
+    ],
+    "overall": "Discriminating eval: assertions 1-3 would fail for a run that followed lexicon glosses ('church', 'baptize', 'Holy Spirit')."
+  }
+}

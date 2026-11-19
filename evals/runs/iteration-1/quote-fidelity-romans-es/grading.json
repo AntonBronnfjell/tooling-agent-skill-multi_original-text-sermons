@@ -1,0 +1,77 @@
+{
+  "eval_id": 1,
+  "eval_name": "quote-fidelity-romans-es",
+  "expectations": [
+    {
+      "text": "A sermon file exists under ./sermons/ and `python3 scripts/check_sermon.py` on it exits 0 with 0 ERROR lines",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-sacrificio-vivo-mente-renovada.es.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    },
+    {
+      "text": "The sermon contains at least one tagged Greek quote from Rom.12.1 or Rom.12.2, each followed by a Literal and a Natural line",
+      "passed": true,
+      "evidence": "Four tagged quotes [GRC Rom.12.1] x2 and [GRC Rom.12.2] x2, each followed by '> Literal:' and '> Natural:' lines in Spanish; text matches `lookup.py verse Rom.12.1-2` (SBL) verbatim (re-run by grader)."
+    },
+    {
+      "text": "The transcript shows lookup.py `verse` (or equivalent) was run for Rom.12.1-2 before the sermon was written (quotes are not from memory)",
+      "passed": true,
+      "evidence": "Tool log opens with `lookup.py verse Rom.12.1`, `verse Rom.12.2`, `variants Rom.12.1-2`, `interlinear Rom.12.1-2`; check_sermon is the last entry, so lookups preceded writing."
+    },
+    {
+      "text": "The sermon frontmatter has language: es and audience: christian",
+      "passed": true,
+      "evidence": "Frontmatter: 'language: es', 'audience: christian'."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_log_entries": 15,
+    "output_chars": 10273,
+    "transcript_chars": 12353,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets (one bullet may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "οἰκτιρμός LXX 26, co-occurs with רַחֲמִים 24; θυσία LXX 327; δοκιμάζω co-occurs with בָּחַן 15",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Grader re-ran `word οἰκτιρμός|θυσία|δοκιμάζω`: counts match exactly; the sermon also repeats the 'same-verse co-occurrence, not alignment' caveat."
+    },
+    {
+      "claim": "Both v.2 verbs are present imperatives; μεταμορφοῦσθε is passive",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Tool log: συσχηματίζεσθε V-PEM-2P, μεταμορφοῦσθε V-PPM-2P."
+    },
+    {
+      "claim": "δοκιμάζειν 'es el de probar un metal'; Philo is 'escritor judío del siglo primero'",
+      "type": "factual",
+      "verified": false,
+      "evidence": "Not from any lookup output in the tool log (background knowledge). Harmless but violates hard rule 7 in spirit (usage claims only from lookup)."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Clean run. Contested λογικὴν shown with two options and sources. Mild interpretive step in Punto 3 ('sí dice que no es algo que fabricamos nosotros') reads theology out of the passive voice; not a tradition lean but more than the morphology alone shows. No tradition vocabulary on translation lines.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The sermon frontmatter has language: es and audience: christian",
+        "reason": "Non-discriminating: the validator already rejects malformed frontmatter and any run would echo the prompt's audience. Replace with a check that every Greek word in prose (οὖν, σώματα, …) also appears in this session's lookup output."
+      }
+    ],
+    "overall": "Assertions pass on genuine evidence; the fidelity assertion (#2) is the one that matters and it is verified by check_sermon against the DB."
+  }
+}

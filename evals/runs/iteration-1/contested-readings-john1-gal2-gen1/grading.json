@@ -1,0 +1,82 @@
+{
+  "eval_id": 3,
+  "eval_name": "contested-readings-john1-gal2-gen1",
+  "expectations": [
+    {
+      "text": "John 1:1c is shown in Greek (καὶ θεὸς ἦν ὁ λόγος) as a tagged quote, with at least two distinct renderings or readings listed and a note about the context (e.g. article, word order, John 1:1b/1:18)",
+      "passed": true,
+      "evidence": "[GRC John.1.1] 'καὶ θεὸς ἦν ὁ λόγος.' with Natural '(options) \"and the word was God\" / \"and what God was, the word was\" / \"and the word was a god\"'; Point 1 notes the anarthrous fronted θεὸς, τὸν θεόν arthrous in 1:1b, Colwell's limit, and v.2."
+    },
+    {
+      "text": "Galatians 2:16 shows πίστεως Ἰησοῦ Χριστοῦ in Greek with at least two options for the genitive (objective vs subjective or equivalent) and a context note",
+      "passed": true,
+      "evidence": "[GRC Gal.2.16] 'διὰ πίστεως Ἰησοῦ Χριστοῦ'; options (a) objective 'trust in' (BSB, WEB) vs (b) subjective 'faithfulness of' (KJV, YLT, RV1909); context note: the middle clause 'we put our trust in the Anointed', πίστις senses from `word πίστις`, Rom.3.22."
+    },
+    {
+      "text": "Genesis 1:26 shows the Hebrew (נַעֲשֶׂה / אֱלֹהִים) as a tagged quote with at least two options for the plural \"us\" and a context note",
+      "passed": true,
+      "evidence": "[HEB Gen.1.26] 'וַיֹּאמֶר אֱלֹהִים נַעֲשֶׂה אָדָם בְּצַלְמֵנוּ כִּדְמוּתֵנוּ'; options heavenly court / majesty-deliberation / plurality within God; context: singular וַיֹּאמֶר, Gen.1.27 בְּצַלְמוֹ, LXX keeps plural, DSS lacuna."
+    },
+    {
+      "text": "Each of the three contested places is presented as options with evidence; the response does not state that one option is the only correct one",
+      "passed": true,
+      "evidence": "Each section ends without a verdict: 'The grammar does not choose for you.' / 'The text allows both.' / 'The text allows all three readings; the data does not decide.' Notes: 'No verdict.' x3."
+    },
+    {
+      "text": "The sermon file passes check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-what-the-text-allows.en.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_log_entries": 12,
+    "output_chars": 12516,
+    "transcript_chars": 15089,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets (one bullet may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "4Q2 and 4Q4 preserve only the second half of Gen.1.26; the 'us' words are not extant",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Grader re-ran `dss Gen.1.26`: 4Q2 'ים ובעוף', 4Q4 'רדו בדגת הים ובעוף השמים ל הרץ'."
+    },
+    {
+      "claim": "Colwell's rule only observes definite pre-verbal predicates usually lack the article",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Matches references/contested-readings.md and linguistics-greek.md §3 (sourced to the skill, not memory)."
+    },
+    {
+      "claim": "πίστις LXX co-occurs with אֱמוּנָה 18",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Grader re-ran `word πίστις`: אֱמוּנָה(18)."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Exemplary neutrality on all three texts; options are balanced in both directions. Process note: the chat reply asks the template question and then proceeds anyway ('Mientras tanto, procedí con la plantilla por defecto') — intake and drafting in one turn.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Each of the three contested places is presented as options with evidence; the response does not state that one option is the only correct one",
+        "reason": "Could pass on a response that lists options but then argues for one in prose (e.g. 'the context clearly favors…'). Add an explicit check that no option is described as favored/required beyond what the immediate context data shows."
+      }
+    ],
+    "overall": "Solid; assertion 4 is the key neutrality check and holds."
+  }
+}

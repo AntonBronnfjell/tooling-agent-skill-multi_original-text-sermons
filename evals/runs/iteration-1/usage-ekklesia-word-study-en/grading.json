@@ -1,0 +1,87 @@
+{
+  "eval_id": 12,
+  "eval_name": "usage-ekklesia-word-study-en",
+  "expectations": [
+    {
+      "text": "The transcript shows `lookup.py usage` was run for ἐκκλησία",
+      "passed": true,
+      "evidence": "Tool log: '`--format text usage ἐκκλησία` — counts grnt 117, lxx 77, ext 71…' and a JSON `usage ἐκκλησία` call."
+    },
+    {
+      "text": "The response cites LXX usage of ἐκκλησία with at least one reference and quote from the lookup output (e.g. Deut.4.10, Deut.9.10, Deut.23.1-2)",
+      "passed": true,
+      "evidence": "[LXX Deut.4.10] '…ἐν Χωρηβ τῇ ἡμέρᾳ τῆς ἐκκλησίας…' and [LXX Ps.26.5] 'ἐμίσησα ἐκκλησίαν πονηρευομένων'. Grader ran check_sermon on the chat quote blocks: no quote errors."
+    },
+    {
+      "text": "The response cites Josephus usage of ἐκκλησία with at least one reference and quote from the lookup output (e.g. Ant.3.84, Ant.3.188)",
+      "passed": true,
+      "evidence": "[EXT:Josephus Ant.3.84] 'συγκαλεῖ τὸ πλῆθος εἰς ἐκκλησίαν…' and [EXT:Josephus Ant.3.306]; both match `usage`/`verse … --corpus ext` output."
+    },
+    {
+      "text": "If the papyri/lexicon excerpt is mentioned, it is flagged as noisy OCR/unverified and is not quoted as verified text",
+      "passed": true,
+      "evidence": "'It is noisy OCR of a printed book, so I only paraphrase it and don't quote it as ancient text.'"
+    },
+    {
+      "text": "The response reports the corpus counts as given by the tool (grnt 117, lxx 77, ext 71) without inventing other counts",
+      "passed": true,
+      "evidence": "'117 uses in the New Testament, 77 in the Septuagint… 71 in Josephus and Philo combined'. Other figures (קָהָל 66; '77 in 73 verses'; 5 sample contexts) are also tool outputs (grader re-ran `word ἐκκλησία`, `search … --corpus lxx`)."
+    },
+    {
+      "text": "The response draws no conclusion that goes beyond the cited examples (it states what the examples show and says what they do not show)",
+      "passed": false,
+      "evidence": "Conclusions go beyond the cited examples: summary 'The word itself never meant \"the called-out ones\"' (a universal claim from ~10 sampled uses of 265); 'Greek cities used it for their citizens' meeting' (one city, Acts 19, plus the noisy papyri paraphrase); '\"Church\" also brings later associations… that 1st-century hearers of ἐκκλησία didn't have' and 'Those who first used the word this way already had both meanings in their ears' (claims about hearers' minds, no data). The response does state limits for Philo and the papyri, but these sentences are not bounded by the evidence."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.83
+  },
+  "execution_metrics": {
+    "tool_log_entries": 18,
+    "output_chars": 0,
+    "transcript_chars": 9880,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets (one bullet may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "Acts 8:1 'τὴν ἐκκλησίαν τὴν ἐν Ἱεροσολύμοις', Acts 8:3 'κατὰ τοὺς οἴκους'",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Not in the explicit verse calls, but both appear in `usage ἐκκλησία` sample contexts (grader re-ran)."
+    },
+    {
+      "claim": "Acts 19:39 'ἐν τῇ ἐννόμῳ ἐκκλησίᾳ', 19:41 'ἀπέλυσεν τὴν ἐκκλησίαν', 1Sam.19.20 LXX 'τὴν ἐκκλησίαν τῶν προφητῶν'",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Grader re-ran the verses: exact."
+    },
+    {
+      "claim": "'Josephus wrote in Greek in the same generation as most of the New Testament'",
+      "type": "factual",
+      "verified": false,
+      "evidence": "Background, not from lookup output."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Evidence gathering is excellent (counts, LXX, Josephus, NT civic use, caveats). The failure is in the closing rhetoric: the root-fallacy correction is pushed into absolute claims. The reference itself says '\"Called out\" is not in the usage', which is the bounded version.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The response draws no conclusion that goes beyond the cited examples…",
+        "reason": "Good, discriminating assertion — keep it. Consider adding an explicit forbidden-phrasing check (never/always/all hearers) for word studies."
+      }
+    ],
+    "overall": "5/6; strong evidence work, overreaching summary."
+  }
+}

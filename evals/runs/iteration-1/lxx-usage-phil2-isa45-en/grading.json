@@ -1,0 +1,87 @@
+{
+  "eval_id": 6,
+  "eval_name": "lxx-usage-phil2-isa45-en",
+  "expectations": [
+    {
+      "text": "The response shows the Hebrew text (WLC) of Isa 45:21-25 and the Rahlfs LXX text of Isa 45:21-25, both taken from lookup.py output (tagged [HEB Isa.45.x] and [LXX Isa.45.x] quotes or equivalent)",
+      "passed": true,
+      "evidence": "[HEB Isa.45.21]…[HEB Isa.45.25] and [LXX Isa.45.21]…[LXX Isa.45.25] all present; check_sermon verified them against WLC/Rahlfs. Caveat: v.21 is quoted only from הֲלוֹא אֲנִי יְהוָה / ἐγὼ ὁ θεός onward (first half paraphrased in prose); vv.22-25 complete."
+    },
+    {
+      "text": "The response reports that the Hebrew (WLC) has יְהוָה in Isa 45:21, 45:24 and 45:25",
+      "passed": true,
+      "evidence": "Notes: 'WLC יְהוָה in Isa.45.21, 24, 25'; Point 3: 'The Hebrew has the divine name three times in these verses (vv. 21, 24, 25)'."
+    },
+    {
+      "text": "The response reports that Isa 45:23 in the LXX ends with τῷ θεῷ",
+      "passed": true,
+      "evidence": "Notes: 'Rahlfs v.23 adds τῷ θεῷ'; the quote ends '…ἐξομολογήσεται πᾶσα γλῶσσα τῷ θεῷ' (grader re-ran `lxx Isa.45.23`)."
+    },
+    {
+      "text": "The response reports that the LXX has ὁ θεός in 45:21, no divine name in 45:24, and κυρίου in 45:25",
+      "passed": true,
+      "evidence": "Notes: 'Rahlfs ὁ θεός in 21, no divine name in 24, κυρίου in 25 (plus ἐν τῷ θεῷ…)'. Grader re-ran `lxx Isa.45.21|24|25`: matches."
+    },
+    {
+      "text": "The response does not claim that the LXX has κύριος in 45:23, and does not assert a link between Phil 2:10-11 and Isa 45 other than what the shown texts support (it reports Paul's wording alongside the data, or states what the data does not show)",
+      "passed": true,
+      "evidence": "No κύριος-in-45:23 claim. Link claims limited to shared wording ('Paul's wording follows the Greek: κάμψῃ … ἐξομολογήσηται') and Rom.14.11; the κύριος transfer is framed as 'Readers have drawn different conclusions…'. Minor unbacked framing: 'Paul's hymn is built from Isaiah's oath' and 'the Greek translation… that Paul's assemblies read'."
+    },
+    {
+      "text": "Any Hebrew/Greek quotes in the saved file pass check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-every-knee-isaiah-45.en.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_log_entries": 17,
+    "output_chars": 10651,
+    "transcript_chars": 14524,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets (one bullet may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "ἐξομολογέω LXX 92, co-occurs with יָדָה 80",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Grader re-ran `word ἐξομολογέω`: lxx 92, יָדָה(80)."
+    },
+    {
+      "claim": "1QIsaa has plural יבואו in v.24",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`dss Isa.45.24`: 1QIsaa '…עדיו יבואו יבושו…'."
+    },
+    {
+      "claim": "Phil 2:6-11 is a 'hymn'; Paul's readers held the LXX",
+      "type": "quality",
+      "verified": false,
+      "evidence": "Background/scholarly framing, not in any lookup output."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Data-exact divine-name distribution; theological conclusion explicitly left to the user. Watch the 'Paul's hymn' framing (a scholarly-majority label presented as fact, hard rule 14).",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The response shows the Hebrew text (WLC) of Isa 45:21-25 and the Rahlfs LXX text…",
+        "reason": "Partial-verse quotes satisfy it. If full verses are intended when the user asks to 'see what the texts actually say', require each verse's full text (or an explicit ellipsis)."
+      }
+    ],
+    "overall": "All pass; assertions 2-5 are well targeted at data-exact reporting."
+  }
+}

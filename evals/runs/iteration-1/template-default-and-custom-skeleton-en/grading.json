@@ -1,0 +1,70 @@
+{
+  "eval_id": 9,
+  "eval_name": "template-default-and-custom-skeleton-en",
+  "expectations": [
+    {
+      "text": "The first sermon file contains the default sections Introduction, Text, Big Idea, Point 1, Point 2, Point 3, Conclusion, Notes as H2 headings",
+      "passed": true,
+      "evidence": "with-me-in-the-dark-valley.en.md H2s: Introduction, Text, Big Idea, Point 1, Point 2, Point 3, Conclusion, Notes."
+    },
+    {
+      "text": "The second sermon file has template: custom in its frontmatter and a sections: list whose names and order match the example (Opener, The Word, The Anchor Point, Three Ropes, Response, or direct equivalents)",
+      "passed": true,
+      "evidence": "a-guarded-mind.en.md: 'template: custom', 'sections: Opener, The Word, The Anchor Point, Three Ropes, Response, Notes' (comma format per SKILL.md; TITLE mapped to the H1; Notes appended as the skill requires); H2s in that order."
+    },
+    {
+      "text": "The second sermon contains none of the example's sentences verbatim (e.g. the storm story sentence about the waves and the boat does not appear)",
+      "passed": true,
+      "evidence": "Grader grep for 'waves|bow of|going down|storm|father yelled' in both files: no match. Opener is a new 3 a.m. phone-list story."
+    },
+    {
+      "text": "Both sermon files pass check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "Both files — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_log_entries": 29,
+    "output_chars": 16572,
+    "transcript_chars": 20583,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets (one bullet may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "צַלְמָוֶת: Amos 5:8 deep darkness turned to morning; Job 38:17 paired with gates of death",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Tool log: `verse Job.38.17`, `verse Amos.5.8`, `search H6757`."
+    },
+    {
+      "claim": "φρουρέω is a garrison word (2 Cor 11:32; Josephus)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`usage φρουρέω` (ext 9) and `verse 2Cor.11.32` in log."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Note the custom opener is a fabricated first-person anecdote ('the thing my son said at dinner') written as the preacher's own experience — the user may not have a son; consider flagging invented personal stories. Second sermon's audience/specialization assumed and disclosed.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "No assertion checks relative section length (the skill says copy 'relative length'); e.g. Three Ropes should be one sentence of text + one of life per rope."
+      }
+    ],
+    "overall": "All pass; assertion 3 is a useful negative check."
+  }
+}

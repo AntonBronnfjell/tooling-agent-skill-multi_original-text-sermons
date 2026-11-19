@@ -1,0 +1,96 @@
+{
+  "eval_id": 7,
+  "eval_name": "dss-isa53-11-light-en",
+  "expectations": [
+    {
+      "text": "The transcript shows lookup.py `dss` and `lxx` were run for Isa.53.11",
+      "passed": true,
+      "evidence": "Tool log: `lookup.py --format text dss Isa.53.11` and `lxx Isa.53.11` (plus `verse Isa.53.11 --corpus dss --witness 1QIsaa|1Q8|4Q58`)."
+    },
+    {
+      "text": "The response shows the WLC/MT reading of Isa 53:11 and reports that it does not contain the word for light",
+      "passed": true,
+      "evidence": "[HEB Isa.53.11] WLC quoted; 'יִרְאֶה… In this text it has **no object**'; table row 'Masoretic text (WLC) | — (no object)'."
+    },
+    {
+      "text": "The response shows that 1QIsaᵃ (witness 1QIsaa) has אור in Isa 53:11",
+      "passed": true,
+      "evidence": "[DSS:1QIsaa Isa.53.11] 'מעמל נפשוה יראה אור וישבע…' — 'The Great Isaiah Scroll (1QIsaa) has אור, \"light\"'. Matches `dss Isa.53.11` exactly (grader re-ran)."
+    },
+    {
+      "text": "The response shows that the LXX (Rahlfs) has φῶς in Isa 53:11",
+      "passed": true,
+      "evidence": "[LXX Isa.53.11] '…δεῖξαι αὐτῷ φῶς…' — 'The Greek has φῶς, \"light\", too'."
+    },
+    {
+      "text": "The response labels 1QIsaᵃ and the LXX as readings that differ from the MT and does not state which one is the original text",
+      "passed": true,
+      "evidence": "Options (a) MT / (b) 1QIsaa+1Q8+4Q58+LXX; 'The data doesn't tell us how the difference arose, and I won't guess.' No originality claim. Note the soft lean: 'the older witnesses lean towards \"light\"' and 'two independent kinds of witness' (independence is not in the data)."
+    },
+    {
+      "text": "Any quoted Hebrew/Greek is copied from lookup.py output (a [DSS ...] tag uses the 1QIsaa witness)",
+      "passed": true,
+      "evidence": "Grader wrapped all six chat quote blocks in a scratch skeleton and ran check_sermon: no quote/tag errors (only missing-section structural errors). DSS tags name witnesses: [DSS:1QIsaa …], [DSS:1Q8 …], [DSS:4Q58 …]."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_log_entries": 12,
+    "output_chars": 0,
+    "transcript_chars": 9233,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets (one bullet may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "1Q8: 'After this the fragment is broken'",
+      "type": "factual",
+      "verified": false,
+      "evidence": "`dss Isa.53.11` shows 1Q8 continues: 'מעמל נפשו יראה אור יש עבדי לרם ועונתם הוא יסבול'. There is a gap, but the fragment resumes — and it reads עבדי 'my servant' with the MT."
+    },
+    {
+      "claim": "1QIsaa reads עבדו 'his servant' where MT has עַבְדִּי",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Correct, but the response omits that 1Q8 and 4Q58 both read עבדי with the MT — selective reporting that slightly favors the 1QIsaa side."
+    },
+    {
+      "claim": "'light' is in 'two independent kinds of witness'",
+      "type": "quality",
+      "verified": false,
+      "evidence": "Independence of the LXX's Hebrew source from the Qumran text is not shown by the data; hard rule 14."
+    },
+    {
+      "claim": "LXX infinitives depend on v.10 'καὶ βούλεται κύριος ἀφελεῖν'",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`verse Isa.53.10 --corpus lxx` ends with that phrase."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Passes, but the 'lean'/'independent' wording and the omitted עבדי agreement are the kind of soft tilt the project principle warns about (evidence, not verdict).",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The response labels 1QIsaᵃ and the LXX as readings that differ from the MT and does not state which one is the original text",
+        "reason": "Passes a response that says 'the older witnesses lean towards light' and calls the witnesses 'independent'. Tighten to: no weighting language (lean/favor/independent/more reliable) unless sourced to the data."
+      },
+      {
+        "reason": "No assertion checks that every scroll's extant text is reported accurately (1Q8 was described as broken after אור while the data shows more text agreeing with the MT)."
+      }
+    ],
+    "overall": "All assertions pass; the most important missing check is accurate, complete reporting of each DSS witness."
+  }
+}

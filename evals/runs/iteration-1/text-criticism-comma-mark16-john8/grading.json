@@ -1,0 +1,96 @@
+{
+  "eval_id": 4,
+  "eval_name": "text-criticism-comma-mark16-john8",
+  "expectations": [
+    {
+      "text": "For 1 John 5:7-8 the response names the witnesses that include or omit the extra words (e.g. TR vs SBL/NA/early editions per lookup.py variants output) and reports the extra clause as a late reading",
+      "passed": true,
+      "evidence": "Point 1: the Comma words 'appear in the TR only… tagged TR and labelled \"late\"… SBL, NA, WH and THGNT do not have them — and neither does the Byzantine text'. Grader re-ran `variants 1John.5.7`: #6-#22 all [TR] late."
+    },
+    {
+      "text": "For Mark 16:9-20 the response reports, as shown by lookup.py `verse`/`variants` output, which editions enclose the passage in [[ ]] (NA28, WH) and which print it (TR/Byz); it does not claim the passage is \"missing from\" an edition the data shows printing it; any \"late\" label is sourced to the data",
+      "passed": true,
+      "evidence": "Point 2: 'All editions in our data print verses 9–20, the TR and Byz included. But NA and WH enclose them in double brackets [[ ]]'; no 'missing from' claim. The 'later addition' gloss on [[ ]] is attributed to the editors and matches references/text-criticism.md. Grader re-ran `verse Mark.16.9 --witness …`: [[ in NA/WH/TR/Byz/THGNT, none in SBL — reported exactly so."
+    },
+    {
+      "text": "For John 7:53-8:11 the response reports, as shown by lookup.py `verse`/`variants` output, which editions enclose the passage in [[ ]] (NA28, WH) and which print it (TR/Byz); it does not claim the passage is \"missing from\" an edition the data shows printing it; any \"late\" label is sourced to the data",
+      "passed": true,
+      "evidence": "Point 3: 'printed in all editions… NA and WH open double brackets at 7:53 and close them at the end of 8:11… The TR and Byz print it too'. Grader confirmed [[ at John.7.53 and ]] at John.8.11 in the data."
+    },
+    {
+      "text": "The transcript shows lookup.py `variants` (or `verse`) was run covering each of the three passages; for John 7:53-8:11, which crosses a chapter boundary, split calls (John.7.53 and John.8.1-11) or per-verse calls count",
+      "passed": false,
+      "evidence": "Mark and 1 John are covered (`variants Mark.16.9-20`, `variants 1John.5.7`, `1John.5.8`). For John 7:53–8:11 the log shows only `verse/variants John.7.53`, `verse/variants John.8.11`, and `verse John.8.1|2|3|7|10` — no `variants John.8.1-11` and no call at all for 8.4, 8.5, 8.6, 8.8, 8.9. The passage is not covered. Consequences in the handout: 'THGNT has 8:1–10' is extrapolated from five verses, and the only in-story wording difference reported is 8:11, while the data (grader ran `variants John.8.1-11`, 207 non-unanimous tokens) shows large differences, e.g. SBL 8.9 'καὶ ὑπὸ τῆς συνειδήσεως ἐλεγχόμενοι' absent in THGNT, SBL 8.4 κατελήφθη vs THGNT κατείληπται."
+    },
+    {
+      "text": "Every witness cited in the handout is one that appears in the lookup.py output of that session",
+      "passed": true,
+      "evidence": "Witnesses cited: SBL, NA, NA28, NA27, WH, THGNT/Tyn, Treg, Byz, TR (+ versions KJV, YLT, BSB, WEB, RV1909 from `compare`). All appear in this session's lookup output; no codices named ('the data has none')."
+    },
+    {
+      "text": "Any Greek quotes in the file pass check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-three-passages-early-and-late.en.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []; includes [GRC:TR 1John.5.7] and [GRC:NA John.8.11] witness-tagged quotes."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.83
+  },
+  "execution_metrics": {
+    "tool_log_entries": 12,
+    "output_chars": 10761,
+    "transcript_chars": 13224,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets (one bullet may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "SBL, NA and WH print the shorter ending after Mark 16:8; TR and Byz lack it",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`variants Mark.16.8` #20-#53: [NA28+NA27+SBL+WH]."
+    },
+    {
+      "claim": "'In 8:11, NA, WH and TR read κατακρίνω; Byz reads κρίνω'",
+      "type": "factual",
+      "verified": true,
+      "evidence": "True but incomplete in the body: SBL also reads κρίνω (only stated in Notes)."
+    },
+    {
+      "claim": "[[ in TR/Byz/THGNT is an inherited marker, not those editions' judgment",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Sourced to references/text-criticism.md, not invented."
+    },
+    {
+      "claim": "'THGNT has 8:1–10'",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Grader confirmed 8.4-8.9 exist in THGNT, but the run never checked them — correct by luck, not by evidence."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Handout is evidence-first and never tells the class what to preach. The one gap is coverage of the pericope's interior, which is exactly what the chapter-boundary assertion was meant to catch.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The transcript shows lookup.py `variants` (or `verse`) was run covering each of the three passages…",
+        "reason": "Make the requirement explicit: 'variants John.8.1-11 (or every verse 8.1–8.11)'. As written, 'per-verse calls count' invites sampling a few verses."
+      },
+      {
+        "reason": "No assertion checks that wording differences inside the John pericope (8.4, 8.9) are reported; a handout can pass assertions 1-3 while missing the largest internal variants."
+      }
+    ],
+    "overall": "Five of six pass; the coverage failure is real and had a visible effect on the handout."
+  }
+}

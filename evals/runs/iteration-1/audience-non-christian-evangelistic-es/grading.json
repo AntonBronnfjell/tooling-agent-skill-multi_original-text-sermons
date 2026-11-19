@@ -1,0 +1,76 @@
+{
+  "eval_id": 8,
+  "eval_name": "audience-non-christian-evangelistic-es",
+  "expectations": [
+    {
+      "text": "The saved sermon has audience: non-christian (or equivalent) in its frontmatter and language: es",
+      "passed": true,
+      "evidence": "Frontmatter: 'audience: non-christian', 'language: es'."
+    },
+    {
+      "text": "Every insider term from this list that appears in the sermon prose is explained in the same sentence or replaced by a plain word on first use: iglesia, bautismo/bautizar, arrepentirse, evangelio, Cristo, gracia, pecado, salvación/salvo, santo, apóstol, espíritu santo, nacer de nuevo, vida eterna, justo/justificado, amén, aleluya, Señor, Mesías, cielo, infierno (terms from references/audiences.md)",
+      "passed": true,
+      "evidence": "Grader grepped the file for every listed term: only 'vida eterna' (prose line 90: 'que muchas Biblias traducen \"vida eterna\". Es una vida sin fin, la vida de la era que viene') and 'cielo' in its plain sense ('un rayo del cielo'). The plain word 'vida sin fin' is used first on the Natural line; evangelio/Cristo/salvación occur only in the Notes meta-line ('evitados en la traducción'). 'unigénito', 'Jesús de Nazaret', 'Nicodemo' explained. Explanation of 'vida eterna' is in the next sentence, not the same one — accepted because the plain replacement came first."
+    },
+    {
+      "text": "The sermon gives who/where/when context for the passage in one or two sentences before reading the text",
+      "passed": false,
+      "evidence": "Context before the text: 'Estas palabras están en el libro de Juan, uno de cuatro relatos antiguos sobre la vida de Jesús de Nazaret, un maestro judío del siglo primero. Juan lo escribió en griego… La escena: un maestro respetado, Nicodemo, va a ver a Jesús de noche'. Who (Jesus, Nicodemus, John) and when (1st century, at night) are given, but no where — the setting (Jerusalem) is never named — and it runs to five sentences, not one or two. Narrow, strictness-driven miss of audiences.md's who/where/when rule."
+    },
+    {
+      "text": "The sermon file passes check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-la-luz-vino.es.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    },
+    {
+      "text": "The closing is an invitation to consider, ask, read or trust, with no assumed agreement",
+      "passed": true,
+      "evidence": "Closing: 'mi invitación es sencilla… acércate a la luz. Lee este capítulo entero… Hazle tus preguntas… Y si llegas a ver que este hijo es quien dice ser, confía en él. Nadie te va a presionar'."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 1,
+    "total": 5,
+    "pass_rate": 0.8
+  },
+  "execution_metrics": {
+    "tool_log_entries": 19,
+    "output_chars": 10348,
+    "transcript_chars": 13576,
+    "note": "No metrics.json in run dir; tool_log_entries counts '## Tool log' bullets (one bullet may group several lookup.py calls)."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "Josephus uses μονογενής for Isaac though Abraham had Ishmael",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Tool log: `verse Ant.1.222 --corpus ext --witness Josephus`, `verse Gen.16.15`."
+    },
+    {
+      "claim": "πιστεύω 'aparece tres veces seguidas'",
+      "type": "factual",
+      "verified": true,
+      "evidence": "John.3.18: πιστεύων, πιστεύων, πεπίστευκεν."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Doctrinal lean to flag: Punto 2 'No es que Dios esté esperando para caer encima. Es que… uno ya se quedó en la oscuridad que eligió' — a self-chosen-judgment interpretation beyond what John 3:18-19 states; also 'El juicio no es un rayo del cielo'. Not a tradition term on a translation line, but a theological reading presented as the text's. μονογενής shown with both options in Notes.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The sermon gives who/where/when context for the passage in one or two sentences before reading the text",
+        "reason": "Ambiguous: graders may accept implied place ('de Nazaret', 'judío'). Spell out 'names the place of the scene' if that is intended, or drop 'where'."
+      }
+    ],
+    "overall": "4/5; the failure is narrow but legitimate against the reference rule."
+  }
+}
