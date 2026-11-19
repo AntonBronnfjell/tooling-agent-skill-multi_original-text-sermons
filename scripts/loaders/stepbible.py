@@ -18,7 +18,7 @@ GREEK_WITNESSES = OrderedDict([("SBL", "SBL"), ("NA", "NA28"), ("THGNT", "Tyn"),
 _ROW = re.compile(r"^([0-9A-Za-z]{3})\.(\d+)\.(\d+)(?:\[(\d+)\.(\d+)\])?[^#]*#(\d+)=(\S*)$")
 _HEADERS = {"eng (heb) ref & type", "word & type"}
 _TRAIL_PUNCT = re.compile(r"[,.;·:?!;·]+$")
-_DISPLACE = re.compile(r"[»«]\d+$")
+_DISPLACE = re.compile(r"(?:[»«][\d.]+)+$")
 _SPELL = re.compile(r"\s*\+?([^:;]+):\s*([^;]*?)\s*;")
 _book_cache = {}
 
@@ -75,6 +75,7 @@ def _verse_row(corpus, witness, ref, text, lang):
 # ---------------------------------------------------------------- Hebrew
 
 def _heb(s):
+    s = re.sub(r"\\ \\[ספ]\s*$", "", s)  # setumah/petuhah paragraph marker, not text
     s = s.replace("//", " ").replace("/", "").replace("\\", "")
     return norm.nfc(re.sub(r"\s+", " ", s).strip())
 
@@ -108,7 +109,7 @@ def _load_tahot(conn, sources_dir):
             tags = _cell(cells, cols, "expanded strong tags")
             lm = re.search(r"\{[HA]\w+=([^=}]+)=", tags)
             word_rows.append(("hebot", "WLC", ref, pos[ref], surf, norm.nfc(lm.group(1)) if lm else "",
-                              _cell(cells, cols, "root dstrong+instance"), _cell(cells, cols, "grammar"),
+                              re.sub(r"_[A-Za-z]+$", "", _cell(cells, cols, "root dstrong+instance")), _cell(cells, cols, "grammar"),
                               _cell(cells, cols, "translation"), typ, "", ""))
             ketiv = None
             if typ.startswith("Q"):

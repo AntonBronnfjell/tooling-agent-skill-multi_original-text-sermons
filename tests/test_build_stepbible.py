@@ -122,6 +122,11 @@ class FixtureBuild(unittest.TestCase):
         self.assertEqual(w["strongs"], "G3056")
         self.assertEqual(w["lemma"], "λόγος")
 
+    def test_fixture_hebrew_strongs_join_lexicon(self):
+        n = self.q("select count(*) c from words w where corpus='hebot' and strongs!='' and not exists "
+                   "(select 1 from lexicon l where l.strongs=w.strongs)")["c"]
+        self.assertEqual(n, 0)
+
     def test_lexicon_has_ekklesia(self):
         self.assertIsNotNone(self.q("select 1 from lexicon where lemma='ἐκκλησία'"))
         self.assertIsNotNone(self.q("select 1 from lexicon where lang='heb'"))
@@ -161,6 +166,33 @@ class SyntheticEdgeCases(unittest.TestCase):
         self.assertEqual(len(rows), 5)
         self.assertEqual([r["editions"] for r in rows], ["L", "X", "R", "L", "L"])
         self.assertEqual(rows[2]["surface"], "הַשָּׂדֶה")
+
+    def test_paragraph_markers_dropped(self):
+        self.tahot([tahot_row("Gen.4.8#01=L", "אָב"),
+                    tahot_row("Gen.4.8#02=L", "אִם\\׃\\ \\ס")])
+        conn = build(self.src, Path(self.tmp) / "t.db")
+        t = conn.execute("select text, match_key from verses where witness='WLC'").fetchone()
+        self.assertTrue(t["text"].endswith("׃"))
+        self.assertFalse(t["match_key"].endswith(" ס"))
+        for r in conn.execute("select surface from words"):
+            self.assertNotIn(" ", r["surface"])
+
+    def test_hebrew_strongs_joins_lexicon_without_instance_suffix(self):
+        self.tahot([tahot_row("Gen.4.8#01=L", "אָב", root="H0001A_B")])
+        conn = build(self.src, Path(self.tmp) / "t.db")
+        self.assertEqual(conn.execute("select strongs from words").fetchone()[0], "H0001A")
+
+    def test_greek_compound_displacement_tokens(self):
+        hdr = ("Word & Type\tGreek\tEnglish translation\tdStrongs = Grammar\tDictionary form =  Gloss\t"
+               "editions\tMeaning variants\tSpelling variants\tSpanish translation\tSub-meaning\tConjoin word\t"
+               "sStrong+Instance\tAlt Strongs")
+        rows = ["\t".join(["Rom.16.25#01=K", "Τῷ (Tō)", "to", "G3588=T-DSM", "ὁ=the", ed, "", "", "", "", "#01", "G3588", "", "", "", "", ""])
+                for ed in ("Byz«14.24",)]
+        rows.append("\t".join(["Rom.16.25#02=K", "δὲ (de)", "now", "G1161=CONJ", "δέ=but", "Tyn»1»1+TR", "", "", "", "", "#02", "G1161", "", "", "", "", ""]))
+        write_xz(self.src / "stepbible" / "TAGNT_Act-Rev.txt.xz", "\ufeffpre\n\n" + hdr + "\n" + "\n".join(rows) + "\n")
+        conn = build(self.src, Path(self.tmp) / "t.db")
+        self.assertEqual(conn.execute("select text from verses where witness='Byz'").fetchone()[0], "Τῷ")
+        self.assertEqual(conn.execute("select text from verses where witness='THGNT'").fetchone()[0], "δὲ")
 
     def test_ketiv_unparseable_is_skipped(self):
         self.tahot([tahot_row("Gen.4.8#01=Q(K)", "אָב", kmean="B= weird (x) ¦ K= y", kspell="L= x"),
