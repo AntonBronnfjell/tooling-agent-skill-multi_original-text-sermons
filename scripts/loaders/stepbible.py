@@ -184,6 +184,8 @@ def _load_tagnt(conn, sources_dir):
                               _cell(cells, cols, "english translation"), editions, "", ""))
             if not all_tokens <= present:
                 variant_rows.append((ref, p, surf, editions))
+            # ponytail: displacement word order (TR»1, Byz«3) is ignored; words stay in source order.
+            # ponytail: main-word trailing punctuation is re-attached to substitutions lacking it.
             tail = _TRAIL_PUNCT.search(surf)
             for wit, tok in GREEK_WITNESSES.items():
                 if tok in sub_by_token:
