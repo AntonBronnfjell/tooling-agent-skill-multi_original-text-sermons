@@ -4,9 +4,14 @@ avoid tradition vocabulary, template sections and frontmatter must be present.
 
 Usage: check_sermon.py <file>... [--db PATH] [--quotes-only [--lang xx]]
 --quotes-only: for chat answers (word studies, single-verse questions) — checks only quote tags, quoted
-text, Literal:/Natural: lines and tradition vocabulary (language from --lang, default en); no
-frontmatter, sections, Notes or length checks.
-Output: `ERROR <line>: <msg>` / `WARN <line>: <msg>` (with a `<path>:` header when several files).
+text, inline-tagged text, untagged original-language runs, Literal:/Natural: lines and tradition vocabulary
+(language from --lang, default en); any frontmatter is ignored (read as text); no sections, Notes or length
+checks; an answer with no tagged quote at all is an ERROR.
+Original-language text anywhere in the body (Notes included): a run of 2+ Greek/Hebrew words must be a
+tagged quote block or carry an inline tag right before it, `[CORPUS[:WITNESS] Ref] <original text>`, which
+is verified like a quote; single words (lemmas) are free; a run already quoted verbatim above is exempt.
+Output: `ERROR <line>: <msg>` / `WARN <line>: <msg>` (with a `<path>:` header when several files), then
+`OK <path>` for each file without errors.
 Exit: 1 if any ERROR, 2 if bible.db is missing, else 0.
 """
 import argparse
@@ -33,8 +38,11 @@ H2_RE = re.compile(r"^##(?!#)\s*(.*?)\s*$")
 OSIS_IN_TEXT = re.compile(r"(?<![\w.])((?:[1-3])?[A-Za-z]+\.\d+\.\d+(?:\s*[-–]\s*\d+)?)")
 HUMAN_IN_TEXT = re.compile(r"(?<![\w.])((?:[1-3]\s?)?[^\W\d_]+\.?)\s+(\d+):(\d+)(?:\s*[-–]\s*(\d+))?")
 HAS_SCRIPT = re.compile("[\u0370-\u03ff\u1f00-\u1fff\u0590-\u05ff]")
-SCRIPT_WORD = "[\u0300-\u036f\u0370-\u03ff\u1f00-\u1fff\u0590-\u05ff]+"
-PROSE_RUN = re.compile(rf"{SCRIPT_WORD}(?:[\s,.;\u00b7:\u05c3]+{SCRIPT_WORD}){{2,}}")
+SCRIPT_WORD = "[\u0300-\u036f\u0370-\u03ff\u1f00-\u1fff\u0590-\u05ff]+[\u2019\u02bc']?"
+SCRIPT_RUN = re.compile(rf"{SCRIPT_WORD}(?:[\s,.;\u00b7:\u05c3\u2026]+{SCRIPT_WORD})*")
+SCRIPT_TOKEN = re.compile(SCRIPT_WORD)
+INLINE_TAG = re.compile(r"\[(" + "|".join(CORPUS) + r")(?::([^\s\]]+))?\s+([^\]]+?)\s*\]\s*$", re.IGNORECASE)
+EDITOR_NOTE = re.compile(r"bracket|corchete|editor", re.IGNORECASE)
 TEMPLATE_NAME = re.compile(r"^[a-z0-9-]+$")
 MAX_RANGE = 50
 MAX_ELLIPSES = 4
@@ -180,13 +188,14 @@ def check_quote(conn, corpus, witness, hay_refs, original, lang):
 # ---------------------------------------------------------------- parsing
 
 def split_frontmatter(lines):
-    """-> (index of first body line, has_frontmatter)."""
+    """-> (index of first body line, has_frontmatter, terminated). An unterminated block is reported by the
+    caller; its body is read from line 2 on so that nothing after the opening `---` escapes the checks."""
     if not lines or lines[0].strip() != "---":
-        return 0, False
+        return 0, False, True
     for i in range(1, len(lines)):
         if lines[i].strip() == "---":
-            return i + 1, True
-    return len(lines), True
+            return i + 1, True, True
+    return 1, True, False
 
 
 def parse_quotes(lines, start):
@@ -279,28 +288,78 @@ def tradition_regex(*langs):
     def word(w):  # straight and curly apostrophes are interchangeable
         return "['\u2019]".join(re.escape(x) for x in re.split("['\u2019]", w))
 
-    alts = [r"\s+".join(word(w) for w in t.split()) for t in terms]
+    def term(t):  # `stem*` rows match every word starting with the stem
+        if t.endswith("*"):
+            return word(t[:-1]) + r"\w*"
+        return r"\s+".join(word(w) for w in t.split())
+
+    alts = [term(t) for t in terms]
     return re.compile(r"(?<!\w)(?:" + "|".join(alts) + r")(?!\w)", re.IGNORECASE)
 
 
 # ---------------------------------------------------------------- main check
 
 def quoted_already(run, quotes, line):
-    """True if `run` (prose original-language words) appears verbatim in a quote block above `line`."""
+    """True if `run` (prose original-language words) appears verbatim in a verified quote above `line`."""
     lg = "heb" if re.search("[\u0590-\u05ff]", run) else "grc"
     k = f" {match_key(run, lg)} "
     return any(q["line"] < line and k in f" {match_key(nfc(q['original']), lg)} " for q in quotes)
+
+
+def ext_bracketed(conn, witness, refs, original):
+    """True if the quoted words (matched in order, segment by segment) include an editor-bracketed EXT word."""
+    words = []
+    for ref in refs:
+        words += conn.execute("SELECT surface, editions FROM words WHERE corpus='ext' AND witness=? AND ref=? "
+                              "ORDER BY pos", (witness, ref)).fetchall()
+    keys = [match_key(w[0], "grc") for w in words]
+    i, hit = 0, False
+    for seg in re.split(r"…|\.\.\.", nfc(original)):
+        toks = match_key(seg, "grc").split()
+        if not toks:
+            continue
+        for j in range(i, len(keys) - len(toks) + 1):
+            if keys[j:j + len(toks)] == toks:
+                hit = hit or any(words[k][1] == "bracketed" for k in range(j, j + len(toks)))
+                i = j + len(toks)
+                break
+    return hit
+
+
+def inline_quotes(lines, start, block_quotes):
+    """Original-language runs outside blockquotes -> (inline quotes, problems).
+
+    A run preceded on its line by `[CORPUS[:WITNESS] Ref]` is an inline quote (verified like a block quote);
+    an untagged run of 2+ words is a problem unless it appears verbatim in a quote above it."""
+    out, problems = [], []
+    for i in range(start, len(lines)):
+        if lines[i].lstrip().startswith(">"):
+            continue
+        text = nfc(lines[i])
+        for m in SCRIPT_RUN.finditer(text):
+            t = INLINE_TAG.search(text[:m.start()])
+            if t:
+                out.append({"line": i + 1, "tag": t.groups(), "original": m.group(0), "labels": None})
+            elif len(SCRIPT_TOKEN.findall(m.group(0))) >= 2 and not quoted_already(m.group(0), block_quotes + out, i + 1):
+                problems.append((i + 1, "untagged original-language text: tag it inline "
+                                        "`[CORPUS[:WITNESS] Ref] <original>` right before the words, or quote it"))
+    return out, problems
 
 
 def check(path, conn, quotes_only=False, lang=None):
     path = Path(path)
     lines = path.read_text(encoding="utf-8").splitlines()
     out = []
-    body_start, has_fm = split_frontmatter(lines)
-    fm = references.frontmatter(path) if has_fm else {}
-    fm_lang_given = bool(lang or fm.get("language"))
-    if quotes_only:  # no --lang (and no frontmatter language): scan with both the es and en lists, no WARN
-        fm = {"language": lang or fm.get("language") or "en"}
+    if quotes_only:  # a chat answer: any `---` block is plain text; no --lang: scan with the es and en lists
+        body_start, has_fm, terminated = 0, False, True
+        fm_lang_given = bool(lang)
+        fm = {"language": lang or "en"}
+    else:
+        body_start, has_fm, terminated = split_frontmatter(lines)
+        fm = references.frontmatter(path) if has_fm else {}
+        fm_lang_given = bool(lang or fm.get("language"))
+        if not terminated:
+            out.append(Finding("ERROR", 1, "unterminated frontmatter: close it with a `---` line"))
     for k in () if quotes_only else REQUIRED_KEYS:
         if not fm.get(k):
             out.append(Finding("ERROR", 1, f"missing frontmatter key: {k}"))
@@ -356,10 +415,12 @@ def check(path, conn, quotes_only=False, lang=None):
     trad = tradition_regex(*trad_langs)
     trad_src = "" if trad_langs == (lang,) else " (es/en list)"
 
-    # quotes
+    # quotes: tagged blockquotes, then inline-tagged runs and untagged runs anywhere in the body
     quotes, problems = parse_quotes(lines, body_start)
-    out += [Finding("ERROR", ln, msg) for ln, msg in problems]
-    for q in quotes:
+    inline, run_problems = inline_quotes(lines, body_start, quotes)
+    out += [Finding("ERROR", ln, msg) for ln, msg in problems + run_problems]
+    editor_text = "\n".join(lines if quotes_only else notes_lines)
+    for q in quotes + inline:
         tag, wit, ref_text = q["tag"]
         corpus = CORPUS.get(tag.upper())
         if corpus is None:
@@ -382,12 +443,22 @@ def check(path, conn, quotes_only=False, lang=None):
                         if msg:
                             out.append(Finding("ERROR", q["line"], msg))
                         out += [Finding("WARN", q["line"], w) for w in warns]
+                        if corpus == "ext" and not msg and ext_bracketed(conn, canon, hay_refs, q["original"]):
+                            if EDITOR_NOTE.search(editor_text):
+                                out.append(Finding("WARN", q["line"], "EXT quote includes editor-bracketed words "
+                                                   "(the edition marks them as doubtful); keep that visible to the hearer"))
+                            else:
+                                out.append(Finding("ERROR", q["line"], "EXT quote includes editor-bracketed words "
+                                                   "(the edition marks them as doubtful): say so in Notes "
+                                                   "(bracket / corchetes / editor)"))
                         if corpus != "ext" and not quotes_only:
                             hit = (set(hay_refs) | named) & contested
                             miss = sorted(hit - notes_verses)
                             if miss:
                                 out.append(Finding("WARN", q["line"],
                                                    f"contested reading {', '.join(miss)} quoted without a mention in Notes"))
+        if q["labels"] is None:  # inline quote: no Literal:/Natural: lines
+            continue
         for label in ("literal", "natural"):
             if label not in q["labels"]:
                 out.append(Finding("ERROR", q["line"], f"missing {label.capitalize()}: line after quote"))
@@ -397,12 +468,9 @@ def check(path, conn, quotes_only=False, lang=None):
                 for m in (trad.finditer(nfc(text)) if trad else ()):
                     out.append(Finding("ERROR", ln, f"tradition term {m.group(0)!r}{trad_src} on {label.capitalize()}: line; use a plain rendering (discuss the term in prose or Notes)"))
 
-    # runs of original-language words in prose (outside any blockquote) should be tagged quotes
-    for i in range(body_start, len(lines)):
-        if lines[i].lstrip().startswith(">") or (notes_range and notes_range[0] <= i + 1 <= notes_range[1]):
-            continue  # quote blocks are verified; Notes legitimately cite variant phrases
-        if any(not quoted_already(m.group(0), quotes, i + 1) for m in PROSE_RUN.finditer(nfc(lines[i]))):
-            out.append(Finding("WARN", i + 1, "3+ original-language words in prose: put the phrase in a tagged quote block so it is verified"))
+    if quotes_only and not quotes and not inline:
+        out.append(Finding("ERROR", 1, "no tagged quotes found: --quotes-only checks the tagged quotes of a chat "
+                                       "answer (`> [CORPUS Ref] original` or inline `[CORPUS Ref] original`)"))
 
     if quotes_only:
         return sorted(out, key=lambda f: (f.line, f.level != "ERROR"))
@@ -451,11 +519,14 @@ def main(argv=None):
             print(f"ERROR 0: cannot read {f}: {e}")
             bad = True
             continue
-        if len(a.files) > 1:
+        if findings and len(a.files) > 1:
             print(f"{f}:")
         for x in findings:
             print(f"{x.level} {x.line}: {x.msg}")
-        bad = bad or any(x.level == "ERROR" for x in findings)
+        errs = any(x.level == "ERROR" for x in findings)
+        if not errs:
+            print(f"OK {f}")
+        bad = bad or errs
     return 1 if bad else 0
 
 

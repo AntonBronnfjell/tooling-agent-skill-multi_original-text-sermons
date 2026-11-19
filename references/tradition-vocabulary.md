@@ -4,14 +4,14 @@ Later church words that the Hebrew/Aramaic/Greek text never literally says. **On
 
 Rules for this table:
 
-- `term` is the only machine-read column. One word form per row (matching is whole-word, so inflections need their own rows).
+- `term` is the only machine-read column. One word form per row (matching is whole-word, so inflections need their own rows), or a stem ending in `*`, which matches every word that starts with it (`bautiz*` = bautizo, bautizad, bautizarlos …). Use a stem only when every word it can match is the tradition term — never a stem that also starts ordinary words.
 - A term belongs here only if its plain rendering is defensible from the original word. Capitalization-only issues (*Holy Spirit* vs *holy spirit*, *Espíritu Santo* vs *espíritu santo*, *Hijo*, *Verbo*-as-title) cannot be matched case-insensitively and live in `fidelity-rules.md` instead.
 - Words that are ordinary plain renderings in the target language stay out even if churches also use them (es *santo* = "holy", *pastor* = "shepherd", *Pascua* = Passover in Spanish), *gentiles* = also the plural of *gentil* "kind", *comforter/consolador* = plain in the OT, e.g. Eccl.4.1, Lam.1.16). Standard lexical equivalents stay out too: *repent/arrepentirse* is the ordinary rendering of μετανοέω — show its range from usage when it matters (`fidelity-rules.md` §2), don't ban it.
 - Counts and LXX notes below come from `lookup.py word`/`usage` output; LXX figures are same-verse co-occurrence, not alignment.
 
 | lang | term | plain rendering | note |
 |---|---|---|---|
-| en | church | assembly, gathering | ἐκκλησία; NT 117, LXX 77 (co-occurs with קָהָל 66×); also a civic assembly (Acts.19.32) |
+| en | church | assembly, gathering | ἐκκλησία; NT 114 (SBL; TR 116), LXX 77 (co-occurs with קָהָל 66×); also a civic assembly (Acts.19.32) |
 | en | churches | assemblies | plural of the above |
 | en | baptize | immerse, dip, wash — say which the context shows | βαπτίζω; LXX 2Kgs.5.14 Naaman in the Jordan; Luke.11.38 and Mark.7.4 of washing before meals; Josephus of sinking ships. Don't assert a mode the verse doesn't show |
 | en | baptized | immersed, dipped, washed | inflection |
@@ -23,6 +23,9 @@ Rules for this table:
 | en | baptism | immersion, washing | βάπτισμα; related βαπτισμός "washing" (Mark.7.4 βαπτισμοὺς ποτηρίων, Heb.6.2) |
 | en | baptisms | immersions, washings | Heb.6.2 βαπτισμῶν (βαπτισμός) |
 | en | baptist | immerser, washer | ὁ βαπτιστής (John) |
+| en | baptiz* | immerse, wash (any form) | stem: every baptiz- word (baptizing, baptizeth …) |
+| en | baptis* | immerse, immersion, wash (any form) | stem: baptism, baptismal, baptist, baptise … |
+| en | evangeli* | good news, announce good news | stem: evangelize, evangelism, evangelical … (εὐαγγελ-) |
 | en | holy ghost | holy spirit (lower case), holy breath | πνεῦμα ἅγιον / רוּחַ; capitals: see fidelity-rules.md |
 | en | godhead | deity, divine nature | KJV for θεότης (Col.2.9, NT 1×) and related words |
 | en | trinity | — (no word in the text) | describe what the verse itself says |
@@ -59,7 +62,7 @@ Rules for this table:
 | en | incarnation | — | describe the verse's words (e.g. σὰρξ ἐγένετο "became flesh") |
 | en | original sin | — | no such phrase |
 | en | purgatory | — | no such word |
-| es | iglesia | asamblea, congregación reunida | ἐκκλησία; NT 117, LXX 77 (co-ocurre con קָהָל 66×) |
+| es | iglesia | asamblea, congregación reunida | ἐκκλησία; NT 114 (SBL; TR 116), LXX 77 (co-ocurre con קָהָל 66×) |
 | es | iglesias | asambleas | plural |
 | es | bautizar | sumergir, lavar — decir cuál muestra el contexto | βαπτίζω; LXX 2Kgs.5.14 Naamán en el Jordán; Luke.11.38 y Mark.7.4 de lavarse antes de comer |
 | es | bautizado | sumergido, lavado | inflexión |
@@ -83,6 +86,12 @@ Rules for this table:
 | es | bautismo | inmersión, lavamiento | βάπτισμα |
 | es | bautismos | inmersiones, lavamientos | plural |
 | es | bautista | el que sumergía/lavaba | ὁ βαπτιστής |
+| es | bautiz* | sumergir, lavar (cualquier forma) | raíz: bautizo, bautizad, bautizarlos … |
+| es | bautíz* | sumergir, lavar | raíz con tilde: bautízate, bautízalos |
+| es | bautic* | sumergir, lavar | raíz: bautice, bauticen, bautícese (sin tilde) |
+| es | bautíc* | sumergir, lavar | raíz con tilde: bautícense |
+| es | bautis* | inmersión, lavamiento | raíz: bautismo, bautismal, bautista |
+| es | evangeli* | buena noticia, anunciar la buena noticia | raíz: evangelio, evangelizar, evangelista … (εὐαγγελ-) |
 | es | trinidad | — (no hay palabra en el texto) | describir lo que dice el versículo |
 | es | trino | — | igual |
 | es | sacramento | — | latín *sacramentum*; el griego cercano suele ser μυστήριον |

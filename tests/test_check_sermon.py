@@ -236,9 +236,9 @@ class Hardening(Base):
         self.assertTrue(any("one-word" in f.msg for f in fs if f.level == "WARN"))
         self.assertTrue(any("segments" in f.msg for f in fs if f.level == "WARN"))
 
-    def test_prose_greek_run_warns(self):
+    def test_prose_greek_run_errors(self):
         t = fm(template="custom", sections="Text, Notes") + "## Text\n\nκαὶ θεὸς ἦν ὁ λόγος here\n\n## Notes\n\nx\n"
-        self.assertTrue(any("original-language words in prose" in f.msg for f in self.run_text(t) if f.level == "WARN"))
+        self.assertTrue(any("untagged original-language text" in f.msg for f in self.run_text(t) if f.level == "ERROR"))
         t = fm(template="custom", sections="Text, Notes") + "## Text\n\nthe word λόγος and ἦν only\n\n## Notes\n\nx\n"
         self.assertFalse(any("original-language words" in f.msg for f in self.run_text(t)))
 
@@ -378,7 +378,7 @@ class Rulings(Base):
         self.assertTrue(any("tradition term" in m for m in self.errs(mk("el Apóstol y la Iglesia"))))
         self.assertTrue(any("tradition term" in m for m in self.errs(mk("pecado original"))))
         # accent-bearing neighbours are letters: no match inside a longer word
-        self.assertFalse(any("tradition term" in m for m in self.errs(mk("bautizándolosmente"))))
+        self.assertFalse(any("tradition term" in m for m in self.errs(mk("iglesiásmente"))))  # exact-form row
         # English term is not enforced on a Spanish sermon
         self.assertFalse(any("tradition term" in m for m in self.errs(mk("church"))))
 
@@ -437,19 +437,103 @@ class Iteration1(Base):
         env = {**os.environ, "OTS_DB": self.dbfile}
         r = subprocess.run([sys.executable, str(CHECK), "--quotes-only", "--lang", "es", str(p)],
                            capture_output=True, text=True, env=env)
-        self.assertEqual((r.returncode, r.stdout), (0, ""))
+        self.assertEqual((r.returncode, r.stdout), (0, f"OK {p}\n"))
 
     def test_prose_run_already_quoted_is_exempt(self):
         t = fm(template="custom", sections="Text, Notes") + "## Text\n\n" + J11 + "\nSo καὶ θεὸς ἦν, says John.\n\n## Notes\n\nx\n"
-        self.assertFalse(any("original-language words in prose" in f.msg for f in self.run_text(t)))
+        self.assertFalse(any("untagged original-language" in f.msg for f in self.run_text(t)))
         before = fm(template="custom", sections="Text, Notes") + "## Text\n\nSo καὶ θεὸς ἦν, says John.\n\n" + J11 + "\n## Notes\n\nx\n"
-        self.assertTrue(any("original-language words in prose" in f.msg for f in self.run_text(before)))
+        self.assertTrue(any("untagged original-language" in f.msg for f in self.run_text(before)))
         other = fm(template="custom", sections="Text, Notes") + "## Text\n\n" + J11 + "\nSo ὁ λόγος σὰρξ ἐγένετο.\n\n## Notes\n\nx\n"
-        self.assertTrue(any("original-language words in prose" in f.msg for f in self.run_text(other)))
+        self.assertTrue(any("untagged original-language" in f.msg for f in self.run_text(other)))
 
     def test_multi_passage_frontmatter(self):
         fs = self.run_text(fm(passage="John.7.53; John.8.1-11; Mark.16.9-20") + body())
         self.assertFalse([f for f in fs if f.level == "ERROR"], fs)
+
+
+PROBES = dict(
+    notes_untagged="- John.1.1 contested. TR adds: ἐν τῷ οὐρανῷ ὁ πατὴρ ὁ λόγος",
+)
+
+
+class FinalReview(Base):
+    """Whole-branch review: untagged text anywhere in the body, inline tags, fail-closed modes, EXT brackets."""
+
+    def doc(self, notes="- John.1.1 options.", prose="prose", quote=J11):
+        return fm() + body(notes=notes, prose=prose, quote=quote)
+
+    def errs(self, text, quotes_only=False):
+        p = Path(self.tmp) / "fr.md"
+        p.write_text(text, encoding="utf-8")
+        return [f.msg for f in check(p, self.conn, quotes_only=quotes_only) if f.level == "ERROR"]
+
+    def test_untagged_run_in_notes_errors(self):
+        e = self.errs(self.doc(notes=PROBES["notes_untagged"]))
+        self.assertTrue(any("untagged original-language text" in m for m in e), e)
+
+    def test_two_word_run_in_prose_errors(self):
+        e = self.errs(self.doc(prose="The text says θεὸς ἀγαθός here."))
+        self.assertTrue(any("untagged original-language text" in m for m in e), e)
+
+    def test_single_words_allowed(self):
+        self.assertEqual(self.errs(self.doc(prose="The lemma λόγος, then θεός.", notes="- John.1.1: λόγος / θεός")), [])
+
+    def test_inline_tag_verified(self):
+        ok = self.doc(notes="- John.1.1 options; [GRC John.1.1] καὶ θεὸς ἦν ὁ λόγος is the clause.")
+        self.assertEqual(self.errs(ok), [])
+        bad = self.doc(notes="- John.1.1 options; [GRC John.1.1] καὶ θεὸς ἦν ὁ λόγος ἀγαθός here.")
+        self.assertTrue(any("not found" in m for m in self.errs(bad)))
+        self.assertTrue(any("not found" in m for m in self.errs(self.doc(prose="- [GRC John.1.1] καὶ θεὸς ἦν ὁ λόγος ἀγαθός ἐστιν"))))
+        unknown = self.doc(notes="- John.1.1 [FOO John.1.1] σὰρξ ἐγένετο here")
+        self.assertTrue(any("untagged original-language text" in m for m in self.errs(unknown)))
+
+    def test_inline_tag_ellipsis(self):
+        ok = self.doc(notes="- John.1.1: [GRC John.1.1] ἐν ἀρχῇ … καὶ θεὸς ἦν ὁ λόγος")
+        self.assertEqual(self.errs(ok), [])
+
+    def test_quotes_only_ignores_frontmatter_lookalike(self):
+        e = self.errs("---\nnote: x\n\n> [GRC John.1.1] καὶ θεὸς ἦν ὁ λόγος ἀγαθός\n> Literal: a\n> Natural: b\n",
+                      quotes_only=True)
+        self.assertTrue(any("not found" in m for m in e), e)
+
+    def test_quotes_only_without_quotes_errors(self):
+        self.assertTrue(any("no tagged quotes" in m for m in self.errs("", quotes_only=True)))
+        self.assertTrue(any("no tagged quotes" in m for m in self.errs("just prose", quotes_only=True)))
+        self.assertEqual(self.errs("prose [GRC John.1.1] καὶ θεὸς ἦν", quotes_only=True), [])
+
+    def test_unterminated_frontmatter_errors(self):
+        t = "---\npassage: John.1.1\nlanguage: en\ntemplate: custom\nsections: Text, Notes\n\n## Text\n" + J11 + "## Notes\n"
+        self.assertTrue(any("unterminated frontmatter" in m for m in self.errs(t)))
+
+    def ext_quote(self):
+        t = self.conn.execute("select text from verses where corpus='ext' and witness='Josephus' and ref='Ant.18.63'").fetchone()[0]
+        return "> [EXT:Josephus Ant.18.63] " + " ".join(t.split()[:4]) + "\n> Literal: a\n> Natural: b\n"
+
+    def test_ext_bracketed_quote_needs_note(self):
+        e = self.errs(self.doc(quote=self.ext_quote()))
+        self.assertTrue(any("editor-bracketed" in m for m in e), e)
+        p = Path(self.tmp) / "fr2.md"
+        p.write_text(self.doc(quote=self.ext_quote(), notes="- Ant.18.63: the editor brackets this passage."), encoding="utf-8")
+        fs = check(p, self.conn)
+        self.assertFalse([f for f in fs if "editor-bracketed" in f.msg and f.level == "ERROR"], fs)
+        self.assertTrue([f for f in fs if "editor-bracketed" in f.msg and f.level == "WARN"], fs)
+
+    def test_baptiz_stems(self):
+        q = "> [GRC John.1.1] καὶ θεὸς\n> Literal: a\n> Natural: {}\n"
+        cases = [("es", "id y bautizad"), ("es", "bautizarlos"), ("es", "yo bautizo"), ("es", "que se bautícen"),
+                 ("en", "they were baptizing them"), ("en", "a baptismal pool"), ("es", "evangelizar")]
+        for lang, nat in cases:
+            e = [f.msg for f in check(self._qo(q.format(nat)), self.conn, quotes_only=True, lang=lang) if f.level == "ERROR"]
+            self.assertTrue(any("tradition term" in m for m in e), (nat, e))
+        clean = [f for f in check(self._qo(q.format("sumergir, lavar; the bath")), self.conn, quotes_only=True, lang="es")
+                 if f.level == "ERROR"]
+        self.assertEqual(clean, [])
+
+    def _qo(self, text):
+        p = Path(self.tmp) / "qo.md"
+        p.write_text(text, encoding="utf-8")
+        return p
 
 
 if __name__ == "__main__":
