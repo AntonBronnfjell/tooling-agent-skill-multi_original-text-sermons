@@ -9,13 +9,13 @@ date: 2026-11-18
 
 # Amado, no condenado — Juan 3:16–17
 
-## Introduction
+## Introducción
 
 Casi todos hemos visto Juan 3:16. Está en camisetas, en carteles de estadio, en pintas al borde de la carretera. Precisamente por eso corremos el riesgo de no oírlo. Una frase muy repetida se gasta como una moneda vieja: todavía sirve, pero ya no vemos el sello.
 
 Hoy quiero hacer algo sencillo: limpiar la moneda. Vamos a leer estas dos frases en el griego en que se escribieron, palabra por palabra, y luego en un español natural. Y le vamos a hacer al texto una pregunta que muchos se hacen en silencio: cuando Dios mira al mundo —cuando me mira a mí—, ¿qué tiene en mente? ¿Amor o juicio?
 
-## Text
+## Texto
 
 Jesús habla de noche con Nicodemo, un maestro respetado de Israel que vino con preguntas (Juan 3:1–2). En medio de esa conversación aparecen estas palabras:
 
@@ -37,13 +37,13 @@ Jesús habla de noche con Nicodemo, un maestro respetado de Israel que vino con 
 
 Fíjense: el texto griego dice "el hijo", sin "su". Muchas Biblias escriben "su Hijo", con mayúscula. Algunos manuscritos tardíos sí añaden "su"; las ediciones basadas en los manuscritos más antiguos no. El sentido no cambia, pero es bueno saber qué dice el texto y qué añadimos nosotros.
 
-## Big Idea
+## Idea central
 
 Dios mira al mundo con un amor que da, no con un juicio que destruye: entregó al hijo para que el mundo sea rescatado, y esa vida la recibe todo el que confía en él.
 
 Tres verbos del texto llevan esta idea: "amó", "dio" y "envió". Y una negación la protege: "no para juzgar".
 
-## Point 1
+## Punto 1
 
 **Un amor que se ve en lo que da.**
 
@@ -65,7 +65,7 @@ Y el historiador judío Josefo, que escribió en el mismo siglo que Juan, la usa
 
 Pero Abraham también había tenido a Ismael (Génesis 16:15). Para Josefo, entonces, la palabra no puede querer decir "el único que Abraham engendró"; en la misma frase dice que Isaac le había nacido κατὰ δωρεὰν … τοῦ θεοῦ, "como regalo de Dios". Esa es la evidencia de uso que muestran nuestros datos, y por eso traduzco "el único". "Unigénito" descansa en otra lectura de la palabra, y ustedes la encontrarán en muchas Biblias. Lo que ninguna de las dos lecturas cambia es el verbo: Dios dio al hijo.
 
-## Point 2
+## Punto 2
 
 **Un amor que se recibe confiando.**
 
@@ -77,7 +77,7 @@ Y fíjense en la palabra "todo". No hay letra pequeña: πᾶς, todo el que con
 
 ¿Y qué recibe? ζωὴν αἰώνιον. Solemos traducir "vida eterna". Otra traducción posible es "vida de la era": una traducción inglesa antigua dice "vida que dura por la era". En la traducción griega del Antiguo Testamento, αἰώνιος aparece sobre todo en versículos donde el hebreo tiene עוֹלָם, palabra que nuestra herramienta glosa "para siempre, duradero". Las dos traducciones están en circulación; aquí dejo "eterna" y anoto la otra.
 
-## Point 3
+## Punto 3
 
 **Un amor que vino a rescatar, no a condenar.**
 
@@ -87,7 +87,7 @@ El propósito es este: "para que el mundo sea salvado por medio de él". Salvar,
 
 Muchos viven con la idea de un Dios que está esperando el error para caer encima. Este texto dice otra cosa. El hijo no vino con el mazo del juez, sino con la cuerda del rescate.
 
-## Conclusion
+## Conclusión
 
 Volvamos a la pregunta: cuando Dios mira al mundo, ¿qué tiene en mente? El texto contesta con tres verbos: amó, dio, envió. Y con una negación: no para condenar, sino para rescatar.
 
@@ -97,7 +97,7 @@ Si ya lo sigues, vive esta semana como alguien rescatado, no como alguien vigila
 
 Para que todo el que confía en él no se pierda, sino que tenga vida eterna.
 
-## Notes
+## Notas
 
 - Variante, John.3.16 y John.3.17, después de τὸν υἱὸν: αὐτοῦ "su" — Treg+TR+Byz; ausente en SBL, NA, WH, THGNT. La herramienta la etiqueta "early" solo por Tregelles. Sentido: sin cambio. KJV "his", BSB "His", RV1909 "su".
 - Variante ortográfica, John.3.16: ἀλλὰ (SBL, WH, Treg, TR, Byz) / ἀλλ᾽ (NA, THGNT). Sin cambio de sentido.
