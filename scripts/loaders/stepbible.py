@@ -5,7 +5,7 @@ versification in OSIS form. Hebrew text is the Qere (STEPBible's main text).
 """
 import lzma
 import re
-from collections import Counter, OrderedDict
+from collections import OrderedDict
 from pathlib import Path
 
 from otslib import editions as ed
@@ -226,7 +226,6 @@ def _load_tagnt(conn, sources_dir):
     fmt = lambda d: ", ".join(f"{w}={n}" for w, n in d.items()) or "none"
     conn.executemany("INSERT INTO meta VALUES (?, ?)", [
         ("tagnt_reordered_verses", fmt(reordered)),
-        ("tagnt_order_uncertain_verses", fmt(Counter(w for _, w, _, _ in flags))),
         ("tagnt_other_verse_displacement_kept_in_place", fmt(other_verse))])
     return len(word_rows) + len(variant_rows) + len(vrows)
 

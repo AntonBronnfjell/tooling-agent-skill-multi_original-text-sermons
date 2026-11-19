@@ -138,6 +138,18 @@ class Surfaces(unittest.TestCase):
         self.assertFalse([f for f in self.run_text(q) if "order" in f.msg])
 
 
+class MetaSummary(unittest.TestCase):
+    def test_summary_equals_final_order_flags(self):
+        with tempfile.TemporaryDirectory() as d:
+            conn = build(FIXTURES, os.path.join(d, "t.db"), only=("stepbible", "versification", "macula", "greek_editions"))
+            meta = dict(conn.execute("SELECT key, value FROM meta").fetchall())
+            want = "; ".join(f"{w}: {r}={n}" for w, r, n in conn.execute(
+                "SELECT witness, reason, count(*) FROM order_flags GROUP BY 1, 2 ORDER BY 1, 2"))
+            conn.close()
+        self.assertEqual(meta["order_flags_summary"], want)
+        self.assertNotIn("tagnt_order_uncertain_verses", meta)
+
+
 class GreekEditionFlags(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp()

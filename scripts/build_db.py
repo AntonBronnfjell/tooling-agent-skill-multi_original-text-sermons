@@ -39,6 +39,9 @@ def build(sources_dir, db_file, only=None, out=sys.stdout):
                 n = mod.load(conn, sources_dir)
             conn.commit()
             print(f"{name}: {n} rows ({time.time() - t0:.1f}s)", file=out)
+        rows = conn.execute("SELECT witness, reason, count(*) FROM order_flags GROUP BY 1, 2 ORDER BY 1, 2").fetchall()
+        conn.execute("INSERT INTO meta VALUES ('order_flags_summary', ?)",  # final: after every loader has run
+                     ("; ".join(f"{w}: {r}={n}" for w, r, n in rows) or "none",))
         manifest = sources_dir / "MANIFEST.json"
         digest = hashlib.sha256(manifest.read_bytes()).hexdigest() if manifest.is_file() else ""
         conn.executemany("INSERT INTO meta VALUES (?, ?)", [

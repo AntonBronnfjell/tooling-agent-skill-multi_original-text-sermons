@@ -297,7 +297,7 @@ def _order_notes(conn, out, witness, refs):
     bad = reasons - {KJV_BREAK}
     if bad:
         out["order_uncertain"] = True
-        out["order_note"] = (f"{witness} word order is uncertain here ({', '.join(sorted(bad))}): the data may not "
+        out["order_note"] = (f"{witness} word order is uncertain here: the data may not "
                              "match the printed edition; verify against a printed edition before quoting")
     elif KJV_BREAK in reasons:
         out["order_note"] = (f"{witness} follows its printed edition; words at a verse boundary were moved to "
