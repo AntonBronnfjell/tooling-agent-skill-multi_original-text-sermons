@@ -20,7 +20,7 @@ import unicodedata
 from pathlib import Path
 
 CHECK = Path(__file__).resolve().parent.parent / "scripts" / "check_sermon.py"
-LINE = re.compile(r"^(ERROR|WARN)\s+(\d+):\s*(.*)$")
+LINE = re.compile(r"^(?:.*?:\s*)?(ERROR|WARN)\s+(\d+):\s*(.*)$")
 
 
 def nfc(s):
@@ -32,7 +32,7 @@ def run_check(path, db=None):
     p = subprocess.run(cmd, capture_output=True, text=True)
     errors, warnings = [], []
     for ln in (p.stdout + p.stderr).splitlines():
-        m = LINE.match(ln.strip().split(": ", 1)[-1]) or LINE.match(ln.strip())
+        m = LINE.match(ln.strip())
         if m:
             (errors if m.group(1) == "ERROR" else warnings).append(f"{m.group(2)}: {m.group(3)}")
         elif p.returncode == 2 and ln.strip():

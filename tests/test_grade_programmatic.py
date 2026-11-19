@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -37,6 +38,31 @@ class GradeProgrammaticTest(unittest.TestCase):
             out = json.loads(p.stdout)
             self.assertEqual(out["check_sermon"], [])
             self.assertFalse(out["has_transcript"])
+
+
+class RunCheckTest(unittest.TestCase):
+    def setUp(self):
+        sys.path.insert(0, str(ROOT / "evals"))
+        import grade_programmatic
+        self.g = grade_programmatic
+
+    def test_parses_error_structure(self):
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / "bad.md"
+            f.write_text("no frontmatter\n", encoding="utf-8")
+            r = self.g.run_check(f)
+        if r["exit"] == 2:
+            self.skipTest("bible.db missing")
+        self.assertEqual(r["exit"], 1)
+        self.assertTrue(r["errors"])
+        self.assertTrue(all(re.match(r"^\d+: \S", e) for e in r["errors"]), r["errors"])
+
+    def test_positive_fixture_exit0(self):
+        fx = sorted((ROOT / "evals" / "fixtures" / "positive").glob("*.md"))[0]
+        r = self.g.run_check(fx)
+        if r["exit"] == 2:
+            self.skipTest("bible.db missing")
+        self.assertEqual((r["exit"], r["errors"]), (0, []))
 
 
 class EvalsJsonTest(unittest.TestCase):

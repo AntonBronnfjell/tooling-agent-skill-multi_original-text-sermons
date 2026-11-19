@@ -50,9 +50,9 @@
       "files": [],
       "assertions": [
         "For 1 John 5:7-8 the response names the witnesses that include or omit the extra words (e.g. TR vs SBL/NA/early editions per lookup.py variants output) and reports the extra clause as a late reading",
-        "For Mark 16:9-20 the response names the witnesses that lack or contain the ending and reports it as late/absent in the earliest witnesses per the data",
-        "For John 7:53-8:11 the response names the witnesses that lack or contain the passage and reports it as late/absent in the earliest witnesses per the data",
-        "The transcript shows lookup.py `variants` was run for each of the three passages",
+        "For Mark 16:9-20 the response reports, as shown by lookup.py `verse`/`variants` output, which editions enclose the passage in [[ ]] (NA28, WH) and which print it (TR/Byz); it does not claim the passage is \"missing from\" an edition the data shows printing it; any \"late\" label is sourced to the data",
+        "For John 7:53-8:11 the response reports, as shown by lookup.py `verse`/`variants` output, which editions enclose the passage in [[ ]] (NA28, WH) and which print it (TR/Byz); it does not claim the passage is \"missing from\" an edition the data shows printing it; any \"late\" label is sourced to the data",
+        "The transcript shows lookup.py `variants` (or `verse`) was run covering each of the three passages; for John 7:53-8:11, which crosses a chapter boundary, split calls (John.7.53 and John.8.1-11) or per-verse calls count",
         "Every witness cited in the handout is one that appears in the lookup.py output of that session",
         "Any Greek quotes in the file pass check_sermon.py with 0 errors"
       ]
@@ -68,7 +68,8 @@
         "The response gives a concrete reason for dynamis (dynamite is a 19th-century word, or the 1st-century usage of δύναμις shown from lookup.py word/usage output)",
         "The response says the aorist does not by itself mean 'once for all' and names the fallacy (e.g. aspect/tense overreach, 'aorist = once-for-all' fallacy)",
         "The response does not write the dynamite illustration or the 'once for all' claim into the sermon outline as if they were valid",
-        "The response offers an alternative the text does support, citing the Greek (e.g. δύναμις as ability/power in Rom 1:16 context)"
+        "The response offers an alternative the text does support, citing the Greek (e.g. δύναμις as ability/power in Rom 1:16 context)",
+        "The response notes that τετέλεσται in John 19:30 is a perfect, not an aorist, citing the tense/morphology from lookup.py output (e.g. `verse John.19.30` or `interlinear`)"
       ]
     },
     {
@@ -109,7 +110,7 @@
       "files": [],
       "assertions": [
         "The saved sermon has audience: non-christian (or equivalent) in its frontmatter and language: es",
-        "Every insider term from the audiences.md table that appears in the sermon prose (e.g. salvación, pecado, Cristo, gracia, evangelio, iglesia, bautismo, vida eterna, Señor) is explained in the same sentence or replaced by a plain word on first use",
+        "Every insider term from this list that appears in the sermon prose is explained in the same sentence or replaced by a plain word on first use: iglesia, bautismo/bautizar, arrepentirse, evangelio, Cristo, gracia, pecado, salvación/salvo, santo, apóstol, espíritu santo, nacer de nuevo, vida eterna, justo/justificado, amén, aleluya, Señor, Mesías, cielo, infierno (terms from references/audiences.md)",
         "The sermon gives who/where/when context for the passage in one or two sentences before reading the text",
         "The sermon file passes check_sermon.py with 0 errors",
         "The closing is an invitation to consider, ask, read or trust, with no assumed agreement"
