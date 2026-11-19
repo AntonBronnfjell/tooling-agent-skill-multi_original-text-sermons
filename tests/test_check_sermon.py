@@ -550,6 +550,13 @@ class FinalReview(Base):
                       "lemmas \u03ba\u03b1\u03af\u037e \u03b8\u03b5\u03cc\u03c2\u0387 \u03bb\u03cc\u03b3\u03bf\u03c2"):
             self.assertEqual(self.errs(self.doc(prose=prose)), [], prose)
 
+    def test_long_separated_list_warns(self):
+        def w(prose):
+            p = self._qo_doc(self.doc(prose=prose))
+            return [f for f in check(p, self.conn) if "separated original-language" in f.msg]
+        self.assertTrue(w("The words \u03ba\u03b1\u03af, \u1f10\u03b3\u03ad\u03bd\u03b5\u03c4\u03bf, \u03c6\u1ff6\u03c2, \u03bc\u03ad\u03b3\u03b1, \u03b8\u03b5\u03cc\u03c2 here."))
+        self.assertFalse(w("The words \u03ba\u03b1\u03af, \u1f10\u03b3\u03ad\u03bd\u03b5\u03c4\u03bf, \u03c6\u1ff6\u03c2, \u03bc\u03ad\u03b3\u03b1 here."))
+
     def test_two_adjacent_words_still_error(self):
         for prose in ("\u03ba\u03b1\u1f76 \u03b8\u03b5\u1f78\u03c2 here", "\u03ba\u03b1\u1f76 \u03b8\u03b5\u1f78\u03c2 \u1f26\u03bd \u1f41 \u03bb\u03cc\u03b3\u03bf\u03c2",
                       "\u03ba\u03b1\u1f76, \u03b8\u03b5\u1f78\u03c2 \u1f26\u03bd \u1f41 \u03bb\u03cc\u03b3\u03bf\u03c2"):

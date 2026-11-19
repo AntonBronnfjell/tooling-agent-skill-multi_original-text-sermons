@@ -379,7 +379,7 @@ def inline_quotes(lines, start, block_quotes):
 
     A run preceded on its line by `[CORPUS[:WITNESS] Ref]` is an inline quote (verified like a block quote);
     an untagged run of 2+ words is a problem unless it appears verbatim in a quote above it."""
-    out, problems = [], []
+    out, problems, warns = [], [], []
     for i in range(start, len(lines)):
         if lines[i].lstrip().startswith(">"):
             continue
@@ -389,12 +389,17 @@ def inline_quotes(lines, start, block_quotes):
             if t:
                 out.append({"line": i + 1, "tag": t.groups(), "original": m.group(0), "labels": None})
             else:  # untagged: pieces split on , ; / \u00b7 are judged alone (a lemma list is not a quote)
-                for piece in LIST_SEP.split(m.group(0)):
+                pieces = [x for x in LIST_SEP.split(m.group(0)) if SCRIPT_TOKEN.search(x)]
+                for piece in pieces:
                     if len(SCRIPT_TOKEN.findall(piece)) >= 2 and not quoted_already(piece, block_quotes + out, i + 1):
                         problems.append((i + 1, "untagged original-language text: tag it inline "
                                                 "`[CORPUS[:WITNESS] Ref] <original>` right before the words, or quote it"))
                         break
-    return out, problems
+                else:
+                    if len(pieces) >= 5:
+                        warns.append((i + 1, f"{len(pieces)} separated original-language words in one run \u2014 tag it "
+                                             "as a quote if it is text, or keep lemma lists short"))
+    return out, list(dict.fromkeys(problems)), warns
 
 
 def check(path, conn, quotes_only=False, lang=None):
@@ -468,8 +473,9 @@ def check(path, conn, quotes_only=False, lang=None):
 
     # quotes: tagged blockquotes, then inline-tagged runs and untagged runs anywhere in the body
     quotes, problems = parse_quotes(lines, body_start)
-    inline, run_problems = inline_quotes(lines, body_start, quotes)
+    inline, run_problems, run_warns = inline_quotes(lines, body_start, quotes)
     out += [Finding("ERROR", ln, msg) for ln, msg in problems + run_problems]
+    out += [Finding("WARN", ln, msg) for ln, msg in run_warns]
     blocks = note_blocks(lines if quotes_only else notes_lines)
     for q in quotes + inline:
         tag, wit, ref_text = q["tag"]
@@ -503,7 +509,7 @@ def check(path, conn, quotes_only=False, lang=None):
                             else:
                                 out.append(Finding("ERROR", q["line"], "EXT quote includes editor-bracketed words "
                                                    "(the edition marks them as doubtful): say so in Notes "
-                                                   "(bracket / corchetes / editor) in the same bullet as the ref"))
+                                                   f"(bracket / corchetes / editor) in the same bullet as the ref (write it as `{hay_refs[0]}`)"))
                         if corpus != "ext" and not quotes_only:
                             hit = (set(hay_refs) | named) & contested
                             miss = sorted(hit - notes_verses)
