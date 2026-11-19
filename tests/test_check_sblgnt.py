@@ -86,7 +86,23 @@ class CheckSblgnt(unittest.TestCase):
         words = DB["Rom.16.22"].split()
         rows = dict(DB, **{"Rom.16.22": " ".join(words[:4]),
                            "Rom.16.23": " ".join(words[4:]) + " " + DB["Rom.16.23"]})
-        self.assertEqual(cs.check(make_db(rows), SOURCES / "sblgnt")["mismatches"], [])
+        self.assertEqual(cs.check(make_db(rows), SOURCES / "sblgnt", stream_chapters={("Rom", 16)})["mismatches"], [])
+
+    def test_word_moved_across_verse_boundary_flagged_outside_allowlist(self):
+        words = DB["Rom.16.22"].split()
+        rows = dict(DB, **{"Rom.16.22": " ".join(words[:4]),
+                           "Rom.16.23": " ".join(words[4:]) + " " + DB["Rom.16.23"]})
+        mm = cs.check(make_db(rows), SOURCES / "sblgnt")["mismatches"]
+        self.assertEqual([m["ref"] for m in mm], ["Rom.16.22", "Rom.16.23"])
+        self.assertIn("3John", {b for b, _ in cs.STREAM_CHAPTERS})
+        self.assertTrue({("3John", 1), ("Acts", 19), ("2Cor", 13), ("Rev", 12), ("Rev", 13), ("Phil", 1)} <= cs.STREAM_CHAPTERS)
+
+    def test_db_chapter_absent_from_faithlife_reported(self):
+        rows = dict(DB, **{"Rom.17.1": "καὶ ἄλλα"})
+        rep = cs.check(make_db(rows), SOURCES / "sblgnt")
+        self.assertEqual(rep["db_only_chapters"], ["Rom.17"])
+        self.assertIn("Rom.17.1", [m["ref"] for m in rep["mismatches"]])
+        self.assertEqual(cs.check(make_db(DB), SOURCES / "sblgnt")["db_only_chapters"], [])
 
     def test_known_versification_differences_are_mapped_to_kjv(self):
         import tempfile
@@ -118,6 +134,47 @@ class CheckSblgnt(unittest.TestCase):
                 self.assertEqual(cs.main(["--db", str(ok), "--sources", str(SOURCES)]), 0)
                 self.assertEqual(cs.main(["--db", str(bad), "--sources", str(SOURCES)]), 1)
             self.assertIn("Rom.16.25", buf.getvalue())
+
+
+REAL_DB = ROOT / "data" / "bible.db"
+REAL_SOURCES = ROOT / "sources"
+
+
+@unittest.skipUnless(REAL_DB.is_file() and (REAL_SOURCES / "sblgnt").is_dir(), "real bible.db not built")
+class RealData(unittest.TestCase):
+    def test_real_db_matches_faithlife(self):
+        c = sqlite3.connect(f"file:{REAL_DB}?mode=ro", uri=True)
+        try:
+            rep = cs.check(c, REAL_SOURCES / "sblgnt")
+        finally:
+            c.close()
+        self.assertEqual(rep["mismatches"], [])
+        self.assertEqual(rep["db_only_chapters"], [])
+
+    def test_real_rom_file_has_no_16_25_27_and_no_dynamenoi(self):
+        import lzma
+        with lzma.open(REAL_SOURCES / "sblgnt" / "Rom.txt.xz", "rt", encoding="utf-8-sig") as f:
+            text = f.read()
+        for v in (25, 26, 27):
+            self.assertNotIn(f"Rom 16:{v}\t", text)
+        self.assertNotIn("δυναμένῳ", text)
+
+    def test_moved_word_across_verse_boundary_caught_on_real_db(self):
+        import shutil
+        import tempfile
+        with tempfile.TemporaryDirectory() as t:
+            copy = Path(t) / "b.db"
+            shutil.copy(REAL_DB, copy)
+            c = sqlite3.connect(copy)
+            (a,) = c.execute("SELECT text FROM verses WHERE corpus='grnt' AND witness='SBL' AND ref='John.3.16'").fetchone()
+            (b,) = c.execute("SELECT text FROM verses WHERE corpus='grnt' AND witness='SBL' AND ref='John.3.17'").fetchone()
+            head, _, last = a.rstrip().rpartition(" ")
+            for ref, text in (("John.3.16", head), ("John.3.17", last + " " + b)):
+                c.execute("UPDATE verses SET text=? WHERE corpus='grnt' AND witness='SBL' AND ref=?", (text, ref))
+            c.commit()
+            rep = cs.check(c, REAL_SOURCES / "sblgnt")
+            c.close()
+        self.assertEqual({m["ref"] for m in rep["mismatches"]}, {"John.3.16", "John.3.17"})
 
 
 if __name__ == "__main__":
