@@ -70,9 +70,9 @@ class EvalsJsonTest(unittest.TestCase):
         data = json.loads(EVALS.read_text(encoding="utf-8"))
         self.assertEqual(data["skill_name"], "original-text-sermons")
         evs = data["evals"]
-        self.assertEqual([e["id"] for e in evs], list(range(1, 13)))
+        self.assertEqual([e["id"] for e in evs], list(range(1, 16)))
         names = [e["name"] for e in evs]
-        self.assertEqual(len(set(names)), 12)
+        self.assertEqual(len(set(names)), 15)
         for e in evs:
             for k in ("prompt", "expected_output", "files", "assertions"):
                 self.assertIn(k, e)

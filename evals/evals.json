@@ -171,6 +171,51 @@
         "The response reports the corpus counts as given by the tool (grnt per edition, e.g. SBL 114 / TR 116 / all_editions 117 — naming the edition for any NT number; lxx 77; ext Josephus 48, Philo 23) without inventing other counts",
         "The response draws no conclusion that goes beyond the cited examples (it states what the examples show and says what they do not show)"
       ]
+    },
+    {
+      "id": 13,
+      "name": "tr-byz-quote-acts20-28-1tim1-1-order-es",
+      "prompt": "Necesito citar en una nota de estudio, en griego, Hechos 20:28 y 1 Timoteo 1:1 según el Textus Receptus y según el texto bizantino. Responde en el chat en español (sin archivo), audiencia: una clase bíblica cristiana, especialización: enseñanza. Muestra el texto de cada edición tal como lo da la herramienta y dime qué diferencias hay entre ellas, sin concluir cuál es la lectura correcta.",
+      "expected_output": "The response runs `lookup.py verse` with --witness TR and Byz and `variants` for both refs, quotes each edition's text with inline/quote-block tags naming the witness (Acts.20.28 TR: ...τοῦ Θεοῦ... διὰ τοῦ ἰδίου αἵματος; Byz: ...τοῦ κυρίου καὶ θεοῦ... διὰ τοῦ ἰδίου αἵματος; 1Tim.1.1 TR: ...καὶ Κυρίου Ἰησοῦ Χριστοῦ...; Byz: ...καὶ κυρίου Ἰησοῦ χριστοῦ...), reports the word-order entries `variants` prints for each edition (Acts.20.28: NA/SBL/THGNT/WH τοῦ αἵματος τοῦ ἰδίου vs Byz+TR τοῦ ἰδίου αἵματος; 1Tim.1.1: three different orders for NA+SBL+THGNT+WH, Byz and TR), and draws no verdict on which reading is original or correct.",
+      "files": [],
+      "assertions": [
+        "The transcript shows `lookup.py verse Acts.20.28` and `lookup.py verse 1Tim.1.1` run with `--witness TR` and with `--witness Byz` (or an equivalent that prints both editions), and `lookup.py variants` for both refs",
+        "The Acts.20.28 TR quote reads exactly as lookup prints it for TR (…ἐκκλησίαν τοῦ Θεοῦ, ἣν περιεποιήσατο διὰ τοῦ ἰδίου αἵματος) and the Byz quote reads exactly as lookup prints it for Byz (…ἐκκλησίαν τοῦ κυρίου καὶ θεοῦ, ἣν περιεποιήσατο διὰ τοῦ ἰδίου αἵματος); each is tagged with its witness (GRC:TR / GRC:Byz)",
+        "The 1Tim.1.1 TR quote reads exactly as lookup prints it for TR (…καὶ Κυρίου Ἰησοῦ Χριστοῦ τῆς ἐλπίδος ἡμῶν) and the Byz quote as printed for Byz (…καὶ κυρίου Ἰησοῦ χριστοῦ τῆς ἐλπίδος ἡμῶν); each is tagged with its witness",
+        "The response shows each edition's word order as `variants` prints it: for Acts.20.28, τοῦ αἵματος τοῦ ἰδίου (NA/SBL/THGNT/WH) versus τοῦ ἰδίου αἵματος (Byz+TR); for 1Tim.1.1, the three order entries (NA+SBL+THGNT+WH, Byz, TR) — and does not present TR or Byz word order as agreeing with NA/SBL where the tool shows otherwise",
+        "Any Greek of two or more words outside a quote block (including in Notes and the Spanish prose) is preceded by an inline tag [CORPUS[:WITNESS] Ref], and the response's quotes pass `check_sermon.py --quotes-only --lang es` on a temp file outside sermons/",
+        "The response states which editions read θεοῦ / κυρίου / κυρίου καὶ θεοῦ at Acts.20.28 as `variants` lists them, and draws no conclusion about which reading is original, correct or doctrinally preferred"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "word-study-sarx-rom8-1-variant-notes-en",
+      "prompt": "Give me a short word study in English (answer in chat, no file needed) on sarx (σάρξ) in Romans 8:1, for a christian Bible class, specialization: teaching. Include in your notes any manuscript/edition difference in that verse, quoting the differing Greek words, and show the evidence rather than a dictionary summary.",
+      "expected_output": "The response runs `lookup.py verse Rom.8.1`, `variants Rom.8.1`, `word σάρξ` and `usage σάρξ`, quotes the verse text of at least one edition (e.g. SBL ends at Ἰησοῦ; TR and Byz continue μὴ κατὰ σάρκα περιπατοῦσιν, ἀλλὰ κατὰ πνεῦμα), shows in Notes that variants lists #9-#15 (μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα) as TR+Byz only, tags every multi-word Greek phrase (quote block or inline tag), and draws no verdict on the reading or on the meaning of σάρξ beyond the cited examples.",
+      "files": [],
+      "assertions": [
+        "The transcript shows `lookup.py verse Rom.8.1` (at least SBL or another critical edition, and TR or Byz) and `lookup.py variants Rom.8.1` were run",
+        "The Notes (or body) state that the words μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα are listed by `variants` for TR and Byz only, and that the SBL text of Rom.8.1 ends at Ἰησοῦ (as lookup prints it)",
+        "Every run of two or more Greek words in the response (quote blocks, prose and Notes, including the variant phrase) carries a quote-block tag or an inline tag [CORPUS[:WITNESS] Ref] immediately before it on the same line, with the witness named for the variant phrase (GRC:TR and/or GRC:Byz)",
+        "Each quoted or inline-tagged Greek text matches what `lookup.py verse` printed for that witness (including TR/Byz punctuation or capitalization differences, e.g. Byz χριστῷ lowercase), and validates with `check_sermon.py --quotes-only --lang en` on a temp file outside sermons/",
+        "If a count of σάρξ is given it matches `lookup.py word σάρξ` and names the edition (SBL/NA/THGNT/WH 147, Byz 150, TR 151, any edition 152; lxx 158)",
+        "The response draws no conclusion about which reading is original or doctrinally correct, and claims nothing about the meaning of σάρξ beyond what the cited examples show"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "chat-answer-es-quotes-only-john3-16",
+      "prompt": "Estoy en un entorno sin hooks (tipo Antigravity). Respóndeme aquí en el chat, en español y sin crear archivo: ¿qué dice el griego de Juan 3:16 en las palabras ἠγάπησεν y μονογενῆ? Audiencia: una clase bíblica cristiana; especialización: enseñanza. Muestra la evidencia de la herramienta, sin sacar conclusiones doctrinales.",
+      "expected_output": "The response runs `lookup.py verse John.3.16` (plus `word`/`variants` as needed), shows the Greek quote in a tagged block with Literal/Natural lines in Spanish, tags every Greek phrase of 2+ words (block or inline), puts the quote blocks in a temp file outside sermons/ and runs `check_sermon.py --quotes-only --lang es` until it exits 0, and draws no doctrinal conclusion.",
+      "files": [],
+      "assertions": [
+        "The transcript shows `lookup.py verse John.3.16` was run and the Greek quoted in the answer matches its output for the witness named in the tag",
+        "The transcript shows the answer's quote blocks were written to a temp file outside sermons/ and `check_sermon.py --quotes-only --lang es <tmpfile>` was run and finally exited 0",
+        "No file was created under sermons/ and the answer is given in the chat in Spanish",
+        "Every Greek phrase of two or more words in the answer (outside a quote block as well) is preceded by an inline tag [CORPUS[:WITNESS] Ref]; single lemmas (ἠγάπησεν, μονογενῆ) may stand alone",
+        "Each quote block has a tag line, a `> Literal:` line and a `> Natural:` line in Spanish",
+        "The answer shows evidence/options (e.g. what `word` or `variants` print) and draws no doctrinal conclusion"
+      ]
     }
   ]
 }
