@@ -50,6 +50,32 @@ class HookTests(unittest.TestCase):
         p = self.put(NEG / "misquote.md")
         self.assertEqual(hook({"file_path": str(p)}).returncode, 2)
 
+    @unittest.skipUnless(HAVE_DB, "data/bible.db not built")
+    def test_hook_warnings_reach_claude_as_additional_context(self):
+        p = self.put(POS / "spanish-hook-template.md")  # WARN-only (short body)
+        r = hook({"hook_event_name": "PostToolUse", "tool_input": {"file_path": str(p)}})
+        self.assertEqual(r.returncode, 0, r.stderr)
+        out = json.loads(r.stdout)
+        self.assertEqual(out["hookSpecificOutput"]["hookEventName"], "PostToolUse")
+        ctx = out["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("WARN", ctx)
+        self.assertIn("body word count", ctx)
+        self.assertNotIn("OK ", ctx)
+
+    @unittest.skipUnless(HAVE_DB, "data/bible.db not built")
+    def test_hook_errors_do_not_echo_ok(self):
+        p = self.put(NEG / "misquote.md")
+        r = hook({"tool_input": {"file_path": str(p)}})
+        self.assertEqual(r.returncode, 2)
+        self.assertNotIn("\nOK ", "\n" + r.stderr)
+
+    @unittest.skipUnless(HAVE_DB, "data/bible.db not built")
+    def test_hook_clean_sermon_silent(self):
+        p = self.sermons / "clean.md"
+        p.write_text((ROOT / "templates" / "sermon-output.md").read_text(encoding="utf-8"), encoding="utf-8")
+        r = hook({"tool_input": {"file_path": str(p)}})
+        self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "", ""))
+
     def test_hook_missing_db_does_not_block(self):
         p = self.put(NEG / "misquote.md")
         r = hook({"tool_input": {"file_path": str(p)}}, env={"OTS_DB": str(Path(self.tmp.name) / "none.db")})

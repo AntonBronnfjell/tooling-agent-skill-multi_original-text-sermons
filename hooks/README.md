@@ -8,7 +8,9 @@
 - Only paths matching `*/sermons/*.md` are checked; anything else, or malformed JSON, exits 0 silently.
 - Validator errors (exit 1): output goes to stderr and the hook exits 2, which Claude Code feeds back to the model so it fixes the sermon.
 - Database missing or invalid (validator exit 2): a message goes to stderr and the hook exits 0. Writes are never blocked just because `data/bible.db` has not been built; run `./install.sh`.
-- Warnings alone never fail.
+- Warnings alone never fail. With a Claude Code payload (`tool_input`), warnings are returned on stdout as `{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"…"}}` with exit 0, which Claude Code adds next to the tool result (checked against code.claude.com/docs/en/hooks: stdout JSON is read on exit 0 only; exit-2 stderr is shown to the model). With a Cursor payload, warnings go to stderr.
+- A clean pass is silent: the validator's `OK <file>` line is dropped.
+- **Cursor caveat:** `afterFileEdit` output (stdout, stderr, exit code) may never reach the agent. In Cursor the hook is a convenience; the enforcement is SKILL.md step 10 (run `check_sermon.py` and fix every ERROR before presenting the sermon).
 - The repo is located from the script's own real path (symlinks followed), so the installed symlink works.
 
 ## Wiring
