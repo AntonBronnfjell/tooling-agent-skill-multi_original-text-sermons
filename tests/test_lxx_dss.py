@@ -85,6 +85,32 @@ class Lxx(Loaded):
         r = self.q("select match_key from verses where corpus='lxx' and ref='Gen.1.1'")
         self.assertTrue(r["match_key"])
 
+    def test_neh_shifted_to_kjv(self):
+        self.assertIsNotNone(self.text("lxx", "Rahlfs", "Neh.1.1"))
+        self.assertIsNone(self.text("lxx", "Rahlfs", "Neh.11.1"))
+
+    def test_malachi_ch4_from_unbound_map(self):
+        self.assertIsNone(self.text("lxx", "Rahlfs", "Mal.3.22"))
+        for v in (4, 5, 6):
+            self.assertIsNotNone(self.text("lxx", "Rahlfs", f"Mal.4.{v}"))
+
+    def test_lettered_refs_folded_into_base_verse(self):
+        n = self.q("select count(*) n from verses where corpus='lxx' and ref glob '*[a-z]'")["n"]
+        self.assertEqual(n, 0)
+        r = self.q("select count(*) n from words where corpus='lxx' and ref='Exod.28.29'")["n"]
+        self.assertGreater(r, 3)
+
+    def test_collisions_concatenated_in_source_order(self):
+        # Rahlfs Ps 50:1 (6 words) and 50:2 (12 words) both land on Ps.51.0: one verse, source order kept
+        n = self.q("select count(*) n from words where corpus='lxx' and ref='Ps.51.0'")["n"]
+        self.assertEqual(n, 18)
+        first = self.q("select surface from words where corpus='lxx' and ref='Ps.51.0' and pos=1")["surface"]
+        self.assertTrue(self.text("lxx", "Rahlfs", "Ps.51.0").startswith(first))
+
+    def test_all_lxx_refs_canonical_shape(self):
+        bad = self.q("select count(*) n from verses where corpus='lxx' and ref not glob '*.[0-9]*.[0-9]*' or ref glob '*[a-z]'")["n"]
+        self.assertEqual(bad, 0)
+
     def test_oslots_skip(self):
         # only Rahlfs witness in the fixture (no double-text books)
         self.assertEqual(self.q("select count(distinct witness) n from verses where corpus='lxx'")["n"], 1)
@@ -97,11 +123,18 @@ class Dss(Loaded):
     def test_1qisaa_has_or(self):
         self.assertIn("אור", self.text("dss", "1QIsaa", "Isa.53.11"))
 
+    def test_proclitics_joined_via_after(self):
+        t = self.text("dss", "1QIsaa", "Isa.53.11")
+        for w in ("מעמל", "וישבע", "ובדעתו", "לרבים"):
+            self.assertIn(w, t)
+        self.assertNotIn("  ", t)
+
     def test_4q58_reconstructed_resh_absent_from_verse(self):
         t = self.text("dss", "4Q58", "Isa.53.11")
         self.assertIsNotNone(t)
         self.assertNotIn("אור", t)
         self.assertIn("או ", t)
+        self.assertIn("שבע", t)
 
     def test_4q58_word_surface_brackets_and_flags(self):
         rows = self.conn.execute("select surface, editions from words where corpus='dss' and witness='4Q58' "

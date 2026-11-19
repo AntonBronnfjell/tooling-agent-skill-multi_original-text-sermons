@@ -1181,6 +1181,38 @@
       "lang": "es",
       "reason": "No Reina 1569 (Biblia del Oso) text on eBible.org (only spaRV1909, sparvg, spav1602p) and no digital verse text found on GitHub.",
       "license_note": "Public domain (1569)"
+    },
+    {
+      "path": "lxx/unbound_lxx_mapping_to_NRSV.csv.xz",
+      "status": "vendored",
+      "upstream": "https://github.com/eliranwong/LXX-Rahlfs-1935",
+      "commit_or_version": "a1b5ff1c739f93cdd18dbab4c9e3fc6b1043141c",
+      "url": "https://raw.githubusercontent.com/eliranwong/LXX-Rahlfs-1935/a1b5ff1c739f93cdd18dbab4c9e3fc6b1043141c/08_versification/resources_on_mapping/unbound_lxx_mapping_to_NRSV.csv",
+      "source_path": "08_versification/resources_on_mapping/unbound_lxx_mapping_to_NRSV.csv",
+      "commit_date": "2020-01-25",
+      "witness": "Rahlfs",
+      "notes": "Exceptions-only map: NRSV (~KJV) book/chapter/verse <- original LXX book/chapter/verse(/subverse letter); orig_is_null=1 rows mean no LXX text. Book index 01O..39O (Unbound OT order; 15O is 2 Esdras = Ezra 1-10 + Neh 11-23). Primary LXX->English versification mapping.",
+      "license_note": "CC BY-NC-SA 4.0 (Eliran Wong); derivative of CATSS/CCAT LXXM data, whose terms ask users to file the CCAT user declaration; personal non-commercial use only",
+      "upstream_sha256": "c1b357ce923c8458fa5ca868c14cc0f128b62cc778589cff16bd1a0a3d633927",
+      "raw_sha256": "c1b357ce923c8458fa5ca868c14cc0f128b62cc778589cff16bd1a0a3d633927",
+      "sha256": "01a8c9bcc4b7f21bc330ec81258defc8090a24ba00640d6f2d2c460a1b7de337",
+      "bytes": 11452
+    },
+    {
+      "path": "dss/after.tf.xz",
+      "status": "vendored",
+      "upstream": "https://github.com/ETCBC/dss",
+      "commit_or_version": "0b7774a72b6d0e91712aa2156d2a1d354f1f5e6d",
+      "url": "https://raw.githubusercontent.com/ETCBC/dss/0b7774a72b6d0e91712aa2156d2a1d354f1f5e6d/tf/2.0.5/after.tf",
+      "source_path": "tf/2.0.5/after.tf",
+      "commit_date": "2026-11-10",
+      "tf_version": "2.0.5",
+      "notes": "Word spacing: the string that follows a word ('' = bound to the next word, as in a proclitic; ' ' = word space; may carry punctuation).",
+      "license_note": "CC BY-NC 4.0 (Abegg, Bowley, Cook data; ETCBC Text-Fabric conversion)",
+      "upstream_sha256": "8032b08c993a20ce3516c7a9058a26db452c008aaa096506a60243cfd94c705e",
+      "raw_sha256": "8032b08c993a20ce3516c7a9058a26db452c008aaa096506a60243cfd94c705e",
+      "sha256": "bdcd99ee2c1da841f6eefc0bacd94fb6f35e66349253e0c33e6fbbbdbad46bfd",
+      "bytes": 545980
     }
   ]
 }

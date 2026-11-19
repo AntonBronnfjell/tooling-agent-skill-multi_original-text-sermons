@@ -2,7 +2,8 @@
 
 A sermon quote must contain only what the manuscript actually reads, so text is rebuilt from SIGN
 nodes, never from the word `glyph` (which silently includes reconstructed and removed letters):
-  verse text   keeps `cons`/`numr` signs; drops signs with rec (reconstructed), rem (removed),
+  verse text   joins words by the `after` feature (space behind the word; absent = proclitic bound to the
+               next word, so scroll `מעמל`/`וישבע` is not split as `מ עמל`/`ו ישבע`); keeps `cons`/`numr` signs; drops signs with rec (reconstructed), rem (removed),
                alt (alternative reading) or vac (vacat); drops punct/missing/empty/term/unc-marker signs;
                morpheme break U+05F3 joins, maqaf stays, non-breaking space is a space.
                Signs flagged unc (uncertain but physically present) and cor (correction) are kept.
@@ -71,6 +72,7 @@ def load(conn, sources_dir):
 
     book = feat("book")
     chapter, verse, lex, scroll_name = feat("chapter"), feat("verse"), feat("lex"), feat("scroll")
+    after = feat("after")
     otype_ranges = []
     for line in tf._lines(d / "otype.tf.xz"):
         spec, _, name = line.partition("\t")
@@ -124,13 +126,21 @@ def load(conn, sources_dir):
         pos[key] = pos.get(key, 0) + 1
         word_rows.append(("dss", witness, ref, pos[key], norm.nfc(surface), norm.nfc(re.sub(r"_\w+$", "", lex.get(w, ""))),
                           "", "", "", flags, "", ""))
+        v = verses.setdefault(key, {"text": "", "gap": False})
         piece = text.strip()
         if piece:
-            verses.setdefault(key, []).append(piece)
+            if v["gap"] and v["text"]:
+                v["text"] += " "
+            v["text"] += piece
+            v["gap"] = w in after
+        elif w in after:  # a lost word still separates its neighbours
+            v["gap"] = True
     conn.executemany("INSERT INTO words VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", word_rows)
     vrows = []
-    for (witness, ref), ws in verses.items():
-        text = norm.display(" ".join(ws), "heb")
+    for (witness, ref), v in verses.items():
+        text = norm.display(v["text"], "heb")
+        if not text:
+            continue
         vrows.append(("dss", witness, ref, text, norm.match_key(text, "heb")))
     conn.executemany("INSERT INTO verses VALUES (?,?,?,?,?)", vrows)
     print(f"dss: {len(word_rows)} words, {len(vrows)} verses, {len({r[1] for r in vrows})} witnesses; skipped "
