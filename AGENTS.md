@@ -69,4 +69,4 @@ These come from the design spec (§3 non-goals, §4 anti-goals) and apply to cod
 - Machine-read tables: the `term` column of `references/tradition-vocabulary.md`, the `ref` column of `references/contested-readings.md`, and `sections:`/`sections_es:` in template frontmatter are parsed by `scripts/otslib/references.py` — keep their format.
 - Keep `SKILL.md` under 500 lines; put detail in `references/`. Every relative link in `SKILL.md` must resolve and every `scripts/*` it names must exist (`lint_skill.py`).
 - New sources: vendor compressed under `sources/`, add a `MANIFEST.json` entry with `upstream`, `commit_or_version`, `sha256`, `license_note`.
-- Tests first (`unittest`), then code. Commit messages end with the `Co-Authored-By` trailer when an agent wrote the change.
+- Tests first (`unittest`), then code. No `Co-Authored-By` agent trailers in commit messages.
