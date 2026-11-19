@@ -2,6 +2,8 @@
 
 Goal: let the listener know where the wording of the passage is uncertain or late, using the witnesses in the DB. Report evidence; don't adjudicate theology through it.
 
+**The NT data holds printed editions** (NA28, SBL, THGNT, WH, Byz, TR), not individual manuscripts. Say so when you report a variant, and never claim manuscript evidence ("the earliest manuscripts omit…", "Codex X reads…") the tools don't show. The `variants` label "early"/"late" describes which editions print a reading.
+
 ## Witnesses in the DB
 
 | corpus | witnesses | notes |
@@ -16,11 +18,20 @@ Goal: let the listener know where the wording of the passage is uncertain or lat
 
 ## Commands
 
-- `lookup.py variants <ref>` — NT readings by edition. The `editions` list is the evidence; the `class` label is "late" only when the reading's support is TR and/or Byz alone, and "early" whenever any critical edition supports it — including 19th-c. Tregelles (Treg) or Tyndale House (Tyn = THGNT). Example: John.3.16 #11 αὐτοῦ is labeled early but its support is `Treg+TR+Byz`. Always quote the edition list, not just the label.
+- `lookup.py variants <ref>` — NT readings by printed edition. The `editions` list is the evidence; the `class` label is "late" only when the reading's support is TR and/or Byz alone, and "early" whenever any critical edition supports it — including 19th-c. Tregelles (Treg) or Tyndale House (Tyn = THGNT). Example: John.3.16 #11 αὐτοῦ is labeled early but its support is `Treg+TR+Byz`. Always quote the edition list, not just the label.
 - `lookup.py verse <ref> --witness W` — the whole verse in one edition (compare SBL with TR/Byz when a variant matters).
 - `lookup.py dss <ref>` — each scroll's extant text vs WLC, consonants only; 'delete' ops may be lacunae (lost leather), not omissions.
 - `lookup.py lxx <ref>` — LXX witnesses vs Rahlfs, with WLC printed for comparison (Greek and Hebrew are not diffed token by token).
 - Hebrew Ketiv/Qere: `verse <ref> --witness Ketiv` vs default.
+
+## Coverage
+
+Run `variants` (NT) or `dss` + `lxx` (OT) over the **whole** passage, never a sample of verses. Ranges stay inside one chapter, so split at the chapter boundary: `variants John.7.53` + `variants John.8.1-11`. Then report:
+
+- the wording differences **inside** the passage that change meaning (e.g. `variants John.8.1-11` lists edition differences in every verse of the story, 8:9 alone has 31 rows — read them all, not only 8:11), not only whether an edition brackets the whole;
+- **every** witness the tool returns, each with its reading. `dss Isa.53.11` lists four scrolls: 1QIsaa and 1Q8 have אור after יראה, 4Q58 has או there, 4Q56 keeps only א יסב; 1QIsaa reads עבדו where 1Q8, 4Q58 and WLC read עבדי. Reporting 1QIsaa alone would tilt the picture.
+- Weigh nothing the tool doesn't weigh: **Wrong:** "the older witnesses lean towards 'light' — two independent kinds of witness." **Right:** "1QIsaa and 1Q8 read אור 'light'; LXX has δεῖξαι αὐτῷ φῶς; WLC has no object after יִרְאֶה."
+- If `dss`/`lxx` answers `absent: "no DSS witness has <ref>"`, that is the finding: the corpus has no witness for that verse.
 
 ## What to report
 
@@ -28,15 +39,15 @@ Report a variant in the sermon when it (a) changes meaning, (b) is behind a fami
 
 Well-known cases (all in `contested-readings.md`):
 
-- **1John.5.7–8** — the long text is tagged `[TR]` only, class late; SBL, NA and Byz end v.7 at οἱ μαρτυροῦντες. Quote it only as `[GRC:TR 1John.5.7]`.
-- **Mark.16.9–20** and **John.7.53–8.11** — NA28 and WH enclose them in [[ ]] (editors judge them later additions). The tool's verse text shows [[ on the first word for NA, WH, TR and Byz alike — an inherited marker, not TR/Byz's own judgment; SBL text shows none. Report the editorial brackets, not "missing from".
+- **1John.5.7–8** — the long text is tagged `[TR]` only, class late; SBL, NA and Byz end v.7 at οἱ μαρτυροῦντες. Quote it only as `[GRC:TR 1John.5.7]`. The TR text in the data prints ἕν τῷ οὐρανῷ — ἕν "one" where the sense needs ἐν "in" (an erratum in the source data): quote it exactly as printed and explain in Notes.
+- **Mark.16.9–20** and **John.7.53–8.11** — editors enclose them in [[ ]] (judged later additions). Report the `[[ ]]` markers as each edition prints them in the tool output (`verse <ref> --witness W` for NA, THGNT, WH, Byz, TR, SBL): e.g. NA, THGNT, WH, Byz and TR print [[ before John.7.53, SBL prints none; THGNT has no John.8.11 at all. A marker shown for TR/Byz is inherited in the data, not their own judgment. Report the brackets, not "missing from".
 - **John.1.18** — μονογενὴς θεὸς (NA, SBL, WH, Treg) vs ὁ μονογενὴς υἱός (THGNT, TR, Byz): critical editions divide.
 - **Isa.53.11** — 1QIsaa and LXX "light" with no counterpart in WLC.
 - **Matt.28.19** — all editions agree on the long form; report the Eusebian citation question as stated in `contested-readings.md`, with no verdict.
 
 ## Format
 
-In the body, one plain sentence: "Some later manuscripts add 'his' here; the earliest-based editions don't."
+In the body, one plain sentence: "Some printed editions (TR, Byz, Tregelles) add 'his' here; NA, SBL, WH and THGNT don't."
 
 In Notes, one bullet per variant:
 
@@ -50,7 +61,7 @@ When quoting a non-default witness in a quote block, the tag names it (`[GRC:TR 
 ## Commands used
 
 ```
-lookup.py variants John.3.16 | John.1.18 | 1John.5.7 | 1John.5.8 | Mark.16.9 | John.7.53 | Matt.28.19
-lookup.py verse John.3.16 --witness NA|TR|Byz|WH|THGNT ; verse John.1.18 --witness THGNT|TR|NA ; verse Mark.16.9 --witness NA|SBL|WH|TR|Byz ; verse John.7.53 --witness TR|Byz ; verse John.8.11 --witness NA
+lookup.py variants John.3.16 | John.1.18 | 1John.5.7 | 1John.5.8 | Mark.16.9-20 | John.7.53 | John.8.1-11 | Matt.28.19
+lookup.py verse John.3.16 --witness NA|TR|Byz|WH|THGNT ; verse John.1.18 --witness THGNT|TR|NA ; verse Mark.16.9 --witness NA|SBL|WH|TR|Byz|THGNT ; verse John.7.53 --witness SBL|NA|THGNT|WH|TR|Byz ; verse John.8.11 --witness NA|THGNT ; verse 1John.5.7 --witness TR
 lookup.py dss Isa.53.11 ; lxx Isa.53.11 ; verse Ps.100.3 --witness Ketiv
 ```

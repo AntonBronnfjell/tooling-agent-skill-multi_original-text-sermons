@@ -179,9 +179,41 @@ class Lookup(unittest.TestCase):
     def test_usage_ext_matches_surface_forms(self):
         # fixture ext has no ἐκκλησία; δέ exercises the same accent-stripped surface path
         o = run("usage", "δέ")
-        self.assertGreater(o["counts"]["ext"], 0)
-        self.assertLessEqual(len(o["contexts"]["ext"]), 5)
-        self.assertTrue(o["contexts"]["ext"][0]["ref"])
+        self.assertGreater(o["counts"]["ext"]["Josephus"], 0)
+        self.assertLessEqual(len(o["contexts"]["ext"]["Josephus"]), 5)
+        self.assertTrue(o["contexts"]["ext"]["Josephus"][0]["ref"])
+
+    def test_usage_ext_split_by_witness(self):
+        o = run("usage", "καί")
+        self.assertEqual(set(o["counts"]["ext"]), {"Josephus", "Philo"})
+        self.assertGreater(o["counts"]["ext"]["Philo"], 0)
+        self.assertTrue(all(c["witness"] == "Philo" for c in o["contexts"]["ext"]["Philo"]))
+        self.assertIn("ext:Philo", run_raw("usage", "καί", "--format", "text").stdout)
+
+    def test_search_ext(self):
+        o = run("search", "καί", "--corpus", "ext")
+        r = o["results"]["ext"]
+        self.assertGreater(r["occurrences"], 0)
+        self.assertTrue(any(x.startswith("Philo ") for x in r["refs"]))
+        self.assertTrue(any(x.startswith("Josephus ") for x in r["refs"]))
+        self.assertIn("surface", o["results"]["ext"]["note"])
+
+    def test_corpus_lacks_existing_verse(self):
+        r = run_raw("dss", "Gen.1.1")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        o = json.loads(r.stdout)
+        self.assertEqual(o["readings"], [])
+        self.assertEqual(o["absent"], "no DSS witness has Gen.1.1")
+        t = run_raw("dss", "Gen.1.1", "--format", "text")
+        self.assertIn("no DSS witness has Gen.1.1", t.stdout)
+        v = run("verse", "Gen.1.1", "--corpus", "dss", "--witness", "1QIsaa")
+        self.assertEqual(v["absent"], "no DSS witness has Gen.1.1")
+
+    def test_unknown_ref_still_exit_1(self):
+        for args in (("dss", "Gen.99.1"), ("lxx", "Hezekiah 1:1")):
+            r = run_raw(*args)
+            self.assertEqual(r.returncode, 1, args)
+            self.assertIn("unknown ref", r.stderr)
 
     def test_usage_papyri_labelled_ocr(self):
         o = run("usage", "ἐκκλησία")

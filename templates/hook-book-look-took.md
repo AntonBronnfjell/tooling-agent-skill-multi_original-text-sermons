@@ -16,7 +16,7 @@ Moves from the listener's world into the text and back out to a response. Suits 
 
 ## Book
 
-~35%. What the text says. Setting in one or two sentences, then the passage in quote blocks (`lookup.py verse`), each with `Literal:` and `Natural:`. Explain the key words from usage evidence; show options on any contested reading; name a variant if it touches familiar wording.
+~35%. What the text says. Setting in one or two sentences — who, where (name the place) and when (`audiences.md`) — then the passage in quote blocks (`lookup.py verse`), each with `Literal:` and `Natural:`. Explain the key words from usage evidence; show options on any contested reading; name a variant if it touches familiar wording.
 
 ## Look
 

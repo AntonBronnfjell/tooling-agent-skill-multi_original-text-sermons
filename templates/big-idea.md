@@ -16,7 +16,7 @@ One sentence from the text carries the whole sermon; three points unfold it in t
 
 ## Text
 
-The passage in quote blocks, from `lookup.py verse` — one block per verse or clause, each followed by `Literal:` and `Natural:`. One or two sentences of setting (who, to whom, where in the book). Mention here any variant that changes the wording the audience knows.
+The passage in quote blocks, from `lookup.py verse` — one block per verse or clause, each followed by `Literal:` and `Natural:`. One or two sentences of setting (who, to whom, where in the book); for a non-christian or mixed audience they come before the first quote and name who, where (the place) and when (`audiences.md`). Several passages: one text per point — say so here. Mention here any variant that changes the wording the audience knows.
 
 ## Big Idea
 

@@ -390,5 +390,49 @@ class Rulings(Base):
         self.assertEqual(f._fields, ("level", "line", "msg"))
 
 
+class Iteration1(Base):
+    """Eval iteration 1 fixes: quotes-only mode, prose runs already quoted, multi-passage frontmatter."""
+
+    def qo(self, text, lang="en"):
+        p = Path(self.tmp) / "chat.md"
+        p.write_text(text, encoding="utf-8")
+        return check(p, self.conn, quotes_only=True, lang=lang)
+
+    def test_quotes_only_skips_sermon_checks(self):
+        fs = self.qo("Chat answer about λόγος.\n\n" + J11)
+        self.assertEqual(fs, [])
+
+    def test_quotes_only_still_checks_quotes_tags_tradition(self):
+        bad = self.qo("> [GRC John.1.1] καὶ θεὸς ἦν ὁ λόγοςς\n> Literal: a\n> Natural: b\n")
+        self.assertTrue(any("not found" in f.msg for f in bad if f.level == "ERROR"))
+        tag = self.qo("> [GRC: John.1.1] καὶ θεὸς\n> Literal: a\n> Natural: b\n")
+        self.assertTrue(any("unparseable" in f.msg for f in tag if f.level == "ERROR"))
+        trad = self.qo(J11.replace("the word was God", "the church"))
+        self.assertTrue(any("tradition term" in f.msg for f in trad if f.level == "ERROR"))
+        es = self.qo(J11.replace("the word was God", "la iglesia"), lang="es")
+        self.assertTrue(any("tradition term" in f.msg for f in es if f.level == "ERROR"))
+        self.assertFalse(any("tradition term" in f.msg for f in self.qo(J11.replace("the word was God", "la iglesia"))))
+
+    def test_quotes_only_cli(self):
+        p = Path(self.tmp) / "chat2.md"
+        p.write_text(J11, encoding="utf-8")
+        env = {**os.environ, "OTS_DB": self.dbfile}
+        r = subprocess.run([sys.executable, str(CHECK), "--quotes-only", "--lang", "es", str(p)],
+                           capture_output=True, text=True, env=env)
+        self.assertEqual((r.returncode, r.stdout), (0, ""))
+
+    def test_prose_run_already_quoted_is_exempt(self):
+        t = fm(template="custom", sections="Text, Notes") + "## Text\n\n" + J11 + "\nSo καὶ θεὸς ἦν, says John.\n\n## Notes\n\nx\n"
+        self.assertFalse(any("original-language words in prose" in f.msg for f in self.run_text(t)))
+        before = fm(template="custom", sections="Text, Notes") + "## Text\n\nSo καὶ θεὸς ἦν, says John.\n\n" + J11 + "\n## Notes\n\nx\n"
+        self.assertTrue(any("original-language words in prose" in f.msg for f in self.run_text(before)))
+        other = fm(template="custom", sections="Text, Notes") + "## Text\n\n" + J11 + "\nSo ὁ λόγος σὰρξ ἐγένετο.\n\n## Notes\n\nx\n"
+        self.assertTrue(any("original-language words in prose" in f.msg for f in self.run_text(other)))
+
+    def test_multi_passage_frontmatter(self):
+        fs = self.run_text(fm(passage="John.7.53; John.8.1-11; Mark.16.9-20") + body())
+        self.assertFalse([f for f in fs if f.level == "ERROR"], fs)
+
+
 if __name__ == "__main__":
     unittest.main()

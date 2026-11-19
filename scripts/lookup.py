@@ -2,7 +2,8 @@
 """Query CLI for the original-text-sermons skill. Reads data/bible.db (see otslib/db.py).
 
 JSON on stdout by default (--format text for a compact rendering). Errors go to stderr:
-exit 1 = unknown ref/witness, exit 2 = bible.db missing.
+exit 1 = unknown ref/witness, exit 2 = bible.db missing. A real verse that the chosen corpus simply
+lacks (e.g. `dss Ps.1.1`) is a finding, not an error: exit 0 with `"absent": "no DSS witness has Ps.1.1"`.
 """
 import argparse
 import difflib
@@ -22,6 +23,7 @@ from otslib.refs import BOOKS, RefError, canonical, parse_ref, source_ref, to_os
 NT = set(BOOKS[BOOKS.index("Matt"):])
 CORPORA = ("grnt", "hebot", "lxx", "dss", "ext")
 DEFAULT_WITNESS = {"grnt": "SBL", "hebot": "WLC", "lxx": "Rahlfs"}
+TAG = {"grnt": "GRC", "hebot": "HEB", "lxx": "LXX", "dss": "DSS", "ext": "EXT"}
 # DB witness name -> token in TAGNT `editions`
 EDITION_TOKEN = {"SBL": "SBL", "NA": "NA28", "THGNT": "Tyn", "WH": "WH", "Byz": "Byz", "TR": "TR"}
 WITNESS_ORDER = ["SBL", "NA", "THGNT", "WH", "Byz", "TR", "WLC", "Ketiv", "Rahlfs", "RahlfsA", "RahlfsTh"]
@@ -38,6 +40,13 @@ class Fail(Exception):
     def __init__(self, msg, code=1):
         super().__init__(msg)
         self.code = code
+
+
+class Absent(Exception):
+    """The ref is a real verse (some corpus has it) but this corpus has no witness for it."""
+    def __init__(self, label, corpus):
+        super().__init__(f"no {TAG[corpus]} witness has {label}")
+        self.out = {"ref": label, "corpus": corpus, "readings": [], "absent": str(self)}
 
 
 # ---------------------------------------------------------------- helpers
@@ -66,6 +75,10 @@ def ref_list(conn, corpus, ref_text):
         have |= {x[0] for x in conn.execute(
             f"SELECT DISTINCT ref FROM verses WHERE corpus=? AND ref IN ({q})", (corpus, *chunk))}
     if not have:
+        q = ",".join("?" * len(refs[:500]))
+        if corpus != "ext" and refs and conn.execute(
+                f"SELECT 1 FROM verses WHERE ref IN ({q}) LIMIT 1", refs[:500]).fetchone():
+            raise Absent(label, corpus)
         raise Fail(f"unknown ref: {ref_text}")
     return label, [r for r in refs if r in have]
 
@@ -295,6 +308,25 @@ def cmd_word(conn, a):
             "lxx_hebrew_cooccurrence_note": "same-verse co-occurrence, not alignment"}
 
 
+def ext_rows(conn, lemmas):
+    """EXT words whose accent-stripped surface matches a form seen for `lemmas` in grnt+lxx.
+    ponytail: ext has no lemmas; ceiling = homograph forms of other lemmas inflate counts, and forms
+    never seen in grnt/lxx are missed."""
+    ph = in_clause(lemmas)
+    forms = {strip_accents(s).casefold() for (s,) in conn.execute(
+        f"SELECT DISTINCT surface FROM words WHERE corpus IN ('grnt','lxx') AND lemma IN ({ph})", lemmas)}
+    forms.discard("")
+    if not forms:
+        return []
+    conn.create_function("ots_key", 1, lambda s: strip_accents(s or "").casefold().strip(ENDPUNCT))
+    return conn.execute(
+        f"SELECT witness, ref, surface, editions FROM words WHERE corpus='ext' AND ots_key(surface) IN ({in_clause(forms)}) "
+        "ORDER BY rowid", tuple(forms)).fetchall()
+
+
+EXT_NOTE = "ext matched by surface forms seen for this lemma in NT/LXX (no ext lemmas): homographs may inflate, unseen forms are missed"
+
+
 def cmd_usage(conn, a):
     lemma = nfc(a.lemma.strip())
     counts, ctx = {}, {}
@@ -308,30 +340,24 @@ def cmd_usage(conn, a):
             t = conn.execute("SELECT text FROM verses WHERE corpus=? AND witness=? AND ref=?",
                              (corpus, vw, r["ref"])).fetchone()
             ctx[corpus].append({"ref": r["ref"], "snippet": snippet(t[0], r["surface"]) if t else r["surface"]})
-    # ponytail: ext has no lemmas, so we match accent-stripped surface forms seen for this lemma in
-    # grnt+lxx; ceiling = homograph forms of other lemmas inflate counts, and forms never seen in
-    # grnt/lxx are missed.
-    forms = {strip_accents(s).casefold() for (s,) in conn.execute(
-        "SELECT DISTINCT surface FROM words WHERE corpus IN ('grnt','lxx') AND lemma=?", (lemma,))}
-    forms.discard("")
-    conn.create_function("ots_key", 1, lambda s: strip_accents(s or "").casefold().strip(ENDPUNCT))
-    ext = conn.execute(
-        f"SELECT witness, ref, surface, editions FROM words WHERE corpus='ext' AND ots_key(surface) IN ({in_clause(forms)}) "
-        "ORDER BY rowid", tuple(forms)).fetchall() if forms else []
-    counts["ext"] = len(ext)
-    ctx["ext"] = []
-    for r in ext[:5]:
+    counts["ext"], ctx["ext"] = {}, {}
+    for r in ext_rows(conn, [lemma]):  # split by witness (Josephus, Philo)
+        w = r["witness"]
+        counts["ext"][w] = counts["ext"].get(w, 0) + 1
+        items = ctx["ext"].setdefault(w, [])
+        if len(items) >= 5:
+            continue
         t = conn.execute("SELECT text FROM verses WHERE corpus='ext' AND witness=? AND ref=?",
-                         (r["witness"], r["ref"])).fetchone()
-        c = {"witness": r["witness"], "ref": r["ref"], "snippet": snippet(t[0], r["surface"]) if t else r["surface"]}
+                         (w, r["ref"])).fetchone()
+        c = {"witness": w, "ref": r["ref"], "snippet": snippet(t[0], r["surface"]) if t else r["surface"]}
         if r["editions"] == "bracketed":
             c["editor_bracketed"] = True
-        ctx["ext"].append(c)
+        items.append(c)
     pap = [{"lemma": r["lemma"], "entry": r["entry"], "label": OCR_LABEL}
            for r in conn.execute("SELECT lemma, entry FROM papyri_vocab WHERE lemma=? OR lemma=?",
                                  (lemma, unicodedata.normalize("NFD", lemma)))]
     qual = conn.execute("SELECT value FROM meta WHERE key='papyri_quality'").fetchone()
-    return {"lemma": lemma, "counts": counts, "contexts": ctx, "lxx_witness": "Rahlfs",
+    return {"lemma": lemma, "counts": counts, "contexts": ctx, "lxx_witness": "Rahlfs", "ext_note": EXT_NOTE,
             "papyri": pap or None, "papyri_quality": qual[0] if qual else "unknown"}
 
 
@@ -433,6 +459,12 @@ def cmd_search(conn, a):
     wit = {"grnt": "TAGNT", "lxx": "Rahlfs", "hebot": "WLC"}
     res = {}
     for c in corpora:
+        if c == "ext":
+            rows = ext_rows(conn, lemmas)
+            refs = list(dict.fromkeys(f"{r['witness']} {r['ref']}" for r in rows))
+            res[c] = {"verses": len(refs), "occurrences": len(rows), "refs": refs[:a.limit],
+                      "truncated": len(refs) > a.limit, "note": EXT_NOTE}
+            continue
         sql = "SELECT ref, COUNT(*) FROM words WHERE corpus=? AND lemma IN (%s)" % in_clause(lemmas)
         args = [c, *lemmas]
         if c in wit:
@@ -449,6 +481,8 @@ def cmd_search(conn, a):
 
 def render_text(cmd, out):
     L = []
+    if isinstance(out, dict) and out.get("absent"):
+        return out["absent"]
     if cmd in ("verse", "interlinear"):
         if "absent_in" in out:
             return f"{out['ref']} [{out['corpus']}]: absent in {out['absent_in']}; present in {', '.join(out['present_in'])}"
@@ -479,8 +513,9 @@ def render_text(cmd, out):
     elif cmd == "usage":
         L.append(f"{out['lemma']}: {out['counts']}")
         for c, items in out["contexts"].items():
-            for i in items:
-                L.append(f"  {c} {i['ref']}: {i['snippet']}" + (" [editor-bracketed]" if i.get("editor_bracketed") else ""))
+            for i in (sum(items.values(), []) if isinstance(items, dict) else items):
+                name = f"{c}:{i['witness']}" if "witness" in i else c
+                L.append(f"  {name} {i['ref']}: {i['snippet']}" + (" [editor-bracketed]" if i.get("editor_bracketed") else ""))
         if out["papyri"]:
             for p in out["papyri"]:
                 L.append(f"papyri ({out['papyri_quality']}; {p['label']}): {p['entry'][:300]}")
@@ -532,7 +567,7 @@ def build_parser():
     add("lxx", cmd_lxx, help="LXX readings").add_argument("ref")
     p = add("search", cmd_search, help="refs where a lemma occurs")
     p.add_argument("query", help="lemma or Strong's number")
-    p.add_argument("--corpus", choices=("grnt", "hebot", "lxx", "dss"))
+    p.add_argument("--corpus", choices=CORPORA)
     p.add_argument("--limit", type=int, default=200)
     return ap
 
@@ -544,6 +579,8 @@ def main(argv=None):
     conn = db.require_db()
     try:
         out = a.fn(conn, a)
+    except Absent as e:
+        out = e.out
     except Fail as e:
         print(str(e), file=sys.stderr)
         return e.code

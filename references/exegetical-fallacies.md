@@ -7,7 +7,7 @@ Check every word study and every "the Greek really means…" sentence against th
 Meaning drawn from a word's components.
 
 - **Wrong:** "ἐκκλησία is ἐκ + καλέω, so it means 'the called-out ones', a people separated from the world."
-- **Right:** usage shows "assembly, gathering" — 77 times in the LXX (co-occurring with קָהָל, Israel's assembly, 66 times), in Josephus for Moses gathering the people (Ant.3.84 συγκαλεῖ τὸ πλῆθος εἰς ἐκκλησίαν), and in Acts.19.32 for a confused civic crowd in Ephesus (ἦν γὰρ ἡ ἐκκλησία συγκεχυμένη). "Called out" is not in the usage.
+- **Right:** usage shows "assembly, gathering" — 77 times in the LXX (co-occurring with קָהָל, Israel's assembly, 66 times), in Josephus for Moses gathering the people (Ant.3.84 συγκαλεῖ τὸ πλῆθος εἰς ἐκκλησίαν), and in Acts.19.32 for a confused civic crowd in Ephesus (ἦν γὰρ ἡ ἐκκλησία συγκεχυμένη). "Called out" is not in any context the tool returned.
 
 ## 2. Etymological fallacy
 
@@ -48,6 +48,11 @@ Citing only the occurrences that support the point.
 - **Wrong:** "ἀγάπη/ἀγαπάω always means selfless divine love."
 - **Right:** run `usage`/`search` and report the counter-cases: LXX 2Sam.13.15 uses ἀγάπη and ἠγάπησεν of Amnon's desire for Tamar, which turns to hatred; 2Tim.4.10 says Demas left ἀγαπήσας τὸν νῦν αἰῶνα, "having loved the present age". The word means "love"; its quality comes from context.
 
+The mirror error is a conclusion wider than the examples — even a correct one.
+
+- **Wrong:** "ἐκκλησία never meant 'the called-out ones'; everyone in the 1st century heard 'assembly'." (Built on ~10 sampled uses of 117 NT + 77 LXX; and no tool shows what hearers thought.)
+- **Right:** "In the 10 NT and LXX contexts `usage ἐκκλησία` shows (Acts.5.11–9.31, Deut.4.10–23.2), the word names a gathering or a group of people; none shows 'called out'. These examples don't tell us how every hearer understood it."
+
 ## 7. Overspecification
 
 Claiming more precision than the form or word carries.
@@ -65,7 +70,7 @@ Claiming more precision than the form or word carries.
 ## Commands used
 
 ```
-lookup.py word ἐκκλησία ; usage ἐκκλησία ; verse Acts.19.32 ; verse Ant.3.84 --corpus ext --witness Josephus
+lookup.py word ἐκκλησία ; usage ἐκκλησία ; search ἐκκλησία --corpus ext ; verse Acts.19.32 ; verse Ant.3.84 --corpus ext --witness Josephus
 lookup.py word πρεσβύτερος ; word κόσμος ; word δύναμις ; usage δύναμις ; verse Rom.1.16
 lookup.py verse 2Sam.13.15 --corpus lxx ; verse 2Tim.4.10 ; verse John.21.15 ; verse John.21.17 ; word ἀγαπάω ; word φιλέω
 lookup.py verse John.2.20 ; verse Rom.6.10

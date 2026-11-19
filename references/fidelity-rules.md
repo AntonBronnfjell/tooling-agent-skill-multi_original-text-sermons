@@ -8,7 +8,7 @@ The skill's only loyalty is to the text, as close to the 1st century as survivin
 - Quote blocks use the tag grammar `[CORPUS[:WITNESS] Ref]` (corpora `HEB ARC GRC LXX DSS EXT`; defaults GRC→SBL, HEB/ARC→WLC, LXX→Rahlfs; DSS and EXT require a witness). The quoted text must be a contiguous substring of `lookup.py verse <ref> [--corpus …] [--witness …]` for that witness; `…` may elide.
 - A late reading always names its witness: `[GRC:TR 1John.5.7]`. A plain `[GRC …]` tag is the SBL text.
 - DSS text holds extant letters only; letters in [brackets] are editors' reconstructions — say so if you use them. Josephus words the tool flags as editor-bracketed are not quoted as Josephus.
-- Moulton–Milligan papyri entries are noisy OCR of a printed lexicon. Describe what the entry reports; never quote it as verified ancient text, and ignore the lexicon's own references to later commentators.
+- Moulton–Milligan papyri entries are noisy OCR of a printed lexicon. Use only the papyrus citations the entry reports, paraphrased; never quote it as verified ancient text, and never use the entry's own commentary or the later scholars it cites (e.g. the ἐκκλησία entry opens with the lexicographers' view of the word's "Biblical history" and a reference to Hort — that is commentary, not papyrus evidence).
 - Lexicon glosses from the tool (e.g. ἅγιος "holy: saint", ᾍδης "hell: Hades", βαπτίζω "to baptize", 1John.3.9 ἁμαρτάνειν glossed "to continue sinning") are aids, not translations. Some carry later vocabulary or an interpretation; check them against morphology and usage before using them.
 
 ## 2. Two-layer translation
@@ -37,6 +37,7 @@ Hebrew and Greek manuscripts of the period have no upper/lower case distinction;
 - **No capitals added to πνεῦμα ἅγιον / רוּחַ**: write "holy spirit" / "espíritu santo" on `Literal:`/`Natural:` lines. If the sermon discusses how others capitalize it, do so in prose.
 - θεός / אֱלֹהִים is rendered "God" / "Dios" only where the target language's grammar treats the word as a name (e.g. ὁ θεὸς as subject in John.3.16 → "Dios"; אֱלֹהִים with a singular verb, as in Gen.1.1 בָּרָא and Gen.1.26 וַיֹּאמֶר → "God"). Where the form is anarthrous and the sense is debated (John.1.1c, Heb.1.8) or the word takes plural agreement (1Sam.28.13 אֱלֹהִים … עֹלִים, Ps.82.6 אֱלֹהִים אַתֶּם), show the options ("God / divine / a god / gods") instead of choosing by capital letter. In Gen.1.26 what is contested is the plural "let us … our", not the rendering of אֱלֹהִים.
 - No reverential capitals on pronouns or titles (he/him, hijo, palabra, él) on translation lines. "Son/Hijo", "Word/Verbo" as capitalized titles are a translation choice; mention them in comparison notes when a published version uses them.
+- κύριος as a title (Phil.2.11 κύριος Ἰησοῦς Χριστὸς): capitalize only where the target language's grammar capitalizes a title used with or for a person's name ("Lord/Señor"), never for reverence. Where the passage applies LXX YHWH-language (κύριος for יהוה), say so in Notes and leave the reader to weigh it.
 - Capitalization is not machine-checked (that would force a side on contested readings); this rule is enforced by review and evals.
 
 ## 5. Usage claims only from the tool
@@ -55,3 +56,8 @@ Not used, cited, or paraphrased: creeds, confessions, councils, church fathers a
 ## 8. Scope of claims
 
 Say what the evidence shows and stop. "The data has no witness for X" is a valid finding. Do not fill gaps with confident guesses, and do not present a scholarly majority as the text's own voice.
+
+- Scope summaries to the examples shown ("in the 10 contexts shown…"); no "never / always / all hearers / everyone in the 1st century", and no claims about what hearers thought.
+- At contested readings, no weighting words (leans, favors, independent support, more reliable) unless the tool output shows it; report every witness the tool returns, not a selection.
+- Background facts no lookup produced (dates, labels such as "hymn") are marked as background or left out.
+- Examples in these reference files are illustrations: re-run the lookup in the session before repeating one.

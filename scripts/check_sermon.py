@@ -2,7 +2,10 @@
 """Validate sermon files: original-language quotes must exist in the local DB, translation lines must
 avoid tradition vocabulary, template sections and frontmatter must be present.
 
-Usage: check_sermon.py <file>... [--db PATH]
+Usage: check_sermon.py <file>... [--db PATH] [--quotes-only [--lang xx]]
+--quotes-only: for chat answers (word studies, single-verse questions) — checks only quote tags, quoted
+text, Literal:/Natural: lines and tradition vocabulary (language from --lang, default en); no
+frontmatter, sections, Notes or length checks.
 Output: `ERROR <line>: <msg>` / `WARN <line>: <msg>` (with a `<path>:` header when several files).
 Exit: 1 if any ERROR, 2 if bible.db is missing, else 0.
 """
@@ -280,13 +283,22 @@ def tradition_regex(*langs):
 
 # ---------------------------------------------------------------- main check
 
-def check(path, conn):
+def quoted_already(run, quotes, line):
+    """True if `run` (prose original-language words) appears verbatim in a quote block above `line`."""
+    lg = "heb" if re.search("[\u0590-\u05ff]", run) else "grc"
+    k = f" {match_key(run, lg)} "
+    return any(q["line"] < line and k in f" {match_key(nfc(q['original']), lg)} " for q in quotes)
+
+
+def check(path, conn, quotes_only=False, lang=None):
     path = Path(path)
     lines = path.read_text(encoding="utf-8").splitlines()
     out = []
     body_start, has_fm = split_frontmatter(lines)
     fm = references.frontmatter(path) if has_fm else {}
-    for k in REQUIRED_KEYS:
+    if quotes_only:
+        fm = {"language": lang or fm.get("language") or "en"}
+    for k in () if quotes_only else REQUIRED_KEYS:
         if not fm.get(k):
             out.append(Finding("ERROR", 1, f"missing frontmatter key: {k}"))
     # Any language may be written; tradition vocabulary is only machine-checked where the
@@ -326,7 +338,7 @@ def check(path, conn):
     # notes section: the heading matched by the template's last section when the sections are walked in
     # order (so an earlier heading sharing its prefix is not taken); else an exact Notes/Notas/last-name
     # heading; else the first heading starting with Notes/Notas
-    notes_idx = notes_heading(headings, pairs)
+    notes_idx = None if quotes_only else notes_heading(headings, pairs)
     notes_lines, notes_range = [], None
     if notes_idx is not None:
         ln = headings[notes_idx][0]
@@ -365,7 +377,7 @@ def check(path, conn):
                         if msg:
                             out.append(Finding("ERROR", q["line"], msg))
                         out += [Finding("WARN", q["line"], w) for w in warns]
-                        if corpus != "ext":
+                        if corpus != "ext" and not quotes_only:
                             hit = (set(hay_refs) | named) & contested
                             miss = sorted(hit - notes_verses)
                             if miss:
@@ -384,8 +396,11 @@ def check(path, conn):
     for i in range(body_start, len(lines)):
         if lines[i].lstrip().startswith(">") or (notes_range and notes_range[0] <= i + 1 <= notes_range[1]):
             continue  # quote blocks are verified; Notes legitimately cite variant phrases
-        if PROSE_RUN.search(nfc(lines[i])):
+        if any(not quoted_already(m.group(0), quotes, i + 1) for m in PROSE_RUN.finditer(nfc(lines[i]))):
             out.append(Finding("WARN", i + 1, "3+ original-language words in prose: put the phrase in a tagged quote block so it is verified"))
+
+    if quotes_only:
+        return sorted(out, key=lambda f: (f.line, f.level != "ERROR"))
 
     # word count (excluding frontmatter, quote blocks, headings, Notes)
     words = 0
@@ -407,6 +422,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("files", nargs="+")
     ap.add_argument("--db")
+    ap.add_argument("--quotes-only", action="store_true", help="chat answers: check quotes/tags/tradition terms only")
+    ap.add_argument("--lang", help="language of the Literal:/Natural: lines in --quotes-only mode (default en)")
     a = ap.parse_args(argv)
     if a.db:
         p = Path(a.db)
@@ -424,7 +441,7 @@ def main(argv=None):
     bad = False
     for f in a.files:
         try:
-            findings = check(Path(f), conn)
+            findings = check(Path(f), conn, quotes_only=a.quotes_only, lang=a.lang)
         except (OSError, UnicodeDecodeError) as e:
             print(f"ERROR 0: cannot read {f}: {e}")
             bad = True

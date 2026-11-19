@@ -12,7 +12,7 @@ The audience shapes vocabulary, illustrations and the closing response — never
 ## non-christian
 
 - **No unexplained insider terms.** Prefer the plain word; if an insider word must appear (a quote, a name people know), explain it in the same sentence.
-- Assume no Bible knowledge: give who/where/when in one or two sentences before the text.
+- Assume no Bible knowledge. **Required:** before the first quote, one or two sentences that name *who* (writer or speaker), *where* (the place of the scene, by name, as the text or its context gives it) and *when*. Example: "In Jerusalem, in the first century, a teacher named Nicodemus comes to Jesus at night." Not a background lecture: two sentences at most.
 - Illustrations from ordinary life, not church life.
 - Response: an invitation to consider, ask, read, or trust — respectful, no pressure, no assumed agreement.
 

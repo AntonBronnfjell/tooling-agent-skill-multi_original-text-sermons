@@ -25,7 +25,7 @@ LLM-agnostic: works in Claude Code, Cursor, Copilot, or any agent that reads mar
 
 ## Workflow
 
-Follow these ten steps in order for every sermon. For a word study or a single-verse question, run steps 3–6 and answer in chat with the same quote format and rules.
+Follow these ten steps in order for every sermon. For a word study or a single-verse question, run steps 3–6 and answer in chat with the same quote format and rules; before answering, put the quote blocks in a temp file and run `python3 scripts/check_sermon.py --quotes-only --lang <xx> <tmpfile>` until it exits 0 (it checks tags, quoted text and tradition terms only).
 
 ### 1. Intake
 
@@ -37,21 +37,25 @@ Ask **only what is missing**, in **one short message**:
 - output language: any. Spanish (`es`) and English (`en`) are fully validated (tradition-vocabulary check + localized default templates); for any other language (e.g. `pt`, `fr`) see step 7 and hard rule 4
 - template: "Use the default template, or paste an example sermon whose structure I should copy?"
 
-A bare request like "a sermon on grace" / "una prédica sobre la gracia" gets the intake message, not a sermon. Don't ask what the user already said; infer the language from the request when it is obvious, and confirm it in the same message.
+A bare request like "a sermon on grace" / "una prédica sobre la gracia" gets the intake message, not a sermon; for a topic-only request, put the step-2 passage proposals in that same message. Don't ask what the user already said; infer the language from the request when it is obvious, and confirm it in the same message. If the request is otherwise complete, or the user leaves the template question unanswered, don't ask — use big-idea and say so in one line (for non-christian or mixed audiences, offer hook-book-look-took, but the default stays big-idea).
 
-Templates: default [big-idea.md](templates/big-idea.md) (expository, 3 points); preset [hook-book-look-took.md](templates/hook-book-look-took.md) (suits evangelistic, non-christian or mixed audiences — offer it then). If the user pastes an **example sermon**, copy only its **skeleton** — section names, order, relative length — and discard its wording, illustrations and theology entirely; the sermon then uses `template: custom` with a `sections:` list (see Output format).
+Templates: default [big-idea.md](templates/big-idea.md) (expository, 3 points); preset [hook-book-look-took.md](templates/hook-book-look-took.md) (suits evangelistic, non-christian or mixed audiences — offer it then). If the user pastes an **example sermon**, copy only its **skeleton** — section names, order, relative length — and discard its wording, illustrations and theology entirely; the sermon then uses `template: custom` with a `sections:` list (see Output format). The example's title is its `#` heading, not a section. A short structure the user asks for explicitly wins over the length target: the length WARN is then acceptable — say so in Notes.
 
 ### 2. Passage
 
-If only a topic is given, propose 1–3 passages (one line each on why) and let the user choose. Don't start the text work until a passage is chosen.
+If only a topic is given, propose 1–3 passages (one line each on why) — in the intake message (step 1) — and let the user choose. Don't start the text work until a passage is chosen. Several passages: list them all in `passage:` (`A; B; C`); with big-idea, give each point one text and say so.
 
 ### 3. Text
 
 Run `lookup.py verse`, `variants`, `dss` and `lxx` for the passage (NT: `verse` + `variants`; OT: `verse` + `dss` + `lxx`). **Never quote from memory**: every original-language word in the sermon is copied from this session's `lookup.py` output for the exact corpus and witness it is tagged with.
 
+- **Cover the whole passage.** Run `variants` (NT) or `dss` + `lxx` (OT) on every verse of it — split at chapter boundaries (`John.7.53` + `John.8.1-11`); never sample verses. Report the wording differences inside the passage, not only whether an edition brackets it.
+- **Report every witness the tool returns** (each edition, each scroll, with its reading), not a selection. `absent: "no DSS witness has Ps.1.1"` (exit 0) means that corpus has no witness for the verse — say so; exit 1 is an unknown ref.
+- The NT data holds printed editions (NA28, SBL, THGNT, WH, Byz, TR), not manuscripts: never claim manuscript evidence the tools don't show ([text-criticism.md](references/text-criticism.md)).
+
 ### 4. Linguistics
 
-Apply the Greek ([linguistics-greek.md](references/linguistics-greek.md)) or Hebrew/Aramaic ([linguistics-hebrew.md](references/linguistics-hebrew.md)) checks and the fallacy checks ([exegetical-fallacies.md](references/exegetical-fallacies.md)) to the key words and clauses. Run `lookup.py word` on key lemmas, including their LXX usage, and `lookup.py usage` when 1st-century meaning matters. Check every quoted reading against [contested-readings.md](references/contested-readings.md) and every variant against [text-criticism.md](references/text-criticism.md).
+Apply the Greek ([linguistics-greek.md](references/linguistics-greek.md)) or Hebrew/Aramaic ([linguistics-hebrew.md](references/linguistics-hebrew.md)) checks and the fallacy checks ([exegetical-fallacies.md](references/exegetical-fallacies.md)) to the key words and clauses. Run `lookup.py word` on key lemmas, including their LXX usage, and `lookup.py usage` when 1st-century meaning matters. The data may split one lexeme across forms or corpora (`usage ἐξομολογέω`: NT 0, LXX 92; `usage ἐξομολογέομαι`: NT 10, LXX 0) — try both forms. Hebrew `word` has no LXX data: look up the Greek side. Check every quoted reading against [contested-readings.md](references/contested-readings.md) and every variant against [text-criticism.md](references/text-criticism.md).
 
 ### 5. Comparison
 
@@ -77,7 +81,7 @@ Save to `./sermons/YYYY-MM-DD-<slug>.<lang>.md` in the current working directory
 
 ### 10. Verify
 
-Run `python3 scripts/check_sermon.py ./sermons/<file>.md` (by its path in the skill folder). **Fix every ERROR and run it again until it exits 0** before presenting the sermon as done. Then handle each WARN: length; contested ref without an options note in Notes; 3+ untagged original-language words in prose; one-word segments around `…` or too many `…` (stitching risk — quote a contiguous phrase or split the quote); tradition vocabulary not checked (languages other than es/en — say so in Notes). Never "fix" an ERROR by changing the quoted text to something `lookup.py` did not print — re-run `lookup.py` and copy, or drop the quote. Exit 2 = DB missing (see Paths and setup).
+Run `python3 scripts/check_sermon.py ./sermons/<file>.md` (by its path in the skill folder). **Fix every ERROR and run it again until it exits 0** before presenting the sermon as done. Then handle each WARN: length (acceptable when the user asked for a short structure — say so in Notes); contested ref without an options note in Notes; 3+ untagged original-language words in prose; one-word segments around `…` or too many `…` (stitching risk — quote a contiguous phrase or split the quote); tradition vocabulary not checked (languages other than es/en — say so in Notes). Never "fix" an ERROR by changing the quoted text to something `lookup.py` did not print — re-run `lookup.py` and copy, or drop the quote. Exit 2 = DB missing (see Paths and setup).
 
 ## Hard rules
 
@@ -93,32 +97,35 @@ Run `python3 scripts/check_sermon.py ./sermons/<file>.md` (by its path in the sk
    - the quoted text must be a contiguous run of that witness's verse text; `…` may elide, but never stitch single words together.
 3. **Two lines after every quote**: `Literal:` then `Natural:`, in the sermon language.
 4. **No tradition vocabulary on `Literal:`/`Natural:` lines** — any term in [tradition-vocabulary.md](references/tradition-vocabulary.md) for that language (e.g. *church/iglesia* for ἐκκλησία, *baptize/bautizar* for βαπτίζω) is an error there. Use the plain rendering; name and discuss the traditional term in prose or Notes. For a language other than es/en the validator still rejects any es/en list term on those lines, but cannot check that language's own church vocabulary: apply the EN/ES lists by analogy (render the plain meaning, not the church term) and state in Notes that the translation lines were not machine-checked for tradition vocabulary.
-5. **Capitalization**: manuscripts of the period have no case distinction. No capitals added to πνεῦμα ἅγιον / רוּחַ ("holy spirit", "espíritu santo"); θεός/אֱלֹהִים → "God/Dios" only where target-language grammar treats it as a name (e.g. אֱלֹהִים with a singular verb, as in Gen.1.1 and Gen.1.26 — there the contested part is the plural "let us … our", not "God"); where the form is anarthrous and the sense debated (John.1.1c, Heb.1.8) or the word takes plural agreement (Ps.82.6), show the options ("God / divine / a god / gods") instead of deciding by a capital letter; no reverential capitals on pronouns or titles ([fidelity-rules.md](references/fidelity-rules.md) §4).
+5. **Capitalization**: manuscripts of the period have no case distinction. No capitals added to πνεῦμα ἅγιον / רוּחַ ("holy spirit", "espíritu santo"); θεός/אֱלֹהִים → "God/Dios" only where target-language grammar treats it as a name (e.g. אֱלֹהִים with a singular verb, as in Gen.1.1 and Gen.1.26 — there the contested part is the plural "let us … our", not "God"); where the form is anarthrous and the sense debated (John.1.1c, Heb.1.8) or the word takes plural agreement (Ps.82.6), show the options ("God / divine / a god / gods") instead of deciding by a capital letter; no reverential capitals on pronouns or titles; κύριος (Phil.2.11 κύριος Ἰησοῦς Χριστὸς) is capitalized only where the target language's grammar capitalizes a title used with or for a person's name — and where the text applies LXX YHWH-language (κύριος for יהוה), say so in Notes ([fidelity-rules.md](references/fidelity-rules.md) §4).
 6. **Show the options at contested readings** ([contested-readings.md](references/contested-readings.md)): the original, each option with its grammatical/lexical/textual basis, and what the immediate context favors — as evidence, not verdict. Never pick silently, in either direction; never pick what suits a doctrine or an anti-doctrine. "The text allows both" is a valid finding.
-7. **Usage claims only from this session's `lookup.py` output** — occurrence counts, semantic domains, "the LXX uses X where the Hebrew has Y", Josephus/Philo/papyri usage. Report the tool's caveats (LXX/Hebrew figures from `word` are same-verse co-occurrence, not alignment).
+7. **Usage claims only from this session's `lookup.py` output** — occurrence counts, semantic domains, "the LXX uses X where the Hebrew has Y", Josephus/Philo/papyri usage. Report the tool's caveats (LXX/Hebrew figures from `word` are same-verse co-occurrence, not alignment). Examples in `references/*.md` are illustrations: re-run the lookup in this session before repeating one.
 8. **Glosses are hints, not translations.** Lexicon and tool glosses can carry tradition vocabulary or an interpretation (e.g. ἅγιος "saint", ἔθνη "Gentiles", ᾍδης "hell", βαπτίζω "baptize"). Translate from the original form, its morphology and the usage evidence.
 9. **No doctrine sources**: no creeds, confessions, councils, church fathers as interpreters, systematic theologies, commentaries, study-Bible notes, unfoldingWord notes, or denominational statements — not cited, not paraphrased. A church father may appear only as a dated text-critical witness.
 10. **DSS text is extant letters only.** Letters in [brackets] inside a word are editors' reconstructions, not on the scroll — never quote them as scroll text; `dss` diffs are consonant-only and a "delete" may be a lacuna, not an omission.
 11. **EXT text flagged `editor_bracketed`** by `lookup.py` must be labelled as editor-bracketed (editorial addition), never presented as plain Josephus/Philo. Josephus and Philo are evidence for word usage and background only — never Philo's allegory, never interpretation.
-12. **Papyri (Moulton–Milligan) is noisy OCR** of a printed lexicon: paraphrase what the entry reports, with that caveat; never quote it as verified ancient text.
+12. **Papyri (Moulton–Milligan) is noisy OCR** of a printed lexicon: use only the papyrus citations it reports, paraphrased with that caveat — never the entry's own commentary or the later scholars it cites; never quote it as verified ancient text.
 13. **No word-study fallacies**: no root fallacy ("ekklēsia = called-out ones"), no illegitimate totality transfer, no anachronism ("dynamis = dynamite"), no "aorist = once for all". If the user asks for one, decline the move and give the evidence-based reading ([exegetical-fallacies.md](references/exegetical-fallacies.md)).
 14. **Say what the evidence shows and stop.** "The data has no witness for X" is a valid finding; don't fill gaps with confident guesses or present a scholarly majority as the text's own voice.
+    - Scope every summary to the examples shown ("in the 10 contexts shown…"); no universal claims (never, always, all hearers, everyone in the 1st century) and no claims about what hearers thought.
+    - At contested readings, no weighting words (leans, favors, independent support, more reliable) unless the tool output shows it.
+    - Background facts no lookup produced (dates, labels such as "hymn") are marked as background or left out.
 
 ## `lookup.py` cheat sheet
 
-JSON by default; add `--format text` for a compact human view (put it before or after the subcommand). Refs accept OSIS (`John.3.16`), English or Spanish names (`Juan 3:16`, `1 Jn 5:7`). Exit 1 = unknown ref/witness, exit 2 = DB missing.
+JSON by default; add `--format text` for a compact human view (put it before or after the subcommand). Refs accept OSIS (`John.3.16`), English or Spanish names (`Juan 3:16`, `1 Jn 5:7`). Exit 1 = unknown ref/witness, exit 2 = DB missing; a real verse the corpus lacks exits 0 with `absent`.
 
 | command | gives | example |
 |---|---|---|
 | `verse <ref> [--corpus C] [--witness W]` | verse text + per-word lemma, Strong's, morphology, gloss. Corpus is inferred from the book (OT→`hebot`, NT→`grnt`); `--corpus lxx\|dss\|ext` for others | `verse John.1.1` · `verse John.1.18 --witness THGNT` · `verse Ps.100.3 --witness Ketiv` · `verse Judg.11.34 --corpus lxx` · `verse Isa.53.11 --corpus dss --witness 1QIsaa` · `verse Ant.1.222 --corpus ext --witness Josephus` |
 | `interlinear <ref>` | surface + gloss per word — source for the `Literal:` layer | `interlinear John.3.16-17` |
-| `variants <ref>` | NT readings by edition (SBL, NA, THGNT, WH, Treg, Byz, TR) with an early/late label — always report the edition list, not just the label | `variants 1John.5.7` |
+| `variants <ref>` | NT readings by printed edition (SBL, NA, THGNT, WH, Treg, Byz, TR) with an early/late label — always report the edition list, not just the label | `variants 1John.5.7` |
 | `word <lemma\|strongs>` | lexicon gloss/definition, semantic domains, NT counts, LXX co-occurrence with Hebrew words | `word ἐκκλησία` · `word H7225` |
-| `usage <lemma>` | 1st-century usage: counts and sample contexts in NT, LXX, Josephus, Philo, plus the Moulton–Milligan entry | `usage ἐκκλησία` |
+| `usage <lemma>` | 1st-century usage: counts and sample contexts in NT, LXX, and EXT per witness (Josephus, Philo; matched by surface form), plus the Moulton–Milligan entry | `usage ἐκκλησία` |
 | `compare <ref> [--versions V,…]` | original vs published translations (KJV, YLT, BSB, WEB, RV1909, user CSVs) | `compare Matt.16.18 --versions KJV,BSB,RV1909` |
 | `dss <ref>` | each Dead Sea Scroll's extant text vs WLC (consonants only) | `dss Isa.53.11` |
 | `lxx <ref>` | LXX witnesses (Rahlfs, RahlfsA, RahlfsTh) with WLC alongside | `lxx Isa.45.23` |
-| `search <lemma\|strongs> [--corpus C] [--limit N]` | refs where a lemma occurs | `search μονογενής --corpus grnt` |
+| `search <lemma\|strongs> [--corpus C] [--limit N]` | refs where a lemma occurs (`--corpus ext`: `Josephus Ant.3.84`-style refs) | `search μονογενής --corpus grnt` · `search ἐκκλησία --corpus ext` |
 
 Witnesses: GRC `SBL` (default) `NA` `THGNT` `WH` `Byz` `TR`; HEB/ARC `WLC` (default) `Ketiv`; LXX `Rahlfs` (default) `RahlfsA` `RahlfsTh`; DSS manuscript sigla (`1QIsaa`, `4Q56` …; `dss <ref>` shows which scrolls have the verse); EXT `Josephus` (`Ant`, `War`, `Life`, `AgAp`) and `Philo` (e.g. `Abr`, `Mos`, `SpecLeg`).
 
@@ -148,7 +155,7 @@ date: 2026-11-18
 - variants, contested readings with options, translation-comparison findings, commands used
 ```
 
-- Frontmatter keys: `passage, language, specialization, audience, template, date`. `language` is a bare language code (`es`, `en`, `pt`, `pt-BR`; names like `Spanish`/`español` also work) — anything else (e.g. `Spanish (es)`) is an error; `specialization` one of `theology | apologetics | evangelistic | teaching | pastoral`; `audience` one of `christian | non-christian | mixed`; `template` is a file name from `templates/` (`big-idea`, `hook-book-look-took`) or `custom`.
+- Frontmatter keys: `passage, language, specialization, audience, template, date`. `passage` may list several refs: `John.7.53; John.8.1-11; Mark.16.9-20`. `language` is a bare language code (`es`, `en`, `pt`, `pt-BR`; names like `Spanish`/`español` also work) — anything else (e.g. `Spanish (es)`) is an error; `specialization` one of `theology | apologetics | evangelistic | teaching | pastoral`; `audience` one of `christian | non-christian | mixed`; `template` is a file name from `templates/` (`big-idea`, `hook-book-look-took`) or `custom`.
 - `template: custom` (skeleton copied from a user's example, or any language other than es/en) adds `sections: Name 1, Name 2, …, Notes` to the frontmatter, in the sermon language; each becomes a `##` heading. The **last** listed section is treated as Notes (e.g. `Notas`, `Anotações`).
 - Each quote block: tag line, then `> Literal: …`, then `> Natural: …`. Original-language words in prose should be short (one or two words); anything longer goes in a tagged quote.
 - The last section is **Notes** (in the sermon language: `Notes`, `Notas`, or the last `sections:` name of a custom template): variants (with edition lists), every contested reading quoted with its options, translation-comparison findings (format in [translation-comparison.md](references/translation-comparison.md)), and the `lookup.py` commands used. Write refs in Notes as OSIS (`John.1.1`) or English/Spanish names (`John 1:1`, `Juan 1:1`) so the validator sees the contested-reading note.
@@ -179,7 +186,7 @@ date: 2026-11-18
 | script | use |
 |---|---|
 | `scripts/lookup.py` | every original-language word, gloss, variant, usage count and comparison (cheat sheet above) |
-| `scripts/check_sermon.py <file>…` | validator (step 10): exit 1 on errors, 2 if the DB is missing |
+| `scripts/check_sermon.py <file>…` | validator (step 10): exit 1 on errors, 2 if the DB is missing; `--quotes-only --lang xx` for chat answers |
 | `scripts/build_db.py` | builds `data/bible.db` from the vendored `sources/` (offline) |
 | `scripts/fetch_sources.sh` | maintenance only: refresh or `--check` the vendored sources |
 | `scripts/check_lxx_alignment.py` | maintenance only: LXX versification sanity check |
