@@ -26,7 +26,8 @@ DEFAULT_WITNESS = {"grnt": "SBL", "hebot": "WLC", "lxx": "Rahlfs"}
 EDITION_TOKEN = {"SBL": "SBL", "NA": "NA28", "THGNT": "Tyn", "WH": "WH", "Byz": "Byz", "TR": "TR"}
 WITNESS_ORDER = ["SBL", "NA", "THGNT", "WH", "Byz", "TR", "WLC", "Ketiv", "Rahlfs", "RahlfsA", "RahlfsTh"]
 WORD_COLS = ("pos", "surface", "lemma", "strongs", "morph", "gloss", "domain", "syntax_role")
-STRONGS_RE = re.compile(r"^([GH])0*(\d+)[A-Za-z]?$")
+STRONGS_RE = re.compile(r"^([GH])0*(\d+)([A-Za-z]?)$")
+EDITIONS = {"NA28", "NA27", "Tyn", "SBL", "WH", "Treg", "TR", "Byz"}
 DSS_NOTE = ("dss text holds extant letters only; letters in [brackets] inside word surfaces are "
             "editor-reconstructed, not on the scroll")
 OCR_LABEL = "OCR of a printed lexicon (noisy, unverified) - do not quote as verified text"
@@ -96,18 +97,38 @@ def edition_tokens(editions):
     return {re.split("[»«]", t)[0] for t in (editions or "").split("+") if t}
 
 
+def is_late(editions):
+    """Controller ruling: ignore non-edition tokens (KJV, NIV...); if no edition token remains,
+    late only when the original tokens were within {TR, Byz, KJV}."""
+    toks = edition_tokens(editions)
+    eds = toks & EDITIONS
+    if eds:
+        return eds <= {"TR", "Byz"}
+    return bool(toks) and toks <= {"TR", "Byz", "KJV"}
+
+
 def verse_words(conn, corpus, witness, ref):
     """Words of one verse for one witness (grnt: TAGNT rows whose editions include the witness)."""
     if corpus == "grnt":
         tok = EDITION_TOKEN.get(witness)
         rows = conn.execute("SELECT * FROM words WHERE corpus='grnt' AND ref=? ORDER BY pos, rowid", (ref,)).fetchall()
-        return [r for r in rows if tok in edition_tokens(r["editions"])]
+        rows = [dict(r) for r in rows if tok in edition_tokens(r["editions"])]
+        have = {(r["pos"], r["surface"]) for r in rows}
+        # substituted readings live only in `variants` (surface only, no lemma/morph)
+        for v in conn.execute("SELECT pos, reading, editions FROM variants WHERE ref=?", (ref,)):
+            if tok in edition_tokens(v["editions"]) and (v["pos"], v["reading"]) not in have:
+                rows.append({"pos": v["pos"], "surface": v["reading"], "lemma": "", "strongs": "", "morph": "",
+                             "gloss": "", "domain": "", "syntax_role": "", "editions": v["editions"],
+                             "from_variant": True})
+        return sorted(rows, key=lambda r: r["pos"])
     return conn.execute("SELECT * FROM words WHERE corpus=? AND witness=? AND ref=? ORDER BY pos, rowid",
                         (corpus, witness, ref)).fetchall()
 
 
 def word_dict(row, corpus):
     d = {k: row[k] for k in WORD_COLS}
+    if isinstance(row, dict) and row.get("from_variant"):
+        d["from_variant"] = True
     if corpus == "dss":
         d["flags"] = [f for f in row["editions"].split(",") if f]
     if corpus == "ext" and row["editions"] == "bracketed":
@@ -125,14 +146,34 @@ def verse_texts(conn, corpus, witness, refs):
     return out
 
 
+def is_strongs(q):
+    return all(STRONGS_RE.match(t.strip().upper()) for t in q.split("+") if t.strip()) and bool(q.strip())
+
+
+def strongs_rows(conn, q):
+    """Lexicon rows for Strong's number(s). `G1473+G2532` = union; `G2424I` = that exact entry;
+    bare `G2010` = G2010 plus its letter-suffixed extensions (never G20100-style longer numbers)."""
+    rows = []
+    for tok in q.split("+"):
+        m = STRONGS_RE.match(tok.strip().upper())
+        if not m:
+            continue
+        n = int(m.group(2))
+        base = f"{m.group(1)}{n:04d}" if n < 10000 else f"{m.group(1)}{n}"
+        if m.group(3):
+            rows += conn.execute("SELECT * FROM lexicon WHERE strongs=?", (base + m.group(3),)).fetchall()
+        else:
+            rows += conn.execute("SELECT * FROM lexicon WHERE strongs=? OR strongs GLOB ?",
+                                 (base, base + "[A-Z]")).fetchall()
+    return rows
+
+
 def lemmas_for(conn, q):
     """lemma, or Strong's number -> the lemma(s) the lexicon gives it."""
     q = nfc(q.strip())
-    m = STRONGS_RE.match(q.upper())
-    if not m:
+    if not is_strongs(q):
         return [q]
-    base = f"{m.group(1)}{int(m.group(2)):04d}"
-    return sorted({r[0] for r in conn.execute("SELECT lemma FROM lexicon WHERE strongs LIKE ?", (base + "%",))})
+    return sorted({r["lemma"] for r in strongs_rows(conn, q)})
 
 
 def in_clause(vals):
@@ -176,6 +217,10 @@ def cmd_verse(conn, a, gloss_only=False):
     out = {"ref": label, "corpus": corpus, "witness": witness, "text": " ".join(texts.values()), "words": words}
     if multi and len(texts) < len(refs):
         out["absent_verses"] = [r for r in refs if r not in texts]
+    if corpus in ("grnt", "hebot", "lxx"):
+        ntok = sum(len(t.split()) for t in texts.values())
+        if not words or len(words) < 0.8 * ntok:
+            out["words_note"] = "word-level data incomplete for this witness; text is authoritative"
     if corpus == "dss":
         out["extant_only"] = True
         out["note"] = DSS_NOTE
@@ -195,7 +240,7 @@ def cmd_variants(conn, a):
     rows = conn.execute(f"SELECT ref, pos, reading, editions FROM variants WHERE ref IN ({q}) ORDER BY rowid", refs)
     out = []
     for r in rows:
-        late = edition_tokens(r["editions"]) <= {"TR", "Byz"}  # controller ruling 1
+        late = is_late(r["editions"])
         out.append({"ref": r["ref"], "pos": r["pos"], "reading": r["reading"], "editions": r["editions"],
                     "class": "late" if late else "early"})
     return out
@@ -203,15 +248,13 @@ def cmd_variants(conn, a):
 
 def cmd_word(conn, a):
     q = nfc(a.query.strip())
-    lex = [dict(r) for r in conn.execute("SELECT * FROM lexicon WHERE lemma=?", (q,))] \
-        if not STRONGS_RE.match(q.upper()) else []
-    if not lex and not STRONGS_RE.match(q.upper()):
-        key = strip_accents(q).casefold()
-        lex = [dict(r) for r in conn.execute("SELECT * FROM lexicon") if strip_accents(r["lemma"]).casefold() == key]
-    if STRONGS_RE.match(q.upper()):
-        m = STRONGS_RE.match(q.upper())
-        base = f"{m.group(1)}{int(m.group(2)):04d}"
-        lex = [dict(r) for r in conn.execute("SELECT * FROM lexicon WHERE strongs LIKE ?", (base + "%",))]
+    if is_strongs(q):
+        lex = [dict(r) for r in strongs_rows(conn, q)]
+    else:
+        lex = [dict(r) for r in conn.execute("SELECT * FROM lexicon WHERE lemma=?", (q,))]
+        if not lex:
+            key = strip_accents(q).casefold()
+            lex = [dict(r) for r in conn.execute("SELECT * FROM lexicon") if strip_accents(r["lemma"]).casefold() == key]
     lemmas = sorted({r["lemma"] for r in lex}) or [q]
     ph = in_clause(lemmas)
 
@@ -311,11 +354,11 @@ def cons(s):
     return _NIQQUD.sub("", s.replace("־", " ")).split()
 
 
-def diff_ops(a_tokens, b_tokens):
+def diff_ops(a_tokens, b_tokens, key="base"):
     ops = []
     for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a_tokens, b_tokens, autojunk=False).get_opcodes():
         if tag != "equal":
-            ops.append({"op": tag, "hebot": a_tokens[i1:i2], "reading": b_tokens[j1:j2]})
+            ops.append({"op": tag, key: a_tokens[i1:i2], "reading": b_tokens[j1:j2]})
     return ops
 
 
@@ -339,7 +382,7 @@ def cmd_dss(conn, a):
         readings.append({"witness": w, "text": text, "extant_only": True, "flags": flags,
                          "tokens": len(toks), "hebot_tokens": len(heb_t), "identical_to_wlc": not ops,
                          "diff_vs_hebot": ops})
-    return {"ref": label, "note": DSS_NOTE + "; diff compares consonants only (WLC vowels/accents stripped); "
+    return {"ref": label, "base_witness": "WLC", "note": DSS_NOTE + "; diff tokens are consonant-only skeletons (WLC vowels/accents stripped); diff compares consonants only (WLC vowels/accents stripped); "
             "'delete' ops are WLC words not extant in the fragment (lacuna or omission - judge from the scroll's extent)",
             "hebot_wlc": heb, "readings": readings}
 
@@ -363,7 +406,9 @@ def cmd_lxx(conn, a):
     first = refs[0]
     return {"ref": label, "lxx_ref": source_ref(conn, "lxx", first) if len(refs) == 1 else None,
             "hebrew_ref": source_ref(conn, "hebrew", first) if len(refs) == 1 else None,
-            "note": "Greek vs Hebrew tokens are not diffed (different languages); witnesses are diffed against Rahlfs, "
+            "base_witness": "Rahlfs",
+            "note": "Greek vs Hebrew tokens are not diffed (different languages); witnesses are diffed against Rahlfs "
+                    "(`base` = Rahlfs tokens); diff tokens are match_key forms (normalised, casefolded, not display text); "
                     "WLC text and token counts are given for comparison",
             "hebot_wlc": heb, "readings": readings}
 
@@ -437,7 +482,7 @@ def render_text(cmd, out):
         for r in out["readings"]:
             L.append(f"  {r['witness']}: {r['text']}")
             for d in r.get("diff_vs_hebot", r.get("diff_vs_rahlfs", [])):
-                L.append(f"    {d['op']}: {' '.join(d['hebot'])} -> {' '.join(d['reading'])}")
+                L.append(f"    {d['op']}: {' '.join(d['base'])} -> {' '.join(d['reading'])}")
     elif cmd == "search":
         for c, r in out["results"].items():
             L.append(f"{c}: {r['occurrences']} in {r['verses']} verses: {', '.join(r['refs'])}" + (" ..." if r["truncated"] else ""))

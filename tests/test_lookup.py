@@ -35,6 +35,14 @@ class Lookup(unittest.TestCase):
         cls.db = os.path.join(cls.tmp, "t.db")
         build_db.build(Path(FIXTURES), Path(cls.db), out=io.StringIO())
         Lookup.db = cls.db
+        import sqlite3
+        c = sqlite3.connect(cls.db)
+        c.executemany("INSERT INTO lexicon VALUES (?,?,?,?,?)", [
+            ("G2010", "ἐπιτρέπω", "grc", "permit", ""), ("G20100", "ἄλλο", "grc", "other", ""),
+            ("G14730", "ἄλλο2", "grc", "other2", "")])  # fixture already has G1473, G2424*, G2532
+        c.execute("INSERT INTO variants VALUES ('Acts.2.4', 9, 'zzz', 'Byz+KJV')")
+        c.commit()
+        c.close()
 
     @classmethod
     def tearDownClass(cls):
@@ -95,6 +103,42 @@ class Lookup(unittest.TestCase):
     def test_variants_displaced_suffix_is_late(self):
         v = run("variants", "Acts.2.38")
         self.assertTrue(all(x["class"] == "late" for x in v if x["editions"].startswith("TR")))
+
+    def test_late_ignores_translation_tokens(self):
+        v = [x for x in run("variants", "Acts.2.4") if x["reading"] == "zzz"]
+        self.assertEqual(v[0]["class"], "late")
+
+    def test_strongs_no_prefix_collision(self):
+        self.assertEqual({r["lemma"] for r in run("word", "G2010")["lexicon"]}, {"ἐπιτρέπω"})
+        self.assertEqual({r["strongs"] for r in run("word", "G1473")["lexicon"]}, {"G1473"})
+        self.assertEqual(run("search", "G2010")["lemmas"], ["ἐπιτρέπω"])
+
+    def test_strongs_suffix_and_combined(self):
+        self.assertEqual([r["strongs"] for r in run("word", "G2424I")["lexicon"]], ["G2424I"])
+        self.assertEqual({r["strongs"] for r in run("word", "G2424")["lexicon"]},
+                         {"G2424G", "G2424H", "G2424I", "G2424J", "G2424K"})
+        self.assertEqual({r["strongs"] for r in run("word", "G1473+G2532")["lexicon"]}, {"G1473", "G2532"})
+
+    def test_variant_reading_merged_into_words(self):
+        o = run("verse", "Acts.2.4", "--witness", "TR")
+        w = [x for x in o["words"] if x["surface"] == "ἅπαντες"]
+        self.assertEqual(len(w), 1)
+        self.assertTrue(w[0]["from_variant"])
+        self.assertEqual(w[0]["pos"], 3)
+        self.assertEqual([x["pos"] for x in o["words"]], sorted(x["pos"] for x in o["words"]))
+
+    def test_words_note_when_incomplete(self):
+        self.assertIn("words_note", run("verse", "Mark.16.9", "--witness", "SBL"))
+        self.assertIn("words_note", run("verse", "Ps.51.2", "--witness", "Ketiv"))
+        self.assertNotIn("words_note", run("verse", "John.1.1"))
+
+    def test_lxx_diff_base_key(self):
+        self.assertEqual(run("lxx", "Isa.45.23")["base_witness"], "Rahlfs")
+        o = run("dss", "Isa.53.11")
+        self.assertEqual(o["base_witness"], "WLC")
+        d = o["readings"][0]["diff_vs_hebot"][0]
+        self.assertIn("base", d)
+        self.assertNotIn("hebot", d)
 
     def test_compare(self):
         o = run("compare", "John.1.1")
