@@ -37,6 +37,8 @@ MAX_RANGE = 50
 MAX_ELLIPSES = 4
 LANGS = {"es": "es", "spanish": "es", "español": "es", "espanol": "es", "castellano": "es", "spa": "es",
          "en": "en", "english": "en", "inglés": "en", "ingles": "en", "eng": "en"}
+LANG_CODE = re.compile(r"^[a-z]{2,3}(?:[-_][a-z0-9]+)*$")
+CHECKED_LANGS = ("es", "en")  # languages with a tradition-vocabulary list; others are scanned with both
 HEB_POINT = re.compile("[ְ-ׇּֿׁׂ]")
 
 
@@ -242,8 +244,31 @@ def required_sections(fm, lang):
     return list(zip(loc, en)), None
 
 
-def tradition_regex(lang):
-    terms = sorted(references.tradition_terms(lang), key=len, reverse=True)
+def notes_heading(headings, pairs):
+    """Index into headings of the Notes section, or None."""
+    starts = lambda h, names: any(h.lower().startswith(n.lower()) for n in names)
+    if pairs:
+        i = 0
+        for k, names in enumerate(pairs):
+            while i < len(headings) and not starts(headings[i][1], names):
+                i += 1
+            if i == len(headings):
+                break
+            if k == len(pairs) - 1:
+                return i
+            i += 1
+    exact = {"notes", "notas"} | {n.lower() for n in (pairs[-1] if pairs else ())}
+    for idx, (_, h) in enumerate(headings):
+        if h.lower() in exact:
+            return idx
+    for idx, (_, h) in enumerate(headings):
+        if re.match(r"(notes|notas)\b", h, re.IGNORECASE):
+            return idx
+    return None
+
+
+def tradition_regex(*langs):
+    terms = sorted(set().union(*(references.tradition_terms(lg) for lg in langs)), key=len, reverse=True)
     if not terms:
         return None
     def word(w):  # straight and curly apostrophes are interchangeable
@@ -267,10 +292,23 @@ def check(path, conn):
     # Any language may be written; tradition vocabulary is only machine-checked where the
     # reference table has terms for it (es, en). Other languages get a WARN, quotes are still verified.
     raw_lang = (fm.get("language") or "en").strip().lower()
-    lang = LANGS.get(raw_lang) or LANGS.get(re.split(r"[-_]", raw_lang)[0]) or re.split(r"[-_]", raw_lang)[0]
-    if not references.tradition_terms(lang):
-        out.append(Finding("WARN", 1, f"tradition vocabulary not checked for {lang} (only "
-                           f"{', '.join(sorted(set(LANGS.values())))} have a list): review Literal:/Natural: lines by hand"))
+    lang = LANGS.get(raw_lang) or LANGS.get(re.split(r"[-_]", raw_lang)[0])
+    if lang is None and not LANG_CODE.match(raw_lang):
+        out.append(Finding("ERROR", 1, f"invalid language value {fm.get('language')!r}: use a language code "
+                           "such as es, en, pt, pt-BR"))
+    elif lang is None:
+        lang = re.split(r"[-_]", raw_lang)[0]
+    if lang and references.tradition_terms(lang):
+        trad_langs = (lang,)
+    else:
+        # unknown or invalid language: still scan with the es and en lists, so a mislabelled Spanish or
+        # English sermon cannot skip the check; the rest of the language's vocabulary is unchecked
+        trad_langs = CHECKED_LANGS
+        if lang:
+            out.append(Finding("WARN", 1, f"tradition vocabulary not checked for {lang} (only "
+                               f"{', '.join(CHECKED_LANGS)} have a list; translation lines scanned with the es/en "
+                               "lists only): review Literal:/Natural: lines by hand"))
+    lang = lang or "en"
 
     headings = [(i + 1, m.group(1)) for i in range(body_start, len(lines)) if (m := H2_RE.match(lines[i]))]
     pairs = []
@@ -285,19 +323,21 @@ def check(path, conn):
             if not ok:
                 out.append(Finding("ERROR", 1, f"missing section: ## {loc}" + (f" ({en})" if loc != en else "")))
 
-    # notes section: a heading starting with Notes/Notas, or with the template's last section name
-    notes_names = {n.lower() for n in (pairs[-1] if pairs else ())}
+    # notes section: the heading matched by the template's last section when the sections are walked in
+    # order (so an earlier heading sharing its prefix is not taken); else an exact Notes/Notas/last-name
+    # heading; else the first heading starting with Notes/Notas
+    notes_idx = notes_heading(headings, pairs)
     notes_lines, notes_range = [], None
-    for idx, (ln, h) in enumerate(headings):
-        if re.match(r"(notes|notas)\b", h, re.IGNORECASE) or any(h.lower().startswith(n) for n in notes_names):
-            end = headings[idx + 1][0] - 1 if idx + 1 < len(headings) else len(lines)
-            notes_range = (ln, end)
-            notes_lines = lines[ln:end]
-            break
+    if notes_idx is not None:
+        ln = headings[notes_idx][0]
+        end = headings[notes_idx + 1][0] - 1 if notes_idx + 1 < len(headings) else len(lines)
+        notes_range = (ln, end)
+        notes_lines = lines[ln:end]
 
     notes_verses = refs_in_text("\n".join(notes_lines))
     contested = contested_verses()
-    trad = tradition_regex(lang)
+    trad = tradition_regex(*trad_langs)
+    trad_src = "" if trad_langs == (lang,) else " (es/en list)"
 
     # quotes
     quotes, problems = parse_quotes(lines, body_start)
@@ -338,7 +378,7 @@ def check(path, conn):
         for label, entries in q["labels"].items():
             for ln, text in entries:
                 for m in (trad.finditer(nfc(text)) if trad else ()):
-                    out.append(Finding("ERROR", ln, f"tradition term {m.group(0)!r} on {label.capitalize()}: line; use a plain rendering (discuss the term in prose or Notes)"))
+                    out.append(Finding("ERROR", ln, f"tradition term {m.group(0)!r}{trad_src} on {label.capitalize()}: line; use a plain rendering (discuss the term in prose or Notes)"))
 
     # runs of original-language words in prose (outside any blockquote) should be tagged quotes
     for i in range(body_start, len(lines)):

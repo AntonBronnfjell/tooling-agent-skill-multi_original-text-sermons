@@ -11,7 +11,7 @@ python3 scripts/build_db.py                       # sources/ -> data/bible.db (o
 python3 -m unittest discover -s tests -v          # full test suite (unittest only)
 python3 scripts/lint_skill.py                     # SKILL.md frontmatter, < 500 lines, links, named scripts
 python3 scripts/check_sermon.py evals/fixtures/positive/*.md   # validator must pass every positive fixture
-python3 scripts/check_sermon.py evals/fixtures/negative/<f>.md # ...and flag each negative one (ERROR, or WARN-only for john-1-1-no-note / stitched-single-words / language-unsupported)
+python3 scripts/check_sermon.py evals/fixtures/negative/<f>.md # ...and flag each negative one (ERROR, or WARN-only for john-1-1-no-note / stitched-single-words)
 python3 scripts/lookup.py --format text verse John.1.1          # smoke-test the DB
 bash scripts/fetch_sources.sh --check             # verify sha256 of vendored sources (no network)
 python3 scripts/check_lxx_alignment.py            # LXX -> KJV versification sanity check (real data)

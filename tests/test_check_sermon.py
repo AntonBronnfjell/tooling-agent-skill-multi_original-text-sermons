@@ -136,6 +136,7 @@ NEG_ERR = {
     "range-nonexistent": "not found",
     "range-giant": "range",
     "chapter-only": "chapter",
+    "language-unsupported": "invalid language value",
 }
 
 
@@ -145,10 +146,16 @@ class Hardening(Base):
             errs = [f.msg for f in check(FX / "negative" / f"{name}.md", self.conn) if f.level == "ERROR"]
             self.assertTrue(any(frag in m for m in errs), (name, errs))
 
-    def test_language_unsupported_fixture_warns_only(self):
-        fs = check(FX / "negative" / "language-unsupported.md", self.conn)
+    def test_language_unsupported_fixture_errors(self):
+        errs = [f.msg for f in check(FX / "negative" / "language-unsupported.md", self.conn) if f.level == "ERROR"]
+        self.assertTrue(any("invalid language value" in m for m in errs), errs)
+        self.assertTrue(any("tradition term 'church' (es/en list)" in m for m in errs), errs)
+
+    def test_portuguese_positive_fixture_warns_only(self):
+        fs = check(FX / "positive" / "portuguese-custom.md", self.conn)
         self.assertFalse([f for f in fs if f.level == "ERROR"], fs)
-        self.assertTrue(any("tradition vocabulary not checked for klingon" in f.msg for f in fs if f.level == "WARN"), fs)
+        self.assertTrue(any("not checked for pt" in f.msg for f in fs if f.level == "WARN"), fs)
+        self.assertFalse(any("contested" in f.msg for f in fs), fs)
 
     def test_other_language_custom_sections_validates_with_warn(self):
         pt = ["Introdução", "Texto", "Conclusão", "Anotações"]
@@ -180,6 +187,48 @@ class Hardening(Base):
         ok = self.run_text(fm(language="pt", template="custom", sections=", ".join(heads))
                            + body(heads, notes="- John.1.1 opções"))
         self.assertFalse(any("contested" in f.msg for f in ok if f.level == "WARN"))
+
+    def custom_with(self, lang, natural):
+        quote = J11.replace("and the word was God", natural)
+        return self.run_text(fm(language=lang, template="custom", sections="Texto, Notas")
+                             + body(["Texto", "Notas"], quote=quote, notes="- John.1.1 opciones."))
+
+    def test_language_value_forms_cannot_bypass_tradition_check(self):
+        for lang in ('"es"', "'es'", "es # spanish", "esp", "sp", "pt", "Spanish (es)", "'en'"):
+            errs = [f.msg for f in self.custom_with(lang, "la iglesia y the church") if f.level == "ERROR"]
+            self.assertTrue(errs, lang)
+            self.assertTrue(any("tradition term" in m or "invalid language" in m for m in errs), (lang, errs))
+
+    def test_quoted_and_commented_language_fully_checked(self):
+        for lang in ('"es"', "'es'", "es # spanish"):
+            fs = self.custom_with(lang, "la iglesia")
+            self.assertTrue(any("tradition term 'iglesia'" in f.msg for f in fs if f.level == "ERROR"), (lang, fs))
+            self.assertFalse(any("not checked" in f.msg for f in fs), (lang, fs))
+
+    def test_invalid_language_value_errors(self):
+        for lang in ("Spanish (es)", "es/en", "español!"):
+            errs = [f.msg for f in self.custom_with(lang, "a palavra") if f.level == "ERROR"]
+            self.assertTrue(any("invalid language value" in m for m in errs), (lang, errs))
+
+    def test_unknown_code_scans_es_and_en_lists(self):
+        for lang, term in (("esp", "iglesia"), ("sp", "church"), ("pt", "bautizar")):
+            errs = [f.msg for f in self.custom_with(lang, f"a {term}") if f.level == "ERROR"]
+            self.assertTrue(any("tradition term" in m and "es/en list" in m for m in errs), (lang, errs))
+
+    def test_real_portuguese_warns_only(self):
+        fs = self.custom_with("pt", "e a palavra era Deus / divina")
+        self.assertFalse([f for f in fs if f.level == "ERROR"], fs)
+        self.assertTrue(any("not checked" in f.msg for f in fs if f.level == "WARN"), fs)
+
+    def test_notes_prefix_in_body_not_taken_as_notes(self):
+        # body heading "Notas previas" shares the prefix of the last section "Notas" but comes before it
+        heads = ["Notas previas", "Texto", "Notas"]
+        t = (fm(language="pt", template="custom", sections="Notas previas, Texto, Notas")
+             + "## Notas previas\n\n- John.1.1 aqui não conta\n\n## Texto\n\n" + J11
+             + "\n## Notas\n\n- nada\n")
+        self.assertTrue(any("contested" in f.msg for f in self.run_text(t) if f.level == "WARN"))
+        t2 = t.replace("- John.1.1 aqui não conta", "- x").replace("- nada", "- John.1.1 opções")
+        self.assertFalse(any("contested" in f.msg for f in self.run_text(t2) if f.level == "WARN"))
 
     def test_stitched_single_words_warns(self):
         fs = check(FX / "negative" / "stitched-single-words.md", self.conn)

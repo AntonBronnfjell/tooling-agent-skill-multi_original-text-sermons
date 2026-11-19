@@ -4,6 +4,7 @@
 - contested_refs(): `ref` column of references/contested-readings.md (OSIS refs).
 - template_sections(name, lang=None): `sections:` (or `sections_<lang>:`) list from templates/<name>.md frontmatter.
 """
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -39,8 +40,18 @@ def frontmatter(path: Path) -> dict:
             break
         key, sep, value = line.partition(":")
         if sep:
-            out[key.strip()] = value.strip()
+            out[key.strip()] = _scalar(value)
     return out
+
+
+def _scalar(value: str) -> str:
+    """YAML-ish scalar: `"x"`/`'x'` -> x; plain `x # comment` -> x."""
+    value = value.strip()
+    if len(value) >= 2 and value[0] in "\"'":
+        end = value.find(value[0], 1)
+        if end > 0 and (end == len(value) - 1 or re.match(r"\s*(#.*)?$", value[end + 1:])):
+            return value[1:end].strip()
+    return re.sub(r"\s+#.*$", "", value).strip()
 
 
 def tradition_terms(lang: str) -> set:
