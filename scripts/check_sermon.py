@@ -162,6 +162,27 @@ def find_in_order(hay, segments):
     return None
 
 
+def order_findings(conn, corpus, witness, refs, line):
+    """Findings for `order_flags` on the quoted Greek verses. A TR quote of a known-scrambled verse is an
+    error; any other flag but the informational KJV verse-break move warns."""
+    if corpus != "grnt":
+        return []
+    try:
+        rows = conn.execute("SELECT ref, reason FROM order_flags WHERE corpus=? AND witness=? AND ref IN (%s)"
+                            % ",".join("?" * len(refs)), (corpus, witness, *refs)).fetchall()
+    except sqlite3.OperationalError:  # DB built before order_flags existed
+        return []
+    out = []
+    for ref in refs:
+        why = {r[1] for r in rows if r[0] == ref}
+        if "known scrambled" in why:
+            out.append(Finding("ERROR", line, f"{witness} word order for {ref} is known to be wrong in the data; "
+                                              "quote another witness"))
+        elif why - {"verse break follows KJV"}:
+            out.append(Finding("WARN", line, f"order uncertain for {witness} {ref}: verify against a printed edition"))
+    return out
+
+
 def check_quote(conn, corpus, witness, hay_refs, original, lang):
     """-> (error message | None, [warning messages])."""
     original = nfc(original)
@@ -443,6 +464,8 @@ def check(path, conn, quotes_only=False, lang=None):
                         if msg:
                             out.append(Finding("ERROR", q["line"], msg))
                         out += [Finding("WARN", q["line"], w) for w in warns]
+                        if not msg:
+                            out += order_findings(conn, corpus, canon, hay_refs, q["line"])
                         if corpus == "ext" and not msg and ext_bracketed(conn, canon, hay_refs, q["original"]):
                             if EDITOR_NOTE.search(editor_text):
                                 out.append(Finding("WARN", q["line"], "EXT quote includes editor-bracketed words "

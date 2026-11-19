@@ -5,7 +5,7 @@ versification in OSIS form. Hebrew text is the Qere (STEPBible's main text).
 """
 import lzma
 import re
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 from pathlib import Path
 
 from otslib import editions as ed
@@ -22,6 +22,7 @@ _TRAIL_PUNCT = re.compile(r"[,.;·:?!;·]+$")
 _DISPLACE = re.compile(r"(?:[»«][\d.]+)+$")
 _SPELL = re.compile(r"\s*\+?([^:;]+):\s*([^;]*?)\s*;")
 _book_cache = {}
+ORDER_UNCERTAIN = "order uncertain"
 
 
 def _open(path):
@@ -163,6 +164,7 @@ def _load_tagnt(conn, sources_dir):
     word_rows, variant_rows = [], []
     pos = {}
     all_tokens = set(GREEK_WITNESSES.values())
+    partial, dia = {}, set()  # ref -> rows not printed by every edition; refs holding διαπαντός
     for path in sorted((sources_dir / "stepbible").glob("TAGNT_*.txt.xz")):
         for m, cells, cols in _word_rows(path):
             ref = _canon_ref(m, use_kjv_alt=True)
@@ -187,6 +189,9 @@ def _load_tagnt(conn, sources_dir):
                               _cell(cells, cols, "english translation"), editions, "", ""))
             if not all_tokens <= present:
                 variant_rows.append((ref, p, surf, editions))
+                partial.setdefault(ref, set()).add(p - 1)
+            if re.search(r"δια\s?παντ", norm.strip_accents(surf).casefold()):
+                dia.add(ref)
             # ponytail: main-word trailing punctuation is re-attached to substitutions lacking it.
             tail = _TRAIL_PUNCT.search(surf)
             for wit, tok in GREEK_WITNESSES.items():
@@ -202,7 +207,7 @@ def _load_tagnt(conn, sources_dir):
                     (p - 1, ed.effective(tok, row_disp, sub_disp), s))
     conn.executemany("INSERT INTO words VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", word_rows)
     conn.executemany("INSERT INTO variants VALUES (?,?,?,?)", variant_rows)
-    vrows, reordered, other_verse = [], {}, {}
+    vrows, reordered, other_verse, flags = [], {}, {}, []
     for ref, by_w in verses.items():
         for wit, ws in by_w.items():
             surfaces = [s for _, _, s in ws]
@@ -211,14 +216,32 @@ def _load_tagnt(conn, sources_dir):
             if ed.moved(ws):
                 surfaces = _reorder_with_punct(ws)
                 reordered[wit] = reordered.get(wit, 0) + 1
+                # SBL text is replaced wholesale by MACULA's (loaders/macula.py), so it is never flagged
+                if wit != "SBL" and (ref in dia or _span_has_partial(ws, partial.get(ref, ()))):
+                    flags.append(("grnt", wit, ref, ORDER_UNCERTAIN))
             if surfaces:
                 vrows.append(_verse_row("grnt", wit, ref, " ".join(surfaces), "grc"))
     conn.executemany("INSERT INTO verses VALUES (?,?,?,?,?)", vrows)
+    conn.executemany("INSERT INTO order_flags VALUES (?,?,?,?)", flags)
     fmt = lambda d: ", ".join(f"{w}={n}" for w, n in d.items()) or "none"
     conn.executemany("INSERT INTO meta VALUES (?, ?)", [
         ("tagnt_reordered_verses", fmt(reordered)),
+        ("tagnt_order_uncertain_verses", fmt(Counter(w for _, w, _, _ in flags))),
         ("tagnt_other_verse_displacement_kept_in_place", fmt(other_verse))])
     return len(word_rows) + len(variant_rows) + len(vrows)
+
+
+def _span_has_partial(entries, partial):
+    """True if a moved word, or a row it jumps over, is not printed by every edition (its position among
+    the other editions' rows is then a guess).
+    # ponytail: the text is still reordered (the displacement marks are the only source); the flag is the
+    # ceiling. Not reordering inside such spans would need NA's order to be better than the marks, unproven."""
+    for row, d, _ in entries:
+        if isinstance(d, int) and d:
+            lo, hi = sorted((row, row + d))
+            if any(lo <= r <= hi for r in partial):
+                return True
+    return False
 
 
 def _reorder_with_punct(entries):

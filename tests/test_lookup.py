@@ -127,7 +127,7 @@ class Lookup(unittest.TestCase):
         self.assertLess(tr.index("Ἰησοῦ"), tr.index("Χριστοῦ"))
         na = [w["surface"] for w in run("verse", "1Tim.1.1", "--witness", "NA")["words"]]  # fixture SBL = MACULA
         self.assertLess(na.index("Χριστοῦ"), na.index("Ἰησοῦ"))
-        self.assertIn("order_note", run("verse", "Acts.20.28", "--witness", "TR"))
+        self.assertNotIn("order_note", run("verse", "Acts.20.28", "--witness", "TR"))  # printed edition text
         self.assertNotIn("order_note", run("verse", "Acts.20.28", "--witness", "NA"))
 
     def test_variants_report_word_order(self):

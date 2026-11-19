@@ -29,6 +29,10 @@ from otslib import norm
 
 CORPUS = "grnt"
 NO_GROUND_TRUTH = "no ground truth"
+KJV_BREAK = "verse break follows KJV"
+KNOWN_SCRAMBLED = "known scrambled"
+# TR verses whose TAGNT text keeps Scrivener's words in another order (checked by hand against Scrivener 1894)
+SCRAMBLED_TR = {"1Tim.1.2", "Acts.1.24", "John.19.31", "Luke.12.56", "Rev.17.4"}
 # eBible / Robinson file book codes -> OSIS
 BOOKS = {
     "MAT": "Matt", "MT": "Matt", "MAR": "Mark", "MR": "Mark", "LUK": "Luke", "LU": "Luke",
@@ -231,9 +235,14 @@ def rebuild(conn, witness, src, trusted):
     tgt = sorted(_tokens(old.items()), key=lambda x: macula._ref_key(x[0]))  # stable: verse order kept
     toks = _tokens(src)
     verses, good = defaultdict(list), defaultdict(lambda: True)
+    split = defaultdict(set)  # source verse -> KJV verses its words went to
     for (sref, tok), kref in zip(toks, assign_refs(toks, tgt)):
         verses[kref].append(tok)
         good[kref] = good[kref] and sref in trusted
+        split[sref].add(kref)
+    # words moved across a verse break the edition prints elsewhere: both verses are affected. A source
+    # verse that moves whole to one KJV verse (Rom 16:25-27 in Byz) is renumbering, not a boundary move.
+    broken = {r for ks in split.values() if len(ks) > 1 for r in ks}
     stats = {"same": 0, "reordered": 0, "different_words": 0, "added": 0, "flagged": 0,
              "unplaced": sorted(r for r in verses if r not in known), "examples": []}
     rows, flags = [], []
@@ -247,7 +256,12 @@ def rebuild(conn, witness, src, trusted):
         else:
             continue  # unverified text at a ref TAGNT does not give this edition: leave it out
         rows.append((CORPUS, witness, ref, text, norm.match_key(text, "grc")))
-    stats["flagged"] = len(flags)
+    flags += [(CORPUS, witness, r, KJV_BREAK) for r in sorted(broken & {x[2] for x in rows}, key=macula._ref_key)]
+    if witness == "TR":
+        flags = [(c, w, r, KNOWN_SCRAMBLED if r in SCRAMBLED_TR else why) for c, w, r, why in flags]
+    stats["flagged"] = sum(1 for f in flags if f[3] != KJV_BREAK)
+    stats["kjv_breaks"] = len(flags) - stats["flagged"]
+    stats["scrambled"] = sum(1 for f in flags if f[3] == KNOWN_SCRAMBLED)
     conn.execute("DELETE FROM verses WHERE corpus=? AND witness=?", (CORPUS, witness))
     conn.executemany("INSERT INTO verses VALUES (?,?,?,?,?)", rows)
     conn.execute("DELETE FROM order_flags WHERE corpus=? AND witness=?", (CORPUS, witness))
@@ -323,7 +337,8 @@ def load(conn, sources_dir, out=print):
     for wit, s in (("Byz", byz), ("TR", tr)):
         out(f"greek_editions {wit}: same_as_tagnt={s['same']} reordered={s['reordered']} "
             f"different_words={s['different_words']} (>=3 words: {len(s['examples'])}) added={s['added']} "
-            f"flagged_no_ground_truth={s['flagged']} unplaced={len(s['unplaced'])}"
+            f"flagged_no_ground_truth_or_scrambled={s['flagged']} (known_scrambled={s['scrambled']}) "
+            f"kjv_verse_breaks={s['kjv_breaks']} unplaced={len(s['unplaced'])}"
             + (f" grctr_not_scrivener={len(s['rejected'])}" if "rejected" in s else ""))
         n += s["same"] + s["reordered"] + s["different_words"] + s["added"]
     return n

@@ -10,6 +10,7 @@ import difflib
 import json
 import os
 import re
+import sqlite3
 import sys
 import unicodedata
 from pathlib import Path
@@ -266,16 +267,45 @@ def cmd_verse(conn, a, gloss_only=False):
         ntok = sum(len(t.split()) for t in texts.values())
         if not words or len(words) < 0.8 * ntok:
             out["words_note"] = "word-level data incomplete for this witness; text is authoritative"
-    if corpus == "grnt" and witness != "SBL" and any(grnt_words(conn, witness, r)[1] for r in texts):
-        out["order_note"] = (f"{witness} word order rebuilt from TAGNT displacement marks (checked on 73 of 78 "
-                             "SBLGNT verses; upstream marks are occasionally inconsistent): `variants` shows each "
-                             "edition's order")
+    if corpus == "grnt":
+        _order_notes(conn, out, witness, list(texts))
     if corpus == "dss":
         out["extant_only"] = True
         out["note"] = DSS_NOTE
     if corpus == "ext" and any(w.get("editor_bracketed") for w in words):
         out["editor_bracketed"] = True
     return out
+
+
+KJV_BREAK = "verse break follows KJV"
+
+
+def order_reasons(conn, corpus, witness, refs):
+    """Set of `order_flags` reasons recorded for these verses (an older DB has no such table)."""
+    try:
+        q = f"SELECT DISTINCT reason FROM order_flags WHERE corpus=? AND witness=? AND ref IN ({in_clause(refs)})"
+        return {r[0] for r in conn.execute(q, (corpus, witness, *refs))}
+    except sqlite3.OperationalError:
+        return set()
+
+
+def _order_notes(conn, out, witness, refs):
+    """`order_uncertain` + `order_note` for the Greek witness. TR and Byz text is a printed edition
+    (see `meta` tr_source / byz_source) except flagged verses; THGNT, WH and NA are rebuilt from TAGNT
+    displacement marks; SBL is MACULA's text."""
+    reasons = order_reasons(conn, "grnt", witness, refs)
+    bad = reasons - {KJV_BREAK}
+    if bad:
+        out["order_uncertain"] = True
+        out["order_note"] = (f"{witness} word order is uncertain here ({', '.join(sorted(bad))}): the data may not "
+                             "match the printed edition; verify against a printed edition before quoting")
+    elif KJV_BREAK in reasons:
+        out["order_note"] = (f"{witness} follows its printed edition; words at a verse boundary were moved to "
+                             "follow the KJV verse break (informational)")
+    elif witness not in ("SBL", "TR", "Byz") and any(grnt_words(conn, witness, r)[1] for r in refs):
+        out["order_note"] = (f"{witness} word order rebuilt from TAGNT displacement marks (checked on 73 of 78 "
+                             "SBLGNT verses; upstream marks are occasionally inconsistent): `variants` shows each "
+                             "edition's order")
 
 
 def cmd_interlinear(conn, a):
