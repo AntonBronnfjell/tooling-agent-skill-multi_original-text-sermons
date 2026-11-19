@@ -111,6 +111,35 @@ class FixtureBuild(unittest.TestCase):
         wh = self.q("select text from verses where corpus='grnt' and witness='WH' and ref='Acts.2.38'")["text"]
         self.assertIn("ἐν τῷ ὀνόματι", wh)
 
+    def text(self, wit, ref):
+        return self.q("select text from verses where corpus='grnt' and witness=? and ref=?", wit, ref)["text"]
+
+    def test_displacement_1tim_1_1_tr_byz_printed_order(self):
+        tr = self.text("TR", "1Tim.1.1")
+        self.assertIn("ἀπόστολος Ἰησοῦ Χριστοῦ κατ᾽", tr)
+        self.assertIn("καὶ κυριόυ Ἰησοῦ Χριστοῦ τῆς", tr)  # κυριόυ: upstream TAGNT spelling (errata)
+        self.assertNotIn("Χριστοῦ Ἰησοῦ", tr)
+        byz = self.text("Byz", "1Tim.1.1")
+        self.assertIn("Ἰησοῦ Χριστοῦ κατ᾽", byz)
+        self.assertIn("καὶ Ἰησοῦ Χριστοῦ τῆς", byz)
+        self.assertNotIn("Χριστοῦ Ἰησοῦ", byz)
+        self.assertIn("ἀπόστολος Χριστοῦ Ἰησοῦ κατ᾽", self.text("SBL", "1Tim.1.1"))  # NA/SBL order unchanged
+
+    def test_displacement_acts_20_28_tr_byz(self):
+        self.assertTrue(self.text("TR", "Acts.20.28").endswith("διὰ τοῦ ἰδίου αἵματος."))
+        self.assertTrue(self.text("Byz", "Acts.20.28").endswith("διὰ τοῦ ἰδίου αἵματος."))
+        self.assertTrue(self.text("SBL", "Acts.20.28").endswith("διὰ τοῦ αἵματος τοῦ ἰδίου."))
+
+    def test_displacement_backward_and_swap(self):
+        self.assertIn("ὑμεῖς δὲ βαπτισθήσεσθε ἐν πνεύματι ἁγίῳ", self.text("TR", "Acts.1.5"))
+        self.assertIn("ὑμεῖς δὲ ἐν πνεύματι βαπτισθήσεσθε ἁγίῳ", self.text("SBL", "Acts.1.5"))
+        tr = self.text("TR", "Acts.1.13")
+        self.assertIn("εἰσῆλθον, ἀνέβησαν εἰς τὸ ὑπερῷον", tr)
+        self.assertIn("Πέτρος καὶ Ἰάκωβος καὶ Ἰωάννης καὶ Ἀνδρέας", tr)
+
+    def test_displacement_to_other_verse_stays_in_place(self):
+        self.assertTrue(self.text("Byz", "Rom.16.25").startswith("Τῷ δὲ δυναμένῳ"))
+
     def test_variants_rows(self):
         self.assertIsNotNone(self.q("select 1 from variants where ref='Acts.8.37'"))
         r = self.q("select * from variants where ref='Acts.2.38' and reading='ἔφη'")

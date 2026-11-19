@@ -8,6 +8,7 @@ import re
 from collections import OrderedDict
 from pathlib import Path
 
+from otslib import editions as ed
 from otslib import norm
 from otslib.refs import RefError, parse_ref
 
@@ -171,11 +172,12 @@ def _load_tagnt(conn, sources_dir):
             editions = _cell(cells, cols, "editions")
             present = set(_tokens(editions))
             subs = _substitutions(_cell(cells, cols, "meaning variants"), _cell(cells, cols, "spelling variants"))
-            sub_by_token = {}
+            sub_by_token, row_disp, sub_disp = {}, ed.displacements(editions), {}
             for reading, toks, raw in subs:
                 variant_rows.append((ref, p, reading, raw))
                 for t in toks:
                     sub_by_token[t] = reading
+                sub_disp.update(ed.displacements(raw))
             sg = [pair.split("=", 1) for pair in _cell(cells, cols, "dstrongs = grammar").split(" + ")]
             strongs = "+".join(x[0].strip() for x in sg)
             morph = " + ".join(x[1].strip() if len(x) > 1 else "" for x in sg)
@@ -185,7 +187,6 @@ def _load_tagnt(conn, sources_dir):
                               _cell(cells, cols, "english translation"), editions, "", ""))
             if not all_tokens <= present:
                 variant_rows.append((ref, p, surf, editions))
-            # ponytail: displacement word order (TR»1, Byz«3) is ignored; words stay in source order.
             # ponytail: main-word trailing punctuation is re-attached to substitutions lacking it.
             tail = _TRAIL_PUNCT.search(surf)
             for wit, tok in GREEK_WITNESSES.items():
@@ -197,13 +198,38 @@ def _load_tagnt(conn, sources_dir):
                     s = surf
                 else:
                     continue
-                verses.setdefault(ref, {}).setdefault(wit, []).append(s)
+                verses.setdefault(ref, {}).setdefault(wit, []).append(
+                    (p - 1, ed.effective(tok, row_disp, sub_disp), s))
     conn.executemany("INSERT INTO words VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", word_rows)
     conn.executemany("INSERT INTO variants VALUES (?,?,?,?)", variant_rows)
-    vrows = [_verse_row("grnt", wit, ref, " ".join(ws), "grc")
-             for ref, by_w in verses.items() for wit, ws in by_w.items() if ws]
+    vrows, reordered, other_verse = [], {}, {}
+    for ref, by_w in verses.items():
+        for wit, ws in by_w.items():
+            surfaces = [s for _, _, s in ws]
+            if any(d == ed.OTHER_VERSE for _, d, _ in ws):
+                other_verse[wit] = other_verse.get(wit, 0) + 1
+            if ed.moved(ws):
+                surfaces = _reorder_with_punct(ws)
+                reordered[wit] = reordered.get(wit, 0) + 1
+            if surfaces:
+                vrows.append(_verse_row("grnt", wit, ref, " ".join(surfaces), "grc"))
     conn.executemany("INSERT INTO verses VALUES (?,?,?,?,?)", vrows)
+    fmt = lambda d: ", ".join(f"{w}={n}" for w, n in d.items()) or "none"
+    conn.executemany("INSERT INTO meta VALUES (?, ?)", [
+        ("tagnt_reordered_verses", fmt(reordered)),
+        ("tagnt_other_verse_displacement_kept_in_place", fmt(other_verse))])
     return len(word_rows) + len(variant_rows) + len(vrows)
+
+
+def _reorder_with_punct(entries):
+    """Reorder one edition's words (entries as for editions.order); trailing punctuation stays with its
+    slot (a clause or verse end), not with the moved word."""
+    punct, bare = [], []
+    for _, _, s in entries:
+        m = _TRAIL_PUNCT.search(s)
+        punct.append(m.group(0) if m else "")
+        bare.append(s[:m.start()] if m else s)
+    return [bare[i] + p for i, p in zip(ed.order(entries), punct)]
 
 
 # ---------------------------------------------------------------- lexicons
