@@ -17,7 +17,7 @@ Plain placeholder paragraph.
 
 Short fixture prose for the validator.
 
-> [GRC:TR 1John.5.7] ὅτι τρεῖς εἰσιν οἱ μαρτυροῦντες, ἕν τῷ οὐρανῷ ὁ πατήρ ὁ λόγος καὶ τὸ ἅγιον πνεῦμα
+> [GRC:TR 1John.5.7] Ὅτι τρεῖς εἰσὶν οἱ μαρτυροῦντες ἐν τῷ οὐρανῷ, ὁ πατήρ, ὁ λόγος, καὶ τὸ ἅγιον πνεῦμα
 > Literal: that three are the ones testifying, in the heaven the father the word and the holy spirit
 > Natural: Three testify: in heaven the Father, the Word and the Holy Spirit (late reading, TR only).
 

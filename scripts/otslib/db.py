@@ -14,10 +14,12 @@ CREATE TABLE versification (scheme TEXT, source_ref TEXT, canonical_ref TEXT);
 CREATE TABLE translations (version TEXT, lang TEXT, ref TEXT, text TEXT);
 CREATE TABLE papyri_vocab (lemma TEXT, entry TEXT);
 CREATE TABLE meta (key TEXT, value TEXT);
+CREATE TABLE order_flags (corpus TEXT, witness TEXT, ref TEXT, reason TEXT);
 CREATE INDEX idx_words_cwr ON words (corpus, witness, ref);
 CREATE INDEX idx_verses_cwr ON verses (corpus, witness, ref);
 CREATE INDEX idx_words_lemma ON words (lemma);
 CREATE INDEX idx_words_strongs ON words (strongs);
+CREATE INDEX idx_order_flags_cwr ON order_flags (corpus, witness, ref);
 """
 
 MISSING_MSG = "bible.db not found — run ./install.sh or python3 scripts/build_db.py"

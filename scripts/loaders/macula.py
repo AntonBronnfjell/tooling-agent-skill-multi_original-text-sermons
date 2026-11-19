@@ -137,28 +137,35 @@ def _assign_refs(conn, words):
         pair = _align([_wkey(words[i][2]) for i in idx], [words[i][0].split(".")[1] for i in idx],
                       [_wkey(x[3]) for x in t], [x[2].split(".")[1] for x in t]) if t else {}
         tgt = [t[pair[k]][2] if k in pair else None for k in range(len(idx))]
-        # unaligned words (SBL-only readings, Mark 16, John 7:53-8:11) follow the nearest aligned
-        # word of the same source verse; a verse with none keeps its own ref.
-        k = 0
-        while k < len(idx):
-            e = k
-            while e < len(idx) and words[idx[e]][0] == words[idx[k]][0]:
-                e += 1
-            last = None
-            for q in range(k, e):
-                if tgt[q]:
-                    last = tgt[q]
-                elif last:
-                    tgt[q] = last
-            nxt = None
-            for q in range(e - 1, k - 1, -1):
-                if tgt[q]:
-                    nxt = tgt[q]
-                elif nxt:
-                    tgt[q] = nxt
-            for q in range(k, e):
-                out[idx[q]] = tgt[q] or words[idx[q]][0]
-            k = e
+        for q, ref in zip(idx, follow_neighbours([words[i][0] for i in idx], tgt)):
+            out[q] = ref
+    return out
+
+
+def follow_neighbours(src_refs, tgt):
+    """Unaligned words (tgt None: SBL-only readings, Mark 16, John 7:53-8:11) follow the nearest aligned
+    word of the same source verse; a verse with none keeps its own ref. -> one target ref per word."""
+    out = list(tgt)
+    k = 0
+    while k < len(src_refs):
+        e = k
+        while e < len(src_refs) and src_refs[e] == src_refs[k]:
+            e += 1
+        last = None
+        for q in range(k, e):
+            if out[q]:
+                last = out[q]
+            elif last:
+                out[q] = last
+        nxt = None
+        for q in range(e - 1, k - 1, -1):
+            if out[q]:
+                nxt = out[q]
+            elif nxt:
+                out[q] = nxt
+        for q in range(k, e):
+            out[q] = out[q] or src_refs[q]
+        k = e
     return out
 
 

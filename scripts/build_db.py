@@ -15,7 +15,7 @@ sys.path.insert(0, str(HERE))
 
 from otslib import db  # noqa: E402
 
-LOADERS = ["stepbible", "versification", "macula", "lxx", "dss", "ext", "translations"]
+LOADERS = ["stepbible", "versification", "macula", "greek_editions", "lxx", "dss", "ext", "translations"]
 
 
 def build(sources_dir, db_file, only=None, out=sys.stdout):

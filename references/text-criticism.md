@@ -39,18 +39,18 @@ Report a variant in the sermon when it (a) changes meaning, (b) is behind a fami
 
 Well-known cases (all in `contested-readings.md`):
 
-- **1John.5.7–8** — the long text is tagged `[TR]` only, class late; SBL, NA and Byz end v.7 at οἱ μαρτυροῦντες. Quote it only as `[GRC:TR 1John.5.7]`. The TR text in the data prints ἕν τῷ οὐρανῷ (see the errata list below).
-- **Mark.16.9–20** and **John.7.53–8.11** — editors enclose them in [[ ]] (judged later additions). Report the `[[ ]]` markers as each edition prints them in the tool output (`verse <ref> --witness W` for NA, THGNT, WH, Byz, TR, SBL): e.g. NA, THGNT, WH, Byz and TR print [[ before John.7.53, SBL prints none; the data has no THGNT text for John.8.11 (`verse John.8.11 --witness THGNT` answers `absent_in`). A marker shown for TR/Byz is inherited in the data, not their own judgment. Report the brackets, not "missing from".
+- **1John.5.7–8** — the long text is tagged `[TR]` only, class late; SBL, NA and Byz end v.7 at οἱ μαρτυροῦντες. Quote it only as `[GRC:TR 1John.5.7]`. The TR verse text reads ἐν τῷ οὐρανῷ; the TAGNT word rows carry the erratum ἕν (see the errata list below).
+- **Mark.16.9–20** and **John.7.53–8.11** — editors enclose them in [[ ]] (judged later additions). Report the `[[ ]]` markers as each edition prints them in the tool output (`verse <ref> --witness W` for NA, THGNT, WH, Byz, TR, SBL): e.g. NA, THGNT and WH print [[ before John.7.53; SBL, TR and Byz print none; the data has no THGNT text for John.8.11 (`verse John.8.11 --witness THGNT` answers `absent_in`). Report the brackets, not "missing from".
 - **John.1.18** — μονογενὴς θεὸς (NA, SBL, WH, Treg) vs ὁ μονογενὴς υἱός (THGNT, TR, Byz): critical editions divide.
 - **Isa.53.11** — 1QIsaa and 1Q8 read אור "light" after יראה; 4Q58 has או there (`verse --witness 4Q58` shows או[ר], the ר reconstructed); 4Q56 keeps only א יסב; WLC יִרְאֶה has no object; LXX δεῖξαι αὐτῷ φῶς. 1QIsaa also reads עבדו "his servant" where 1Q8, 4Q58 and WLC read עבדי "my servant".
 - **Matt.28.19** — all editions agree on the long form; report the Eusebian citation question as stated in `contested-readings.md`, with no verdict.
 
 Upstream errata (STEPBible TAGNT spellings the printed editions do not have). Quote the data exactly as `lookup.py` prints it — the validator only accepts that — and say in Notes that the form is a data erratum and what the printed edition reads:
 
-- **1John.5.7** TR: ἕν τῷ οὐρανῷ — ἕν "one" where the sense needs ἐν "in".
-- **Matt.17.4** TR: the spelling-variant column gives μίαν in place of Μωσῇ, so the TR text reads "σοὶ μίαν καὶ μίαν μίαν καὶ μίαν Ἠλίᾳ".
-- **1Tim.1.1** TR: κυριόυ (accent on the last syllable) for κυρίου; Byz carries the same κυριόυ at word 3 (after ἀπόστολος) instead of after καί.
-- Word order of TR/Byz/THGNT/WH/NA is rebuilt from TAGNT displacement marks (`verse` adds an `order_note`; `variants` lists each edition's order). The marks reproduce SBLGNT's order in 73 of the 78 verses where SBL carries one; a few marks are inconsistent upstream (e.g. TR Mark.7.30, 1Cor.8.8). When an order looks wrong, show the `variants` order entry and the editions instead of building on it.
+- **1John.5.7** TR word rows (`interlinear`, `variants`): ἕν τῷ οὐρανῷ — ἕν "one" where the sense needs ἐν "in" (the TR verse text has ἐν).
+- **Matt.17.4** TR word rows: the spelling-variant column gives μίαν in place of Μωσῇ (`variants`); the TR verse text reads καὶ Μωσῇ μίαν.
+- **1Tim.1.1** TR and Byz word rows: κυριόυ (accent on the last syllable) for κυρίου; the verse text has κυρίου.
+- TR and Byz verse text comes from the printed editions (Scrivener 1894, Robinson–Pierpont 2018), mapped to KJV verse numbers; a TR verse where the accented source differs from Scrivener keeps the TAGNT text and is listed in `order_flags`. Word order of THGNT/WH/NA is rebuilt from TAGNT displacement marks (`verse` adds an `order_note`; `variants` lists each edition's order). The marks reproduce SBLGNT's order in 73 of the 78 verses where SBL carries one; a few marks are inconsistent upstream (e.g. THGNT 1Cor.8.8). When an order looks wrong, show the `variants` order entry and the editions instead of building on it.
 
 ## Format
 
