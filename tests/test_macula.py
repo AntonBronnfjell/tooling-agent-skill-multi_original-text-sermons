@@ -38,8 +38,8 @@ class MaculaEnrich(unittest.TestCase):
 
     def test_greek_role(self):
         r = self.q("select syntax_role from words where corpus='grnt' and witness='TAGNT' and ref='John.1.1' "
-                   "and syntax_role is not null limit 1")
-        self.assertIsNotNone(r)
+                   "and syntax_role is not null and syntax_role<>'' limit 1")
+        self.assertTrue(r["syntax_role"])
 
     def test_other_witness_words_untouched(self):
         r = self.q("select count(*) n from words where corpus='grnt' and editions not like '%SBL%' and domain<>''")
@@ -62,6 +62,33 @@ class MaculaEnrich(unittest.TestCase):
         r = self.q("select text from verses where corpus='grnt' and witness='SBL' and ref='Mark.16.17'")
         self.assertGreaterEqual(len(r["text"].split()), 15)
         self.assertTrue(r["text"].startswith("σημεῖα δὲ"))
+
+    def sbl(self, ref):
+        return self.q("select text from verses where corpus='grnt' and witness='SBL' and ref=?", ref)["text"]
+
+    def test_verse_boundaries_follow_kjv_refs_gal_2_19_20(self):
+        self.assertTrue(self.sbl("Gal.2.19").endswith("ζήσω·"))
+        self.assertTrue(self.sbl("Gal.2.20").startswith("Χριστῷ συνεσταύρωμαι"))
+
+    def test_verse_boundaries_rom_9_11_12(self):
+        self.assertTrue(self.sbl("Rom.9.11").endswith("ἐκ τοῦ καλοῦντος,"))
+        self.assertTrue(self.sbl("Rom.9.12").startswith("ἐρρέθη αὐτῇ"))
+
+    def test_swapped_verses_phil_1_16_17_follow_kjv_order(self):
+        self.assertTrue(self.sbl("Phil.1.16").startswith("οἱ δὲ ἐξ ἐριθείας"))
+        self.assertTrue(self.sbl("Phil.1.17").startswith("οἱ μὲν ἐξ ἀγάπης"))
+
+    def test_sbl_verses_line_up_with_tagnt_sbl_words(self):
+        """every verse that has TAGNT SBL words starts with the same word as its first TAGNT SBL word"""
+        rows = self.conn.execute(
+            "SELECT ref, MIN(pos) p FROM words WHERE corpus='grnt' AND witness='TAGNT' "
+            "AND ref IN ('Gal.2.19','Gal.2.20','Rom.9.11','Rom.9.12','Phil.1.16','Phil.1.17') "
+            "AND editions LIKE '%SBL%' GROUP BY ref").fetchall()
+        self.assertEqual(len(rows), 6)
+        for r in rows:
+            first = self.q("SELECT surface FROM words WHERE corpus='grnt' AND witness='TAGNT' AND ref=? AND pos=?",
+                           r["ref"], r["p"])["surface"]
+            self.assertEqual(macula._wkey(first), macula._wkey(self.sbl(r["ref"]).split()[0]), r["ref"])
 
     def test_no_editorial_brackets(self):
         n = self.q("select count(*) n from verses where corpus='grnt' and witness='SBL' "
@@ -96,12 +123,6 @@ class MaculaReplace(unittest.TestCase):
     def test_token_spacing(self):
         self.assertEqual(macula._token("δι", "’") + macula._token("οὗ", " "), "δι’ οὗ ")
         self.assertEqual(macula._token("Χριστός", ";"), "Χριστός; ")
-
-    def test_kjv_remap_split_and_merge(self):
-        ws = [(i, f"w{i}") for i in range(1, 9)]
-        parts = macula._kjv_split("Acts.19.40", ws)
-        self.assertEqual([(t, len(w)) for t, w in parts], [("Acts.19.40", 2), ("Acts.19.41", 6)])
-        self.assertEqual(macula._kjv_split("John.1.1", ws), [("John.1.1", ws)])
 
     def test_brackets_dropped(self):
         self.assertEqual(macula.clean("[[καὶ]]"), "καὶ")

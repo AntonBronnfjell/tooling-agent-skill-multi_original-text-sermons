@@ -13,6 +13,12 @@ class NormTests(unittest.TestCase):
         self.assertEqual(display("בְּרֵאשִׁ֖ית", "heb"), "בְּרֵאשִׁית")
     def test_greek_match_key(self):
         self.assertEqual(match_key("Καὶ θεὸς ἦν ὁ λόγος.", "grc"), match_key("καὶ θεὸς ἦν ὁ λόγος", "grc"))
+    def test_greek_elision_marks_fold(self):
+        k = match_key("δι\u2019 οὗ", "grc")
+        self.assertEqual(k, match_key("δι\u1fbd οὗ", "grc"))
+        self.assertEqual(k, match_key("δι' οὗ", "grc"))
+        self.assertEqual(k, match_key("δι\u02bc οὗ", "grc"))
+        self.assertEqual(display("δι\u2019 οὗ", "grc"), "δι\u2019 οὗ")  # display keeps the source mark
     def test_maqaf(self):
         self.assertEqual(match_key("כָּל־הָאָרֶץ", "heb"), match_key("כָּל הָאָרֶץ", "heb"))
     def test_greek_display_unchanged(self):
