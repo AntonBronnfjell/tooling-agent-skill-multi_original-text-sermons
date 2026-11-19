@@ -108,8 +108,45 @@ class Lxx(Loaded):
         self.assertTrue(self.text("lxx", "Rahlfs", "Ps.51.0").startswith(first))
 
     def test_all_lxx_refs_canonical_shape(self):
-        bad = self.q("select count(*) n from verses where corpus='lxx' and ref not glob '*.[0-9]*.[0-9]*' or ref glob '*[a-z]'")["n"]
+        bad = self.q("select count(*) n from verses where corpus='lxx' and "
+                     "(ref not glob '*.[0-9]*.[0-9]*' or ref glob '*[a-z]')")["n"]
         self.assertEqual(bad, 0)
+
+    def test_prov_25_29_unshifted(self):
+        self.assertIsNone(self.text("lxx", "Rahlfs", "Prov.32.10"))
+        t = self.text("lxx", "Rahlfs", "Prov.25.10")
+        self.assertIsNotNone(t)
+        self.assertEqual(self.q("select count(*) n from verses where corpus='lxx' and ref like 'Prov.3_.%'")["n"], 0)
+
+    def test_daniel_3_additions_skipped(self):
+        # Rahlfs Dan 3:24-90 (Prayer of Azariah / Song) have an A-book target: not canonical verses.
+        # Rahlfs 3:91 is KJV 3:24.
+        self.assertNotIn("προσηύξατο", self.text("lxx", "Rahlfs", "Dan.3.24") or "")  # Rahlfs 3:24 (addition)
+        self.assertIsNone(self.text("lxx", "Rahlfs", "Dan.3.91"))
+        self.assertIsNotNone(self.text("lxx", "Rahlfs", "Dan.3.24"))
+
+    def test_ps_151_skipped(self):
+        self.assertEqual(self.q("select count(*) n from verses where corpus='lxx' and ref like 'Ps.151.%'")["n"], 0)
+
+    def test_jer_overrides(self):
+        self.assertIn("ἐπιφανοῦμαι", self.text("lxx", "Rahlfs", "Jer.29.14"))
+        self.assertIsNone(self.text("lxx", "Rahlfs", "Jer.36.14"))
+        self.assertIn("Αιλαμ", self.text("lxx", "Rahlfs", "Jer.49.34"))
+        self.assertNotIn("Σεδεκιου", self.text("lxx", "Rahlfs", "Jer.25.20") or "")
+        # Rahlfs 38:35-37 are MT 31:37, 35, 36
+        self.assertEqual(self.q("select count(*) n from verses where corpus='lxx' and ref in "
+                                "('Jer.31.35','Jer.31.36','Jer.31.37')")["n"], 3)
+
+    def test_deut_23_transposition(self):
+        w = self.q("select text from verses where corpus='lxx' and ref='Deut.23.24'")["text"]
+        src = self.q("select text from verses where corpus='lxx' and ref='Deut.23.25'")["text"]
+        self.assertNotEqual(w, src)
+
+    def test_one_to_many_prefers_own_ref(self):
+        # Rahlfs Isa 53:2, 53:3 each keep their own KJV verse (none is folded into the previous one)
+        a, b = self.text("lxx", "Rahlfs", "Isa.53.2"), self.text("lxx", "Rahlfs", "Isa.53.3")
+        self.assertTrue(a and b)
+        self.assertNotIn(b.split()[0] + " " + b.split()[1], a)
 
     def test_oslots_skip(self):
         # only Rahlfs witness in the fixture (no double-text books)
@@ -162,6 +199,27 @@ class Dss(Loaded):
 
     def test_word_lemma_homonym_suffix_stripped(self):
         self.assertEqual(self.q("select count(*) n from words where corpus='dss' and lemma like '%\\_%' escape '\\'")["n"], 0)
+
+
+REAL_DB = ROOT / "data" / "bible.db"
+# LXX verses that exist in no Masoretic (WLC) verse: Josh 21:36-37 (KJV has them, WLC does not),
+# LXX verse 0 of Lam 1 (the opening sentence) and Dan 5:0 (heading).
+LXX_ONLY = {"Josh.21.36", "Josh.21.37", "Lam.0.1", "Dan.5.0"}
+
+
+@unittest.skipUnless(REAL_DB.is_file(), "needs a real build (python3 scripts/build_db.py)")
+class RealBuildRefSpace(unittest.TestCase):
+    def test_lxx_refs_inside_kjv_ot_ref_space(self):
+        import sqlite3
+        c = sqlite3.connect(f"file:{REAL_DB}?mode=ro", uri=True)
+        try:
+            kjv = {r for (r,) in c.execute("select ref from verses where corpus='hebot' and witness='WLC'")}
+            lxx = {r for (r,) in c.execute("select distinct ref from verses where corpus='lxx'")}
+        finally:
+            c.close()
+        if not lxx:
+            self.skipTest("real DB has no LXX yet")
+        self.assertEqual(sorted(lxx - kjv - LXX_ONLY), [])
 
 
 if __name__ == "__main__":

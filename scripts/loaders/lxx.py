@@ -43,19 +43,59 @@ last_stats = {}
 
 
 def _unbound(path):
-    """-> {(osis book, chapter, verse, letter): 'Book.C.V'} (first row wins when one source verse feeds several)."""
-    out = {}
+    """-> (targets, skip). targets: {(osis book, chapter, verse, letter): [KJV refs in file order]};
+    skip: keys whose Unbound target is an A-book (deuterocanonical addition: Prayer of Azariah, Ps 151, Esther Additions...)."""
+    out, skip = {}, set()
     with lzma.open(path, "rt", encoding="utf-8-sig") as f:
         for line in f:
             c = line.rstrip("\r\n").split("\t")
             if len(c) < 8 or c[0].startswith("#") or c[7] == "1" or not c[4] or not c[5]:
                 continue
-            if not (c[0].endswith("O") and c[3].endswith("O")):  # A-books (deuterocanon) have no OSIS id
+            if not c[3].endswith("O"):  # source book without an OSIS id
                 continue
-            nb, ob = int(c[0][:-1]), int(c[3][:-1])
+            ob = int(c[3][:-1])
             book = "Neh" if ob == 15 and int(c[4]) >= 11 else _UNBOUND[ob]
-            out.setdefault((book, int(c[4]), int(c[5]), c[6]), f"{_UNBOUND[nb]}.{c[1]}.{c[2]}")
-    return out
+            key = (book, int(c[4]), int(c[5]), c[6])
+            if not c[0].endswith("O"):
+                skip.add(key)
+                continue
+            out.setdefault(key, []).append(f"{_UNBOUND[int(c[0][:-1])]}.{c[1]}.{c[2]}")
+    return out, skip
+
+
+# Explicit corrections, keyed by (osis book, chapter, verse, letter) AFTER the Prov chapter shift; value = KJV ref.
+# Each was found with scripts/check_lxx_alignment.py / strongs comparison against MACULA Hebrew.
+_OVERRIDES = {
+    ("Jer", 36, 14, ""): "Jer.29.14",  # Unbound maps 36:14 to itself; TVTMS and the Strongs overlap say MT 29:14
+    ("Jer", 25, 14, ""): "Jer.25.13",  # superscription "which Jeremiah prophesied against the nations" (MT 25:13b)
+    ("Jer", 25, 20, ""): "Jer.49.34",  # Elam heading (placed last in Rahlfs 25:14-20)
+    ("Jer", 38, 35, ""): "Jer.31.37",  # Rahlfs 38:35-37 = MT 31:37, 35, 36
+    ("Jer", 38, 36, ""): "Jer.31.35",
+    ("Jer", 38, 37, ""): "Jer.31.36",
+    ("Deut", 23, 25, ""): "Deut.23.25",  # Rahlfs 23:25-26 = MT 23:25, 24
+    ("Deut", 23, 26, ""): "Deut.23.24",
+}
+# CATSS numbers Prov 25-29 as chapters 32-36 (lettered 32.10a == Unbound 25:10a); 24, 30, 31 agree with Unbound.
+_PROV_SHIFT = (32, 36, 7)
+
+
+def target(conn, umap, skip, b, c, v, letter):
+    """Rahlfs/CATSS source verse -> KJV ref, or None for deuterocanonical additions (skipped)."""
+    if b == "Prov" and _PROV_SHIFT[0] <= c <= _PROV_SHIFT[1]:
+        c -= _PROV_SHIFT[2]
+    key = (b, c, v, letter)
+    if key in _OVERRIDES:
+        return _OVERRIDES[key]
+    own = f"{b}.{c}.{v}"
+    ts = umap.get(key) or (letter and umap.get((b, c, v, "")))
+    if not ts and (key in skip or (letter and (b, c, v, "") in skip)):
+        return None
+    if b == "Ps":  # Unbound folds Psalm titles into v.1; TVTMS keeps them as verse 0 (repo convention)
+        return canonical(conn, "lxx", own)
+    if ts:
+        # one source verse feeding several KJV verses: its own ref, else the target with its verse number, else the first
+        return own if own in ts else next((t for t in ts if t.rsplit(".", 1)[1] == str(v)), ts[0])
+    return canonical(conn, "hebrew", own) if b in _HEBREW_NUMBERED else own
 
 
 def _rows(path):
@@ -75,12 +115,13 @@ def load(conn, sources_dir):
     morph = _map(d / "patched_623693.csv.xz")
     lemma = _map(d / "09-lexemes.csv.xz")
     strongs = {i: s for i, s in _map(d / "final_Strongs.csv.xz").items() if s.startswith("G")}
-    umap = _unbound(d / "unbound_lxx_mapping_to_NRSV.csv.xz")
+    umap, skip = _unbound(d / "unbound_lxx_mapping_to_NRSV.csv.xz")
     ver = [(int(c[0]), c[1]) for c in _rows(d / "versification_original.csv.xz")]
     starts = [v[0] for v in ver]
 
     pos, canon, sources = {}, {}, {}
     lettered = 0
+    skipped_additions, skipped_addition_verses = 0, set()
     verses = OrderedDict()
     word_rows = []
     skipped_words = 0
@@ -101,15 +142,14 @@ def load(conn, sources_dir):
         if src not in canon:
             m = _SRC.match(src)
             b, c_, v_, letter = m.group(1), int(m.group(2)), int(m.group(3)), m.group(4)
-            if b == "Ps":  # Unbound folds Psalm titles into v.1; TVTMS keeps them as verse 0 (repo convention)
-                target = canonical(conn, "lxx", f"{b}.{c_}.{v_}")
-            else:
-                target = umap.get((b, c_, v_, letter)) or (letter and umap.get((b, c_, v_, ""))) or (
-                    canonical(conn, "hebrew", f"{b}.{c_}.{v_}") if b in _HEBREW_NUMBERED else f"{b}.{c_}.{v_}")
-            canon[src] = target
-            if letter:
+            canon[src] = target(conn, umap, skip, b, c_, v_, letter)
+            if letter and canon[src]:
                 lettered += 1
         ref = canon[src]
+        if ref is None:  # deuterocanonical addition (Unbound A-book target)
+            skipped_additions += 1
+            skipped_addition_verses.add(src)
+            continue
         sources.setdefault((witness, ref), set()).add(re.sub(r"[a-z]+$", "", src))
         surface = norm.display(word, "grc")
         key = (witness, ref)
@@ -124,9 +164,11 @@ def load(conn, sources_dir):
         vrows.append(("lxx", witness, ref, text, norm.match_key(text, "grc")))
     conn.executemany("INSERT INTO verses VALUES (?,?,?,?,?)", vrows)
     collisions = sorted((w, r, sorted(ss)) for (w, r), ss in sources.items() if len(ss) > 1)
-    last_stats.update(lettered_source_verses_folded=lettered, collisions=collisions, skipped_books=sorted(skipped_books))
+    last_stats.update(lettered_source_verses_folded=lettered, skipped_addition_words=skipped_additions,
+                      skipped_addition_verses=sorted(skipped_addition_verses), collisions=collisions, skipped_books=sorted(skipped_books))
     print(f"lxx: {len(collisions)} canonical refs receive >=2 distinct source verses; "
-          f"{lettered} lettered source verses folded into their base verse")
+          f"{lettered} lettered source verses folded into their base verse; skipped {skipped_additions} words "
+          f"({len(skipped_addition_verses)} source verses) whose Unbound target is a deuterocanonical addition")
     print(f"lxx: {len(word_rows)} words, {len(vrows)} verses; skipped {skipped_words} words in "
           f"{len(skipped_books)} non-OSIS books ({', '.join(sorted(skipped_books)) or '-'})")
     return len(word_rows) + len(vrows)

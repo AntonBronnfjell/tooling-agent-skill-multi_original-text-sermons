@@ -64,12 +64,30 @@ def score(a, b):
     return len(a & b) / len(b) if a and b else None
 
 
+def jaccard(a, b):
+    return len(a & b) / len(a | b) if a and b else None
+
+
+def ref_sets(conn):
+    """-> (KJV OT ref set = Hebrew WLC verse refs, LXX Rahlfs-family verse refs)."""
+    kjv = {r for (r,) in conn.execute("SELECT ref FROM verses WHERE corpus='hebot' AND witness='WLC'")}
+    lxx = {r for (r,) in conn.execute("SELECT DISTINCT ref FROM verses WHERE corpus='lxx'")}
+    return kjv, lxx
+
+
+def coverage(conn):
+    """(a) LXX refs outside the KJV ref space; (b) KJV refs with Hebrew text but no Rahlfs text."""
+    kjv, lxx = ref_sets(conn)
+    main = {r for (r,) in conn.execute("SELECT ref FROM verses WHERE corpus='lxx' AND witness='Rahlfs'")}
+    return sorted(lxx - kjv, key=_key), sorted(kjv - main, key=_key)
+
+
 def check(conn, sources):
     mac, lxx = macula_strongs(conn, sources), lxx_strongs(conn)
     refs = sorted(set(lxx) & set(mac), key=_key)
     order = sorted(mac, key=_key)
     idx = {r: i for i, r in enumerate(order)}
-    flagged, low = [], 0
+    flagged, low, jflag, jlow = [], 0, [], 0
     for r in refs:
         if len(mac[r]) < 4:
             continue
@@ -85,7 +103,19 @@ def check(conn, sources):
                 best, bestr = t, o
         if bestr != r:
             flagged.append((r, round(s, 2), bestr, round(best, 2)))
-    return len(refs), low, flagged
+        js = jaccard(lxx[r], mac[r])
+        if js < 0.2:
+            jlow += 1
+        jb, jr = js, r
+        for o in order[max(0, idx[r] - 60): idx[r] + 61]:
+            if o.split(".")[0] != r.split(".")[0] or len(mac[o]) < 4:
+                continue
+            t = jaccard(lxx[r], mac[o])
+            if t is not None and t > jb + 0.15:
+                jb, jr = t, o
+        if jr != r:
+            jflag.append((r, round(js, 2), jr, round(jb, 2)))
+    return len(refs), low, flagged, jlow, jflag
 
 
 def main(argv=None):
@@ -96,8 +126,23 @@ def main(argv=None):
     ap.add_argument("--min-chapter-flags", type=int, default=3, help="chapters with at least N flagged refs are summarised")
     a = ap.parse_args(argv)
     conn = sqlite3.connect(f"file:{a.db or otsdb.db_path()}?mode=ro", uri=True)
-    n, low, flagged = check(conn, a.sources)
+    n, low, flagged, jlow, jflag = check(conn, a.sources)
     print(f"refs compared: {n}; low overlap (<0.4): {low}; flagged (neighbour fits >=0.25 better): {len(flagged)}")
+    print(f"symmetric (Jaccard): <0.2: {jlow}; flagged (neighbour >=0.15 better): {len(jflag)}")
+    outside, empty = coverage(conn)
+    print(f"(a) LXX refs outside the KJV OT ref space: {len(outside)}")
+    print(f"(b) KJV refs with Hebrew text but no Rahlfs text: {len(empty)}")
+    if a.list:
+        print("  (a)", ", ".join(outside))
+        print("  (b)", ", ".join(empty))
+        for f in jflag:
+            print("  J", *f)
+    else:
+        bb = defaultdict(int)
+        for r in empty:
+            bb[r.split(".")[0]] += 1
+        print("  (b) by book:", dict(sorted(bb.items(), key=lambda x: -x[1])[:25]))
+        print("  (a) first:", ", ".join(outside[:15]))
     by = defaultdict(list)
     for f in flagged:
         by[".".join(f[0].split(".")[:2])].append(f)
