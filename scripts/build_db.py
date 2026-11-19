@@ -33,13 +33,7 @@ def build(sources_dir, db_file, only=None, out=sys.stdout):
         conn.executescript(db.SCHEMA)
         for name in [n for n in LOADERS if n in todo]:
             t0 = time.time()
-            try:
-                mod = importlib.import_module(f"loaders.{name}")
-            except ModuleNotFoundError as e:
-                if e.name != f"loaders.{name}":
-                    raise
-                print(f"{name}: skipped (loader not implemented yet)", file=out)
-                continue
+            mod = importlib.import_module(f"loaders.{name}")  # missing loader module = hard error
             n = mod.load(conn, sources_dir)
             conn.commit()
             print(f"{name}: {n} rows ({time.time() - t0:.1f}s)", file=out)

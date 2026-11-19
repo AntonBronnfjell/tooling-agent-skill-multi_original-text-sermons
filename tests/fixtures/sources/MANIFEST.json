@@ -1,0 +1,34 @@
+{
+ "entries": [
+  {
+   "path": "translations/KJV.vpl.xz",
+   "status": "vendored",
+   "lang": "en"
+  },
+  {
+   "path": "translations/YLT.vpl.xz",
+   "status": "vendored",
+   "lang": "en"
+  },
+  {
+   "path": "translations/BSB.vpl.xz",
+   "status": "vendored",
+   "lang": "en"
+  },
+  {
+   "path": "translations/WEB.vpl.xz",
+   "status": "vendored",
+   "lang": "en"
+  },
+  {
+   "path": "translations/RV1909.vpl.xz",
+   "status": "vendored",
+   "lang": "es"
+  },
+  {
+   "path": "translations/Reina1569.vpl.xz",
+   "status": "omitted",
+   "lang": "es"
+  }
+ ]
+}
