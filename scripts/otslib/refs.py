@@ -161,3 +161,17 @@ def to_osis(ref):
         if ref.verse_end is not None:
             s += f"-{ref.verse_end}"
     return s
+
+
+def canonical(conn, scheme, source_ref):
+    """Map a ref in `scheme` numbering (hebrew, lxx) to canonical English; identity if unmapped."""
+    row = conn.execute("SELECT canonical_ref FROM versification WHERE scheme=? AND source_ref=?",
+                       (scheme, source_ref)).fetchone()
+    return row[0] if row else source_ref
+
+
+def source_ref(conn, scheme, canonical_ref):
+    """Inverse of canonical(): first source ref mapping to `canonical_ref`; identity if none."""
+    row = conn.execute("SELECT source_ref FROM versification WHERE scheme=? AND canonical_ref=? "
+                       "ORDER BY rowid LIMIT 1", (scheme, canonical_ref)).fetchone()
+    return row[0] if row else canonical_ref
