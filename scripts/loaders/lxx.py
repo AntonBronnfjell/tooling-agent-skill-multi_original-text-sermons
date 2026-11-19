@@ -3,8 +3,10 @@
 Versification: Rahlfs numbering is mapped to English (KJV/NRSV) with the Unbound exceptions-only map
 `unbound_lxx_mapping_to_NRSV.csv` (vendored from the same upstream commit); a ref with no row keeps
 its Rahlfs numbering (it already equals KJV). Rahlfs lettered sub-verses (`Esth.1.1a`) are folded into
-their base canonical verse, appended in source order. TVTMS `lxx` rows are used ONLY for Psalms (they keep titles as verse 0, where Unbound folds
-them into v.1); elsewhere they do not follow Rahlfs numbering (see scripts/check_lxx_alignment.py).
+their base canonical verse, appended in source order. When an Unbound row gives one source verse several KJV
+targets, `pick` chooses by Greek Strong's overlap with MACULA Hebrew `greekstrong` (falling back to position).
+TVTMS `lxx` rows are used ONLY for Psalms (they keep titles as verse 0, where Unbound folds them into v.1);
+elsewhere they do not follow Rahlfs numbering (see scripts/check_lxx_alignment.py).
 
 Source files are headerless TSVs keyed by a global word id: text_accented (id, ccat id, word; a few
 rows have only id, word), versification_original (first word id of each verse -> Rahlfs ref),
@@ -77,6 +79,10 @@ _OVERRIDES = {
     ("Jer", 38, 37, ""): "Jer.31.36",
     ("Deut", 23, 25, ""): "Deut.23.25",  # Rahlfs 23:25-26 = MT 23:25, 24
     ("Deut", 23, 26, ""): "Deut.23.24",
+    # Rahlfs 1Kgs 4:17-19 list the governors as Shimei (MT 4:18), Geber (MT 4:19), Jehoshaphat (MT 4:17); Unbound
+    # keeps 4:17 and 4:18 in place, and the greekstrong pick sends 4:19 to 4:17.
+    ("1Kgs", 4, 17, ""): "1Kgs.4.18",
+    ("1Kgs", 4, 18, ""): "1Kgs.4.19",
 }
 # CATSS numbers Prov 25-29 as chapters 32-36 (lettered 32.10a == Unbound 25:10a); 24, 30, 31 agree with Unbound.
 _PROV_SHIFT = (32, 36, 7)
@@ -105,22 +111,66 @@ def _split(ref):
     return b, int(c), int(v)
 
 
-def pick(ts, own, v, prev, nxt):
-    """Choose among the KJV targets of one source verse. Order: (1) the target that continues the neighbours'
-    offset (previous source verse's single target + 1, or next source verse's single target - 1);
-    (2) its own ref; (3) the target with its verse number; (4) the first."""
+# Greek Strong's too frequent to tell verses apart (article, conjunctions, pronouns, common prepositions...).
+STOP = {"2532", "3588", "846", "1722", "1519", "3754", "3756", "1161", "1063", "2443", "3361", "1537", "575",
+        "4314", "1909", "3778", "1473", "4771", "1510", "5613"}
+MARGIN = 0.15  # a data pick must beat the runner-up candidate by at least this much (Jaccard) ...
+MIN_SCORE = 0.25  # ... and reach this overlap itself (weaker evidence falls back to position)
+
+
+def _gstrong(s):
+    """'G0746', '746', '1722a' -> '746' / '1722' (None if empty or a stop number)."""
+    g = re.sub(r"[A-Za-z]+$", "", s.strip().lstrip("G")).lstrip("0")
+    return g if g and g not in STOP else None
+
+
+def macula_greek(conn, sources_dir):
+    """MACULA Hebrew `greekstrong` (the LXX word aligned to each Hebrew word) -> {canonical KJV ref: set of Strong's}.
+    MACULA refs are WLC numbering, folded to KJV with the `hebrew` scheme. Empty if the file is absent."""
+    from loaders.macula import _rows as macula_rows  # header-indexed MACULA TSV reader
+    path = Path(sources_dir) / "macula" / "macula-hebrew.tsv.xz"
+    out, cache = {}, {}
+    if not path.is_file():
+        return out
+    for ref, _n, get in macula_rows(path):
+        gs = get("greekstrong")
+        if not gs:
+            continue
+        if ref not in cache:
+            cache[ref] = canonical(conn, "hebrew", ref)
+        bucket = out.setdefault(cache[ref], set())
+        for g in gs.split():
+            g = _gstrong(g)
+            if g:
+                bucket.add(g)
+    return out
+
+
+def jaccard(a, b):
+    return len(a & b) / len(a | b) if a and b else 0.0
+
+
+def pick(ts, own, v, prev, nxt, scores=None):
+    """Choose among the KJV targets of one source verse.
+    (1) By data: `scores` = {target: Jaccard of the verse's Greek Strong's vs MACULA `greekstrong` of the target};
+        the best target wins if it scores >= MIN_SCORE and at least MARGIN above the runner-up.
+    (2) The neighbours' offset (previous source verse's single target + 1, next one's single target - 1), only if
+        every single-target neighbour expects the same ref.
+    (3) Its own ref; (4) the target with its verse number; (5) the first."""
     if len(ts) == 1:
         return ts[0]
-    if prev and len(prev) == 1:
-        pb, pc, pv = _split(prev[0])
-        for t in ts:
-            if _split(t) == (pb, pc, pv + 1):
-                return t
-    if nxt and len(nxt) == 1:
-        nb, nc, nv = _split(nxt[0])
-        for t in ts:
-            if _split(t) == (nb, nc, nv - 1):
-                return t
+    if scores:
+        ranked = sorted(ts, key=lambda t: -scores.get(t, 0.0))
+        best, second = scores.get(ranked[0], 0.0), scores.get(ranked[1], 0.0)
+        if best >= MIN_SCORE - 1e-9 and best - second >= MARGIN - 1e-9:
+            return ranked[0]
+    expect = set()
+    for nb, step in ((prev, 1), (nxt, -1)):
+        if nb and len(nb) == 1:
+            b, c, x = _split(nb[0])
+            expect.add(f"{b}.{c}.{x + step}")
+    if len(expect) == 1 and next(iter(expect)) in ts:
+        return next(iter(expect))
     if own in ts:
         return own
     return next((t for t in ts if t.rsplit(".", 1)[1] == str(v)), ts[0])
@@ -167,6 +217,13 @@ def load(conn, sources_dir):
     umap, skip = _unbound(d / "unbound_lxx_mapping_to_NRSV.csv.xz")
     ver = [(int(c[0]), c[1]) for c in _rows(d / "versification_original.csv.xz")]
     starts = [v[0] for v in ver]
+    mac = macula_greek(conn, sources_dir)
+    vstrongs = {}  # source verse index -> its Greek Strong's (for one-to-many picks)
+    for wid, s in strongs.items():
+        g = _gstrong(s)
+        if g:
+            vstrongs.setdefault(bisect_right(starts, wid) - 1, set()).add(g)
+    data_picks = 0
 
     pos, canon, sources = {}, {}, {}
     lettered = 0
@@ -195,8 +252,12 @@ def load(conn, sources_dir):
             if cs is None:
                 canon[k] = None
             else:
-                canon[k] = pick(cs, f"{b}.{c_}.{v_}", v_, _neighbour(conn, umap, skip, ver, k, -1),
-                                _neighbour(conn, umap, skip, ver, k, 1))
+                own = f"{b}.{c_}.{v_}"
+                prev, nxt = _neighbour(conn, umap, skip, ver, k, -1), _neighbour(conn, umap, skip, ver, k, 1)
+                scores = {t: jaccard(vstrongs.get(k, set()), mac.get(t, set())) for t in cs} if len(cs) > 1 else None
+                canon[k] = pick(cs, own, v_, prev, nxt, scores)
+                if scores and canon[k] != pick(cs, own, v_, prev, nxt):
+                    data_picks += 1
                 if letter:
                     lettered += 1
         ref = canon[k]
@@ -219,10 +280,12 @@ def load(conn, sources_dir):
     conn.executemany("INSERT INTO verses VALUES (?,?,?,?,?)", vrows)
     collisions = sorted((w, r, sorted(ss)) for (w, r), ss in sources.items() if len(ss) > 1)
     last_stats.update(lettered_source_verses_folded=lettered, skipped_addition_words=skipped_additions,
-                      skipped_addition_verses=sorted(skipped_addition_verses), collisions=collisions, skipped_books=sorted(skipped_books))
+                      skipped_addition_verses=sorted(skipped_addition_verses), collisions=collisions, skipped_books=sorted(skipped_books),
+                      data_picks=data_picks)
     print(f"lxx: {len(collisions)} canonical refs receive >=2 distinct source verses; "
           f"{lettered} lettered source verses folded into their base verse; skipped {skipped_additions} words "
           f"({len(skipped_addition_verses)} source verses) whose Unbound target is a deuterocanonical addition")
+    print(f"lxx: {data_picks} one-to-many source verses placed by MACULA greekstrong overlap (not by position)")
     print(f"lxx: {len(word_rows)} words, {len(vrows)} verses; skipped {skipped_words} words in "
           f"{len(skipped_books)} non-OSIS books ({', '.join(sorted(skipped_books)) or '-'})")
     return len(word_rows) + len(vrows)

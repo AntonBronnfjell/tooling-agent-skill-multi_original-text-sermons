@@ -149,6 +149,31 @@ class Lxx(Loaded):
         self.assertIsNotNone(self.text("lxx", "Rahlfs", "Jonah.2.4"))
         self.assertIn("στήσεται βασιλεὺς Βαβυλῶνος", self.text("lxx", "Rahlfs", "Ezek.21.21"))
 
+    def test_one_to_many_picked_by_macula_greekstrong(self):
+        # Jer 10: Rahlfs orders 10:4, 10:9, 10:5; Unbound sends 10:9 to KJV 10:5 or 10:9. The silver "from Tarshish"
+        # is MT 10:9 (Jaccard 0.55 vs 0.13), so it must not be appended to 10:5 (the round-3 neighbour rule did that).
+        self.assertIn("ἀπὸ Θαρσις", self.text("lxx", "Rahlfs", "Jer.10.9"))
+        self.assertNotIn("Θαρσις", self.text("lxx", "Rahlfs", "Jer.10.5"))
+        # Ezek 7: Rahlfs 7:3 ("ἥκει τὸ πέρας") is MT 7:6 "an end is come" (Jaccard 1.0 vs 0); position alone keeps it
+        # on 7:3, where Rahlfs 7:7 ("νῦν τὸ πέρας πρὸς σέ ...") belongs. Rahlfs 7:10 stays on 7:10.
+        self.assertEqual(self.text("lxx", "Rahlfs", "Ezek.7.6"), "ἥκει τὸ πέρας")
+        self.assertTrue(self.text("lxx", "Rahlfs", "Ezek.7.3").startswith("νῦν τὸ πέρας πρὸς σέ"))
+        self.assertIn("ἡ ῥάβδος ἤνθηκεν", self.text("lxx", "Rahlfs", "Ezek.7.10"))
+
+    def test_pick_rules(self):
+        from loaders.lxx import pick
+        ts = ["Jer.10.5", "Jer.10.9"]
+        # data wins when clearly better (>= MIN_SCORE and >= MARGIN above the runner-up)
+        self.assertEqual(pick(ts, "Jer.10.9", 9, ["Jer.10.4"], ["Jer.10.5"], {"Jer.10.5": 0.6, "Jer.10.9": 0.1}), "Jer.10.5")
+        # too close or too weak: neighbours disagree (10.5 vs 10.4) -> own ref
+        self.assertEqual(pick(ts, "Jer.10.9", 9, ["Jer.10.4"], ["Jer.10.5"], {"Jer.10.5": 0.3, "Jer.10.9": 0.2}), "Jer.10.9")
+        self.assertEqual(pick(ts, "Jer.10.9", 9, ["Jer.10.4"], ["Jer.10.5"], {"Jer.10.5": 0.2, "Jer.10.9": 0}), "Jer.10.9")
+        # single-target neighbours agreeing on an offset beat the own ref
+        self.assertEqual(pick(["Jonah.2.5", "Jonah.2.6"], "Jonah.2.6", 6, ["Jonah.2.4"], ["Jonah.2.6"]), "Jonah.2.5")
+        # no neighbour hint and no own ref -> same verse number -> first
+        self.assertEqual(pick(["Isa.3.21", "Isa.3.22"], "Isa.4.22", 22, None, None), "Isa.3.22")
+        self.assertEqual(pick(["Isa.3.21", "Isa.3.23"], "Isa.4.22", 22, None, None), "Isa.3.21")
+
     def test_one_to_many_prefers_own_ref(self):
         # Rahlfs Isa 53:2, 53:3 each keep their own KJV verse (none is folded into the previous one)
         a, b = self.text("lxx", "Rahlfs", "Isa.53.2"), self.text("lxx", "Rahlfs", "Isa.53.3")
