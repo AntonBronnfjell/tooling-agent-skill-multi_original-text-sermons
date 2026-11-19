@@ -4,8 +4,9 @@ Josephus (Perseus TEI) and Philo (First1KGreek TEI), witnesses `Josephus` / `Phi
   ref   `<Work>.<book>.<section>` (always 3 parts, letters-only work abbreviation) from the nesting of
         `div[@type='textpart']/@n`. Single-level works (Vita, most Philo) use book `1`. Sections whose `n`
         is not numeric (e.g. Ant book 1 `n="arg"`, a summary) are skipped and counted.
-  text  text of each leaf section minus <head>, <label>, <note>, <del>, <sic> (editorial apparatus, headings,
-        deleted/erroneous readings); <q>, <add> and <corr> content is kept. Whitespace collapsed.
+  text  text of each leaf section minus <head>, <label>, <note> (headings, apparatus) and <sic> when paired with a sibling <corr>;
+        <q>, <add>, <corr> and <del> content is kept (Perseus <del> = editor-bracketed transmitted text, e.g.
+        Ant 18.63-64; its words get editions='bracketed'). Whitespace collapsed.
   words one row per whitespace token, surface = token with punctuation stripped, lemma '' (TEI has none),
         pos = 1-based index within the section.
 
@@ -23,7 +24,7 @@ from pathlib import Path
 from otslib import norm
 
 TEI = "{http://www.tei-c.org/ns/1.0}"
-_SKIP = {TEI + t for t in ("head", "label", "note", "del", "sic")}
+_SKIP = {TEI + t for t in ("head", "label", "note")}
 
 JOSEPHUS = {"tlg001": "Ant", "tlg002": "Life", "tlg003": "AgAp", "tlg004": "War"}
 PHILO = {
@@ -36,18 +37,38 @@ PHILO = {
     "tlg031": "Legat",
 }
 _ELISION = "’᾽ʼ'"
-_WS = re.compile(r"\s+")
 
 
-def _text(el, out):
+def _text(el, out, br=False):
+    """Append (text, bracketed) pairs for el's content; <del> content is flagged bracketed."""
     if el.tag in _SKIP:
         return
+    br = br or el.tag == TEI + "del"
     if el.text:
-        out.append(el.text)
+        out.append((el.text, br))
+    has_corr = any(c.tag == TEI + "corr" for c in el)
     for c in el:
-        _text(c, out)
+        if not (c.tag == TEI + "sic" and has_corr):
+            _text(c, out, br)
         if c.tail:
-            out.append(c.tail)
+            out.append((c.tail, br))
+
+
+def _tokens(pairs):
+    """Whitespace-split text from (text, bracketed) pairs -> [(token, bracketed)], NFC."""
+    toks, cur, flag = [], [], False
+    for txt, br in pairs:
+        for ch in txt:
+            if ch.isspace():
+                if cur:
+                    toks.append(("".join(cur), flag))
+                    cur, flag = [], False
+            else:
+                cur.append(ch)
+                flag = flag or br
+    if cur:
+        toks.append(("".join(cur), flag))
+    return [(norm.nfc(t), f) for t, f in toks]
 
 
 def _surface(tok):
@@ -60,7 +81,7 @@ def _sections(div, path, out, skipped):
     if not parts:
         buf = []
         _text(div, buf)
-        out.append((path, _WS.sub(" ", "".join(buf)).strip()))
+        out.append((path, _tokens(buf)))
         return
     for p in parts:
         _sections(p, path + [p.get("n", "")], out, skipped)
@@ -72,25 +93,26 @@ def _load_tei(conn, path, witness, work, stats):
     secs = []
     _sections(ed, [], secs, stats)
     verses, words = {}, []
-    for ns, text in secs:
+    for ns, toks in secs:
+        text = toks
         if len(ns) == 1:
             ns = ["1"] + ns
-        if len(ns) != 2 or not all(n.isdigit() for n in ns) or not text:
+        if len(ns) != 2 or not all(n.isdigit() for n in ns) or not toks:
             stats["skipped"] += 1
             continue
         ref = f"{work}.{int(ns[0])}.{int(ns[1])}"
-        verses.setdefault(ref, []).append(text)
-    for ref, texts in verses.items():
-        text = norm.display(" ".join(texts), "grc")
+        verses.setdefault(ref, []).extend(toks)
+    for ref, toks in verses.items():
+        text = norm.display(" ".join(t for t, _ in toks), "grc")
         conn.execute("INSERT INTO verses VALUES (?,?,?,?,?)",
                      ("ext", witness, ref, text, norm.match_key(text, "grc")))
         pos = 0
-        for tok in text.split():
-            s = _surface(tok)
-            if not s:
+        for tok, br in toks:
+            sf = _surface(tok)
+            if not sf:
                 continue
             pos += 1
-            words.append(("ext", witness, ref, pos, s, "", "", "", "", "", "", ""))
+            words.append(("ext", witness, ref, pos, sf, "", "", "", "", "bracketed" if br else "", "", ""))
     conn.executemany("INSERT INTO words VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", words)
     stats["verses"][witness] += len(verses)
     stats["words"][witness] += len(words)

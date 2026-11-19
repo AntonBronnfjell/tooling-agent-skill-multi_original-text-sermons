@@ -49,6 +49,33 @@ class Ext(unittest.TestCase):
         # headings/labels are not part of section text
         self.assertIsNone(self.q("select 1 from verses where corpus='ext' and text like '%ΦΙΛΩΝ%'"))
 
+    def test_ant_18_63_testimonium_kept_and_bracketed(self):
+        t = self.q("select text from verses where corpus='ext' and witness='Josephus' and ref='Ant.18.63'")
+        self.assertIsNotNone(t)
+        self.assertIn("Ἰησοῦς", t["text"])
+        r = self.q("select count(*) n from words where corpus='ext' and ref='Ant.18.63' and editions='bracketed'")
+        self.assertGreater(r["n"], 0)
+        # ordinary sections carry no flag
+        self.assertIsNone(self.q("select 1 from words where corpus='ext' and ref='Ant.3.84' and editions!=''"))
+
+    def test_ant_18_64_present(self):
+        self.assertIsNotNone(self.q("select 1 from verses where corpus='ext' and ref='Ant.18.64'"))
+
+    def test_pb_tail_preserved(self):
+        t = self.q("select text from verses where corpus='ext' and ref='Ant.3.84'")["text"]
+        self.assertIn("ἀκούσεσθαι, ὁ μὲν θεός", t)  # text after <pb/> and <q> kept
+
+    def test_skipped_count_excludes_18_63(self):
+        import io
+        from loaders import ext
+        out = io.StringIO()
+        import sqlite3
+        from otslib import db
+        c = sqlite3.connect(":memory:")
+        c.executescript(db.SCHEMA)
+        ext.load(c, FIXTURES, out)
+        self.assertIn("0 sections skipped", out.getvalue())
+
     def test_philo_decal(self):
         t = self.q("select text from verses where corpus='ext' and witness='Philo' and ref='Decal.1.32'")
         self.assertIsNotNone(t)
