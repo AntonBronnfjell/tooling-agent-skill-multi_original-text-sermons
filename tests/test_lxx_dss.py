@@ -142,6 +142,13 @@ class Lxx(Loaded):
         src = self.q("select text from verses where corpus='lxx' and ref='Deut.23.25'")["text"]
         self.assertNotEqual(w, src)
 
+    def test_one_to_many_follows_neighbour_offset(self):
+        # Jonah 2: Rahlfs 2:6 feeds KJV 2:5 and 2:6; the previous source verse (2:5 -> 2:4) says it is 2:5.
+        # Ezek 21: Rahlfs 21:26 ("διότι στήσεται ...") is KJV 21:21, not 21:26. Neither KJV verse may be empty.
+        self.assertIsNotNone(self.text("lxx", "Rahlfs", "Jonah.2.5"))
+        self.assertIsNotNone(self.text("lxx", "Rahlfs", "Jonah.2.4"))
+        self.assertIn("στήσεται βασιλεὺς Βαβυλῶνος", self.text("lxx", "Rahlfs", "Ezek.21.21"))
+
     def test_one_to_many_prefers_own_ref(self):
         # Rahlfs Isa 53:2, 53:3 each keep their own KJV verse (none is folded into the previous one)
         a, b = self.text("lxx", "Rahlfs", "Isa.53.2"), self.text("lxx", "Rahlfs", "Isa.53.3")

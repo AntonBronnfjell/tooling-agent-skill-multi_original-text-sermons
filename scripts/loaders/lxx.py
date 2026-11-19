@@ -67,7 +67,10 @@ def _unbound(path):
 # Each was found with scripts/check_lxx_alignment.py / strongs comparison against MACULA Hebrew.
 _OVERRIDES = {
     ("Jer", 36, 14, ""): "Jer.29.14",  # Unbound maps 36:14 to itself; TVTMS and the Strongs overlap say MT 29:14
-    ("Jer", 25, 14, ""): "Jer.25.13",  # superscription "which Jeremiah prophesied against the nations" (MT 25:13b)
+    # Rahlfs 25:14 is only the superscription "which Jeremiah prophesied against the nations": it is the tail of MT 25:13
+    # ("...all that Jeremiah hath prophesied against all the nations"), and Unbound sends it to 49:34, the Elam heading
+    # that Rahlfs 25:20 carries. Appending to 25:13 keeps 49:34 for the actual heading.
+    ("Jer", 25, 14, ""): "Jer.25.13",
     ("Jer", 25, 20, ""): "Jer.49.34",  # Elam heading (placed last in Rahlfs 25:14-20)
     ("Jer", 38, 35, ""): "Jer.31.37",  # Rahlfs 38:35-37 = MT 31:37, 35, 36
     ("Jer", 38, 36, ""): "Jer.31.35",
@@ -79,23 +82,69 @@ _OVERRIDES = {
 _PROV_SHIFT = (32, 36, 7)
 
 
-def target(conn, umap, skip, b, c, v, letter):
-    """Rahlfs/CATSS source verse -> KJV ref, or None for deuterocanonical additions (skipped)."""
+def candidates(conn, umap, skip, b, c, v, letter):
+    """Rahlfs/CATSS source verse -> list of possible KJV refs (usually one), or None for deuterocanonical additions."""
     if b == "Prov" and _PROV_SHIFT[0] <= c <= _PROV_SHIFT[1]:
         c -= _PROV_SHIFT[2]
     key = (b, c, v, letter)
     if key in _OVERRIDES:
-        return _OVERRIDES[key]
+        return [_OVERRIDES[key]]
     own = f"{b}.{c}.{v}"
     ts = umap.get(key) or (letter and umap.get((b, c, v, "")))
     if not ts and (key in skip or (letter and (b, c, v, "") in skip)):
         return None
     if b == "Ps":  # Unbound folds Psalm titles into v.1; TVTMS keeps them as verse 0 (repo convention)
-        return canonical(conn, "lxx", own)
+        return [canonical(conn, "lxx", own)]
     if ts:
-        # one source verse feeding several KJV verses: its own ref, else the target with its verse number, else the first
-        return own if own in ts else next((t for t in ts if t.rsplit(".", 1)[1] == str(v)), ts[0])
-    return canonical(conn, "hebrew", own) if b in _HEBREW_NUMBERED else own
+        return list(ts)
+    return [canonical(conn, "hebrew", own) if b in _HEBREW_NUMBERED else own]
+
+
+def _split(ref):
+    b, c, v = ref.rsplit(".", 2)
+    return b, int(c), int(v)
+
+
+def pick(ts, own, v, prev, nxt):
+    """Choose among the KJV targets of one source verse. Order: (1) the target that continues the neighbours'
+    offset (previous source verse's single target + 1, or next source verse's single target - 1);
+    (2) its own ref; (3) the target with its verse number; (4) the first."""
+    if len(ts) == 1:
+        return ts[0]
+    if prev and len(prev) == 1:
+        pb, pc, pv = _split(prev[0])
+        for t in ts:
+            if _split(t) == (pb, pc, pv + 1):
+                return t
+    if nxt and len(nxt) == 1:
+        nb, nc, nv = _split(nxt[0])
+        for t in ts:
+            if _split(t) == (nb, nc, nv - 1):
+                return t
+    if own in ts:
+        return own
+    return next((t for t in ts if t.rsplit(".", 1)[1] == str(v)), ts[0])
+
+
+def _parse(raw):
+    book, rest = raw.split(".", 1)
+    return _SRC.match(f"{_SPECIAL.get(book, (book,))[0]}.{rest}")
+
+
+def _neighbour(conn, umap, skip, ver, k, step):
+    """Candidate list of the nearest source verse (same book, other chapter/verse number) before/after row k."""
+    m0 = _parse(ver[k][1])
+    j = k + step
+    for _ in range(4):  # a few rows at most: lettered siblings share the verse number
+        if not 0 <= j < len(ver):
+            return None
+        m = _parse(ver[j][1])
+        if not m or m.group(1) != m0.group(1):
+            return None
+        if m.group(2, 3) != m0.group(2, 3):
+            return candidates(conn, umap, skip, m.group(1), int(m.group(2)), int(m.group(3)), m.group(4))
+        j += step
+    return None
 
 
 def _rows(path):
@@ -139,13 +188,18 @@ def load(conn, sources_dir):
             skipped_books.add(book)
             continue
         src = f"{osis}.{ch}.{vs}"
-        if src not in canon:
+        if k not in canon:
             m = _SRC.match(src)
             b, c_, v_, letter = m.group(1), int(m.group(2)), int(m.group(3)), m.group(4)
-            canon[src] = target(conn, umap, skip, b, c_, v_, letter)
-            if letter and canon[src]:
-                lettered += 1
-        ref = canon[src]
+            cs = candidates(conn, umap, skip, b, c_, v_, letter)
+            if cs is None:
+                canon[k] = None
+            else:
+                canon[k] = pick(cs, f"{b}.{c_}.{v_}", v_, _neighbour(conn, umap, skip, ver, k, -1),
+                                _neighbour(conn, umap, skip, ver, k, 1))
+                if letter:
+                    lettered += 1
+        ref = canon[k]
         if ref is None:  # deuterocanonical addition (Unbound A-book target)
             skipped_additions += 1
             skipped_addition_verses.add(src)
