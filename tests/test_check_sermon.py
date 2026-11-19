@@ -557,6 +557,20 @@ class FinalReview(Base):
         self.assertTrue(w("The words \u03ba\u03b1\u03af, \u1f10\u03b3\u03ad\u03bd\u03b5\u03c4\u03bf, \u03c6\u1ff6\u03c2, \u03bc\u03ad\u03b3\u03b1, \u03b8\u03b5\u03cc\u03c2 here."))
         self.assertFalse(w("The words \u03ba\u03b1\u03af, \u1f10\u03b3\u03ad\u03bd\u03b5\u03c4\u03bf, \u03c6\u1ff6\u03c2, \u03bc\u03ad\u03b3\u03b1 here."))
 
+    def test_slash_separated_lists(self):
+        def w(prose):
+            p = self._qo_doc(self.doc(prose=prose))
+            return [f for f in check(p, self.conn) if "separated original-language" in f.msg]
+        five = ["\u03ba\u03b1\u03af", "\u1f10\u03b3\u03ad\u03bd\u03b5\u03c4\u03bf", "\u03c6\u1ff6\u03c2", "\u03bc\u03ad\u03b3\u03b1", "\u03b8\u03b5\u03cc\u03c2"]
+        self.assertTrue(w("Words " + " / ".join(five) + " here."))
+        self.assertFalse(w("Words " + " / ".join(five[:4]) + " here."))
+        self.assertTrue(w("Words " + ", ".join(five[:2]) + " / " + ", ".join(five[2:]) + " here."))
+        self.assertTrue(w("Words " + " / ".join(five[:2]) + ", " + ", ".join(five[2:]) + " here."))
+
+    def test_inline_tag_does_not_absorb_slash_word(self):
+        e = self.errs(self.doc(notes="- John.1.1 options; [GRC John.1.1] \u03ba\u03b1\u1f76 \u03b8\u03b5\u1f78\u03c2 \u1f26\u03bd \u1f41 \u03bb\u03cc\u03b3\u03bf\u03c2 / \u03c6\u1ff6\u03c2 here."))
+        self.assertEqual(e, [])
+
     def test_two_adjacent_words_still_error(self):
         for prose in ("\u03ba\u03b1\u1f76 \u03b8\u03b5\u1f78\u03c2 here", "\u03ba\u03b1\u1f76 \u03b8\u03b5\u1f78\u03c2 \u1f26\u03bd \u1f41 \u03bb\u03cc\u03b3\u03bf\u03c2",
                       "\u03ba\u03b1\u1f76, \u03b8\u03b5\u1f78\u03c2 \u1f26\u03bd \u1f41 \u03bb\u03cc\u03b3\u03bf\u03c2"):

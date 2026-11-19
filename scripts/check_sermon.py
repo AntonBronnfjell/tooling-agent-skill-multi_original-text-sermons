@@ -384,21 +384,30 @@ def inline_quotes(lines, start, block_quotes):
         if lines[i].lstrip().startswith(">"):
             continue
         text = nfc(lines[i])
+        groups, prev_end = [], None  # untagged runs; runs joined only by a `/` form one list
         for m in SCRIPT_RUN.finditer(text):
             t = INLINE_TAG.search(text[:m.start()])
             if t:
                 out.append({"line": i + 1, "tag": t.groups(), "original": m.group(0), "labels": None})
-            else:  # untagged: pieces split on , ; / \u00b7 are judged alone (a lemma list is not a quote)
-                pieces = [x for x in LIST_SEP.split(m.group(0)) if SCRIPT_TOKEN.search(x)]
-                for piece in pieces:
-                    if len(SCRIPT_TOKEN.findall(piece)) >= 2 and not quoted_already(piece, block_quotes + out, i + 1):
-                        problems.append((i + 1, "untagged original-language text: tag it inline "
-                                                "`[CORPUS[:WITNESS] Ref] <original>` right before the words, or quote it"))
-                        break
-                else:
-                    if len(pieces) >= 5:
-                        warns.append((i + 1, f"{len(pieces)} separated original-language words in one run \u2014 tag it "
-                                             "as a quote if it is text, or keep lemma lists short"))
+                prev_end = None
+                continue
+            gap = text[prev_end:m.start()] if prev_end is not None else ""
+            if groups and prev_end is not None and "/" in gap and re.fullmatch(r"[\s,;/\u00b7]+", gap):
+                groups[-1].append(m.group(0))
+            else:
+                groups.append([m.group(0)])
+            prev_end = m.end()
+        for g in groups:  # untagged: pieces split on , ; / \u00b7 are judged alone (a lemma list is not a quote)
+            pieces = [x for run in g for x in LIST_SEP.split(run) if SCRIPT_TOKEN.search(x)]
+            for piece in pieces:
+                if len(SCRIPT_TOKEN.findall(piece)) >= 2 and not quoted_already(piece, block_quotes + out, i + 1):
+                    problems.append((i + 1, "untagged original-language text: tag it inline "
+                                            "`[CORPUS[:WITNESS] Ref] <original>` right before the words, or quote it"))
+                    break
+            else:
+                if len(pieces) >= 5:
+                    warns.append((i + 1, f"{len(pieces)} separated original-language words in one run \u2014 tag it "
+                                         "as a quote if it is text, or keep lemma lists short"))
     return out, list(dict.fromkeys(problems)), warns
 
 
