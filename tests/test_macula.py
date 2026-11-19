@@ -124,6 +124,15 @@ class MaculaReplace(unittest.TestCase):
         self.assertEqual(macula._token("δι", "’") + macula._token("οὗ", " "), "δι’ οὗ ")
         self.assertEqual(macula._token("Χριστός", ";"), "Χριστός; ")
 
+    def test_faithlife_word_fixes(self):
+        # the published SBLGNT (Faithlife) wins where MACULA's surface form differs
+        self.assertEqual(macula.faithlife_fix("John.7.34", "εὑρήσετέ"), "εὑρήσετε")
+        self.assertEqual(macula.faithlife_fix("John.8.5", "Μωϋσῆς"), "Μωσῆς")
+        self.assertEqual(macula.faithlife_fix("John.10.29", "ἐστιν"), "ἐστίν")
+        self.assertEqual(macula.faithlife_fix("Luke.8.20", "θέλοντές"), "θέλοντες")
+        # same word elsewhere is left alone
+        self.assertEqual(macula.faithlife_fix("John.7.36", "ἐστιν"), "ἐστιν")
+
     def test_brackets_dropped(self):
         self.assertEqual(macula.clean("[[καὶ]]"), "καὶ")
         self.assertEqual(macula.clean("[τοῦ]"), "τοῦ")

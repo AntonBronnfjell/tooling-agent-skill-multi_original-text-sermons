@@ -30,6 +30,22 @@ def clean(s):
     return _BRACKETS.sub("", s)
 
 
+# The published SBLGNT (Faithlife, sources/sblgnt, checked by scripts/check_sblgnt.py) is authoritative for the
+# SBL verse text. Where MACULA's surface form differs from it beyond punctuation/case, Faithlife wins:
+# (KJV ref, MACULA form) -> Faithlife form.
+FAITHLIFE_FIXES = {
+    ("John.7.34", "εὑρήσετέ"): "εὑρήσετε",
+    ("John.7.36", "εὑρήσετέ"): "εὑρήσετε",
+    ("John.8.5", "Μωϋσῆς"): "Μωσῆς",
+    ("John.10.29", "ἐστιν"): "ἐστίν",
+    ("Luke.8.20", "θέλοντές"): "θέλοντες",
+}
+
+
+def faithlife_fix(ref, text):
+    return FAITHLIFE_FIXES.get((ref, norm.nfc(clean(text))), text)
+
+
 def _token(text, after):
     """`after` is ' ' or bare punctuation (',' '.' '·' ';' '’'), never carrying its own space;
     SBLGNT prints a space after every token, elision included (δι’ οὗ)."""
@@ -271,7 +287,7 @@ def load_greek(conn, sources_dir):
     new_rows, by_verse = [], {}
     stats = {"replaced_same": 0, "replaced_different": 0, "added": 0, "examples": []}
     for ref, ws in verses.items():
-        text = norm.display(re.sub(r"\s+", " ", "".join(_token(w[2], w[3]) for w in ws)).strip(), "grc")
+        text = norm.display(re.sub(r"\s+", " ", "".join(_token(faithlife_fix(ref, w[2]), w[3]) for w in ws)).strip(), "grc")
         new_rows.append(("grnt", "SBL", ref, text, norm.match_key(text, "grc")))
         by_verse[ref] = [(w[4], w[7], w[5], w[6]) for w in ws]
         if ref not in old:

@@ -15,6 +15,7 @@ python3 scripts/check_sermon.py evals/fixtures/negative/<f>.md # ...and flag eac
 python3 scripts/lookup.py --format text verse John.1.1          # smoke-test the DB
 bash scripts/fetch_sources.sh --check             # verify sha256 of vendored sources (no network)
 python3 scripts/check_lxx_alignment.py            # LXX -> KJV versification sanity check (real data)
+python3 scripts/check_sblgnt.py                   # SBL verses vs published SBLGNT (Faithlife); exit 1 on any text mismatch
 ```
 
 `install.sh` (repo root) builds the DB if missing and symlinks the repo into each agent's skills directory (Claude Code, Cursor, Copilot, `~/.agents`, and Google Antigravity at `~/.gemini/config/skills`); it supports `--status` and `--uninstall`.
@@ -34,6 +35,7 @@ Exit codes: `lookup.py` 1 = unknown ref/witness, 2 = DB missing; `check_sermon.p
 | `scripts/otslib/` | shared code: DB path, normalization, refs/versification, reference-table parsing |
 | `scripts/fetch_sources.sh` | maintenance: refresh vendored sources at pinned versions, or `--check` hashes |
 | `scripts/check_lxx_alignment.py` | maintenance: LXX versification check |
+| `scripts/check_sblgnt.py` | maintenance: compares SBL `verses` with `sources/sblgnt/` (Faithlife SBLGNT, authoritative; loader fixes in `loaders/macula.py` `FAITHLIFE_FIXES`) |
 | `scripts/lint_skill.py` | lints `SKILL.md` |
 | `sources/` | vendored raw data, xz-compressed, each file < 100 MB; `MANIFEST.json` lists upstream, commit/version, sha256, license note |
 | `sources/user/` | user CSV translations (gitignored except README) |

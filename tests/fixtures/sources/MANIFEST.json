@@ -29,6 +29,10 @@
    "path": "translations/Reina1569.vpl.xz",
    "status": "omitted",
    "lang": "es"
+  },
+  {
+   "path": "sblgnt/Rom.txt.xz",
+   "status": "vendored"
   }
  ]
 }

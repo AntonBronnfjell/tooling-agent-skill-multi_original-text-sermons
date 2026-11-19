@@ -169,7 +169,7 @@ Listed in the manifest but not vendored: LXX Swete 1930 (CC BY-NC-SA 4.0) and Re
 
 > [!WARNING]
 > - About 10–30 TR/Byzantine verses still come out with wrong word order (e.g. Mark 7:30, 2 Pet 1:18, Luke 15:30) because some upstream TAGNT word-order marks are inconsistent; a TR/Byz quote of those verses can validate against text no printed edition contains.
-> - The data holds **printed editions**, not individual manuscripts; the Romans 16:25–27 doxology is absent from the SBL text per MACULA and TAGNT.
+> - The data holds **printed editions**, not individual manuscripts; the Romans 16:25–27 doxology is absent from the SBL text: MACULA and TAGNT agree, and the published SBLGNT (Faithlife) text of Romans also ends at 16:24 with no 16:25–27 (`scripts/check_sblgnt.py` cross-checks every SBL verse against that file).
 > - Moulton & Milligan is noisy OCR and is never quoted as verified text.
 
 The plan to close these gaps is in [docs/superpowers/plans/2026-11-19-gap-closure.md](docs/superpowers/plans/2026-11-19-gap-closure.md).
