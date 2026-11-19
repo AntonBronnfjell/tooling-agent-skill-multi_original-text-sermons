@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/skills/original-text-sermons/hooks/check-sermon-hook.sh\""
+            "command": "sh -c 'for d in \"${CLAUDE_PROJECT_DIR:+$CLAUDE_PROJECT_DIR/.claude/skills}\" \"$HOME/.claude/skills\" \"$HOME/.agents/skills\" \"$HOME/.copilot/skills\" \"$HOME/.cursor/skills\"; do [ -n \"$d\" ] && [ -f \"$d/original-text-sermons/hooks/check-sermon-hook.sh\" ] && exec bash \"$d/original-text-sermons/hooks/check-sermon-hook.sh\"; done; echo \"original-text-sermons: validator hook not found — run install.sh\" >&2; exit 0'"
           }
         ]
       }

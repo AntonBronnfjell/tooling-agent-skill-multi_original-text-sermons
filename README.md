@@ -23,7 +23,7 @@ cd ~/Development/anton.social/tooling-agent-skill-multi_original-text-sermons
 ./install.sh --uninstall
 ```
 
-`install.sh` symlinks the repo (one copy on disk) into `~/.claude/skills/original-text-sermons`, `~/.cursor/skills/…`, `~/.agents/skills/…` and `~/.copilot/skills/…` for the agent directories that exist, and wires the validator as a post-write hook where the host supports it.
+`install.sh` symlinks the repo (one copy on disk) into `~/.claude/skills/original-text-sermons`, `~/.cursor/skills/…`, `~/.agents/skills/…` and `~/.copilot/skills/…` for the agent directories that exist, and wires the validator as a post-write hook where the host supports it. For Claude Code the hook is declared in `SKILL.md` frontmatter: it activates once the skill is invoked and depends on the skill being installed under one of `.claude/skills` (project), `~/.claude/skills`, `~/.agents/skills`, `~/.copilot/skills` or `~/.cursor/skills`. If that is not possible (for example an organisation lock on skill hooks), merge `hooks/claude-code.json` into `~/.claude/settings.json` manually. See `hooks/README.md`.
 
 To build the database by hand: `python3 scripts/build_db.py` (offline; reads the vendored `sources/`). Set `OTS_DB=/path/to/bible.db` to keep it elsewhere.
 

@@ -8,7 +8,7 @@ set -euo pipefail
 
 NAME="original-text-sermons"
 REPO="$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$(dirname "${BASH_SOURCE[0]}")")"
-HOOK_CMD="$REPO/hooks/check-sermon-hook.sh"
+HOOK_CMD="\"$REPO/hooks/check-sermon-hook.sh\""
 DB="${OTS_DB:-$REPO/data/bible.db}"
 SKILL_DIRS=("$HOME/.claude/skills" "$HOME/.cursor/skills" "$HOME/.agents/skills" "$HOME/.copilot/skills")
 CURSOR_HOOKS="$HOME/.cursor/hooks.json"
@@ -21,7 +21,7 @@ mode, path, cmd = sys.argv[1:4]
 try:
     cfg = json.load(open(path)) if os.path.exists(path) else {}
 except ValueError:
-    sys.exit("refusing to edit %s: not valid JSON" % path)
+    sys.exit("Cursor hook NOT wired: %s is not valid JSON \u2014 fix or remove it and re-run" % path)
 hooks = cfg.get("hooks") if isinstance(cfg.get("hooks"), dict) else {}
 entries = hooks.get("afterFileEdit") if isinstance(hooks.get("afterFileEdit"), list) else []
 ours = [e for e in entries if isinstance(e, dict) and e.get("command") == cmd]
@@ -58,7 +58,7 @@ do_status() {
     else echo "missing    $t"; fi
   done
   echo "claude     hooks via SKILL.md frontmatter (PostToolUse Write|Edit), active once the skill is invoked; settings.json not modified"
-  if [ -d "$HOME/.cursor" ]; then echo "cursor     afterFileEdit $(cursor_json status) in $CURSOR_HOOKS"
+  if [ -d "$HOME/.cursor" ]; then echo "cursor     afterFileEdit $(cursor_json status 2>&1 || echo 'UNREADABLE (invalid JSON)') in $CURSOR_HOOKS"
   else echo "cursor     no ~/.cursor directory"; fi
   [ -f "$DB" ] && echo "database   $DB" || echo "database   MISSING ($DB); run ./install.sh"
   echo "git        core.hooksPath=$(git -C "$REPO" config --get core.hooksPath || echo '(unset)')"
@@ -69,7 +69,10 @@ do_uninstall() {
     t="$d/$NAME"
     if is_ours "$t"; then rm "$t"; echo "removed    $t"; fi
   done
-  [ -d "$HOME/.cursor" ] && echo "cursor     $(cursor_json remove)"
+  if [ -d "$HOME/.cursor" ]; then
+    out="$(cursor_json remove)" || exit 1
+    echo "cursor     $out"
+  fi
   if [ -z "${OTS_NO_GIT:-}" ] && [ "$(git -C "$REPO" config --get core.hooksPath || true)" = "hooks" ]; then
     git -C "$REPO" config --unset core.hooksPath && echo "git        core.hooksPath unset"
   fi
@@ -90,6 +93,14 @@ do_install() {
     fi
     python3 "$REPO/scripts/build_db.py"
   fi
+  linked_any=0
+  for d in "${SKILL_DIRS[@]}"; do
+    [ -d "$d" ] && linked_any=1
+  done
+  [ "$linked_any" = 1 ] || echo "install: no agent skill directories found - nothing linked"
+  if [ ! -d "$HOME/.claude/skills" ]; then
+    echo "WARNING: $HOME/.claude/skills does not exist; the skill and its Claude validator hook won't be active in Claude Code. Create it (mkdir -p) and re-run install.sh." >&2
+  fi
   for d in "${SKILL_DIRS[@]}"; do
     [ -d "$d" ] || continue
     t="$d/$NAME"
@@ -98,9 +109,12 @@ do_install() {
     fi
     ln -sfn "$REPO" "$t"; echo "linked     $t"
   done
-  [ -d "$HOME/.cursor" ] && echo "cursor     $(cursor_json add)"
+  if [ -d "$HOME/.cursor" ]; then
+    out="$(cursor_json add 2>&1)" || { echo "$out" >&2; exit 1; }
+    echo "cursor     $out"
+  fi
   [ -z "${OTS_NO_GIT:-}" ] && git -C "$REPO" config core.hooksPath hooks 2>/dev/null && echo "git        core.hooksPath=hooks" || true
-  echo "claude     hooks come from SKILL.md frontmatter; no settings.json change"
+  echo "claude     hooks come from SKILL.md frontmatter (needs the skill under a skills dir); no settings.json change"
 }
 
 case "${1:-}" in

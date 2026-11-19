@@ -129,7 +129,7 @@ class InstallTests(unittest.TestCase):
         cfg = json.loads((self.home / ".cursor" / "hooks.json").read_text())
         cmds = [h["command"] for h in cfg["hooks"]["afterFileEdit"]]
         self.assertEqual(len(cmds), 1)
-        self.assertTrue(cmds[0].endswith("hooks/check-sermon-hook.sh"))
+        self.assertEqual(cmds[0], '"%s/hooks/check-sermon-hook.sh"' % ROOT.resolve())
         self.assertFalse((self.home / ".claude" / "settings.json").exists())
 
     def test_existing_cursor_hooks_preserved_and_backed_up(self):
@@ -186,6 +186,77 @@ class InstallTests(unittest.TestCase):
         head = (ROOT / "SKILL.md").read_text().split("---")[1]
         self.assertIn("PostToolUse", head)
         self.assertIn("check-sermon-hook.sh", head)
+
+    def frontmatter_command(self):
+        for line in (ROOT / "SKILL.md").read_text().split("---")[1].splitlines():
+            if line.strip().startswith("command:"):
+                return json.loads(line.split("command:", 1)[1].strip())
+        self.fail("no command in frontmatter")
+
+    def run_cmd(self, project=None):
+        env = {**os.environ, "HOME": str(self.home)}
+        env.pop("CLAUDE_PROJECT_DIR", None)
+        if project:
+            env["CLAUDE_PROJECT_DIR"] = str(project)
+        return subprocess.run(["sh", "-c", self.frontmatter_command()], input="STDIN-PAYLOAD",
+                              capture_output=True, text=True, env=env)
+
+    def fake_skill(self, base):
+        h = Path(base) / "original-text-sermons" / "hooks"
+        h.mkdir(parents=True)
+        (h / "check-sermon-hook.sh").write_text('#!/bin/sh\necho "RAN $0 $(cat)"\n')
+
+    def test_frontmatter_command_fallback_chain(self):
+        proj = Path(self.tmp.name) / "proj dir"
+        cases = [(proj / ".claude/skills", proj)] + [(self.home / d, None) for d in (
+            ".claude/skills", ".agents/skills", ".copilot/skills", ".cursor/skills")]
+        for base, project in cases:
+            with self.subTest(base=str(base)):
+                for d in (proj / ".claude", self.home / ".claude/skills/original-text-sermons"):
+                    shutil.rmtree(d, ignore_errors=True)
+                for d in (".agents", ".copilot", ".cursor"):
+                    shutil.rmtree(self.home / d / "skills" / "original-text-sermons", ignore_errors=True)
+                self.fake_skill(base)
+                r = self.run_cmd(project)
+                self.assertEqual(r.returncode, 0, r.stderr)
+                self.assertIn("RAN", r.stdout)
+                self.assertIn("STDIN-PAYLOAD", r.stdout)
+                self.assertIn(str(base), r.stdout)
+
+    def test_frontmatter_command_none_found_warns_and_exits_0(self):
+        r = self.run_cmd(Path(self.tmp.name) / "proj")
+        self.assertEqual(r.returncode, 0)
+        self.assertIn("original-text-sermons: validator hook not found", r.stderr)
+        self.assertIn("run install.sh", r.stderr)
+
+    def test_malformed_cursor_json_install_and_uninstall_fail(self):
+        path = self.home / ".cursor" / "hooks.json"
+        path.write_text("{ broken")
+        for args in ((), ("--uninstall",)):
+            r = self.run_install(*args)
+            self.assertNotEqual(r.returncode, 0, args)
+            self.assertIn("Cursor hook NOT wired", r.stdout + r.stderr)
+            self.assertIn("not valid JSON", r.stdout + r.stderr)
+            self.assertEqual(path.read_text(), "{ broken")
+            self.assertFalse((self.home / ".cursor" / "hooks.json.bak").exists())
+
+    def test_cursor_command_quoted_for_spaces(self):
+        self.run_install()
+        cmd = json.loads((self.home / ".cursor/hooks.json").read_text())["hooks"]["afterFileEdit"][0]["command"]
+        self.assertTrue(cmd.startswith('"') and cmd.endswith('"'))
+
+    def test_no_agent_dirs_message(self):
+        shutil.rmtree(self.home)
+        self.home.mkdir()
+        r = self.run_install()
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("no agent skill directories found", r.stdout)
+
+    def test_missing_claude_dir_warns(self):
+        shutil.rmtree(self.home / ".claude")
+        r = self.run_install()
+        self.assertIn("Claude", r.stdout + r.stderr)
+        self.assertIn("won't be active", r.stdout + r.stderr)
 
     def test_snippets_are_valid_json(self):
         for n in ("claude-code.json", "cursor-hooks.json"):
