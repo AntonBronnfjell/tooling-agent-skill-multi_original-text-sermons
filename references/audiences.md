@@ -44,5 +44,5 @@ Terms to explain or replace (English / Spanish):
 ## mixed
 
 - Write for the non-christian listener, and give the christian listener the "what's behind your translation" asides.
-- Explain each insider term once, briefly, on first use.
+- Explain each insider term briefly on first use in prose; a term kept on a `Natural:` line (e.g. "vida eterna") is explained right after that quote each time, as for non-christian hearers.
 - Response: two short invitations — one for those exploring, one for those already following.

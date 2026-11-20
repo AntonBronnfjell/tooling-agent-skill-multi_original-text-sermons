@@ -2,7 +2,7 @@
 
 The specialization shapes **what the sermon does with the text** — never what the text says. Every specialization keeps the fidelity rules: fresh translation, options on contested readings, no doctrine sources. Pick one; if the user names none, ask (intake).
 
-In every specialization, the Big Idea, point titles, conclusion, call to respond, applications and discussion questions must not resolve a contested identification, reading or practice the body left open — not by assertion, framing or a leading question (SKILL.md hard rule 16). Invite a response to what all options share, or name the open question. Wrong: "When you say 'Jesus is lord,' say it as Isaiah's tongue does" (after declining to decide). Right: "Paul sets Isaiah's 'every knee, every tongue' beside 'Jesus the anointed is lord'; how far that goes is the question the text leaves us."
+In every specialization, the Big Idea, point titles, conclusion, call to respond, applications and discussion questions must not resolve a contested identification, reading or practice the body left open — not by assertion, framing or a leading question (SKILL.md hard rule 16). Invite a response to what all options share, or name the open question. The rule cuts both ways. Wrong (affirming, after the body declined to decide): "When you say 'Jesus is lord,' say it as Isaiah's tongue does." Wrong (denying or minimizing): "Here κύριος only means 'master'" · "immersion is only a symbol". Right: "Paul sets Isaiah's 'every knee, every tongue' beside 'Jesus the anointed is lord / Lord' (κύριος); how far that goes is the question the text leaves us."
 
 ## theology
 

@@ -36,16 +36,19 @@ Early Hebrew and Greek manuscripts make no distinction between upper and lower c
 
 One rule covers θεός / אֱלֹהִים and κύριος, on `Literal:`/`Natural:` lines **and in the preacher's own prose**, and it is applied the same way whoever the word refers to (God, Jesus, a human master):
 
-- **Name vs title, by the target language's grammar.** A word used as a proper name takes a capital: ὁ θεός as the subject or referent of a clause (John.3.16 → "Dios"), אֱלֹהִים with a singular verb (Gen.1.1 בָּרָא, Gen.1.26 וַיֹּאמֶר → "God"; in Gen.1.26 what is contested is the plural "let us … our", not "God"). A title or common noun stays lower case, as the language writes any title ("the king", "el maestro"):
-  - κύριος in a predicate: "X is lord" / "X es señor";
-  - κύριε in address: "lord", "señor", "sir" (the sense the context shows);
-  - κύριος in plain prose and narration: "the lord said", "el señor dijo", "the lord's meal" — not "the Lord", "el Señor".
+- **θεός / אֱלֹהִים: name vs common noun, by the target language's grammar.** A word used as a proper name takes a capital: ὁ θεός as the subject or referent of a clause (John.3.16 → "Dios"), אֱלֹהִים with a singular verb (Gen.1.1 בָּרָא, Gen.1.26 וַיֹּאמֶר → "God"; in Gen.1.26 what is contested is the plural "let us … our", not "God"). A common noun stays lower case ("a god", "gods").
+- **κύριος / κύριε: lower case by default, both casings where it is contested.** Lower case is the default where κύριος is a common noun or title, as the language writes any title ("the king", "el maestro"):
+  - a predicate: "X is lord" / "X es señor";
+  - "my lord", masters and owners, parables;
+  - address: κύριε → "lord", "señor", "sir" (the sense the context shows);
+  - plain prose and narration: "the lord said", "el señor dijo".
+
+  But wherever κύριος quotes or echoes a YHWH text, or the body shows the identification with options (e.g. Phil.2.11, Rom.10.9-13, 1Cor.8.6, Acts.2.21, Acts.2.36, Heb.1.10), show **both casings** — "lord / Lord", "señor / Señor" — and report from `lxx <ref>` / `verse <ref>` output whether κύριος stands where the Hebrew has יהוה (e.g. Heb.1.10 quotes Ps.102.25, where the LXX has κύριε and the WLC has no יהוה), plus the senses the shown `usage κύριος` contexts display. **Neither casing decides** whether a NT κύριος stands for the divine name. For any other sense (address "sir", master/owner…), `search`/`verse` an example first. Report; give no verdict.
 - **Coordinated pairs get the same casing.** Where one phrase joins the two words (Byz Acts.20.28 τοῦ κυρίου καὶ θεοῦ; John.20.28 ὁ κύριός μου καὶ ὁ θεός μου) don't capitalize one and not the other ("del señor y Dios"); show the options — "of the lord and god / of the Lord and God" — and say capitals are the translator's choice.
 - **Contested θεός: show the options.** Where the form is anarthrous and the sense is debated (John.1.1c, Heb.1.8) or the word takes plural agreement (1Sam.28.13 אֱלֹהִים … עֹלִים, Ps.82.6 אֱלֹהִים אַתֶּם), show "God / divine / a god / gods" instead of choosing by capital letter.
-- **κύριος in an OT quotation or echo.** Show what `lxx <ref>` and `verse <ref>` print for that verse — including whether κύριος or יהוה stands there at all — and the senses the shown `usage κύριος` contexts display. A capital never decides whether a NT κύριος stands for the divine name; for any other sense (address "sir", master/owner…), `search`/`verse` an example first. Report; give no verdict.
 - **No capitals added to πνεῦμα ἅγιον / רוּחַ**: write "holy spirit" / "espíritu santo" on `Literal:`/`Natural:` lines. If the sermon discusses how others capitalize it, do so in prose.
 - No reverential capitals on pronouns or titles (he/him, hijo, palabra, él). "Son/Hijo", "Word/Verbo", "the LORD", "el Señor" as published capitals are a translation choice: quote them as such and mention them in comparison notes.
-- State the convention in one line in Notes (e.g. "Capitals: names capitalized, titles such as lord/señor lower case for every referent; manuscripts have no case distinction").
+- State the convention in one line in Notes (e.g. "Capitals: names capitalized; κύριος lower case by default for every referent — a typographic convention that claims nothing about who is meant; both casings shown at Phil.2.11; manuscripts make no upper/lower-case distinction").
 - Capitalization is not machine-checked (that would force a side on contested readings); this rule is enforced by review and evals.
 
 ## 5. Usage claims only from the tool
