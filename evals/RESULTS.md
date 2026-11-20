@@ -392,3 +392,5 @@ The combined figure uses iteration-3 results for the 11 evals not re-run (1–5 
 **81/81 assertions (100%). 15 of 15 evals pass fully.**
 
 Caveat: evals 1–12 now pass at 100%. Most of the remaining signal is in the note-level checks (leans, background claims, selective quoting), not in the assertions. Adding held-out evals (new lemmas, new contested passages) would test whether these results generalize.
+
+Note (v1.1 final fix wave): the validator now counts maqaf-joined Hebrew as separate words, so the archived iteration-3 `template-default-and-custom-skeleton-en` shepherd sermon fails on an untagged `מַעְגְּלֵי־צֶדֶק` in Notes (a form the verse does not print). This is the stricter rule catching a real slip, not a regression; archived runs are not edited.

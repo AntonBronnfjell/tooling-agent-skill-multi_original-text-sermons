@@ -7,7 +7,7 @@
 <p>
   <img alt="Python 3.9+" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="Standard library only" src="https://img.shields.io/badge/dependencies-stdlib%20only-success">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-421%20passing-success">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-436%20passing-success">
   <img alt="Evals" src="https://img.shields.io/badge/evals-15%20cases%2C%2081%2F81%20assertions-success">
   <img alt="Code license MIT" src="https://img.shields.io/badge/code-MIT-blue">
   <img alt="Data non-commercial" src="https://img.shields.io/badge/data-personal%20%2F%20non--commercial-orange">
