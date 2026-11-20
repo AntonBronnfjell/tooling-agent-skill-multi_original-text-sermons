@@ -28,6 +28,7 @@ from typing import NamedTuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from otslib import db, references  # noqa: E402
+from otslib import editions as ed  # noqa: E402
 from otslib.norm import match_key, nfc, strip_points  # noqa: E402
 from otslib.refs import CrossChapterError, RefError, parse_ref  # noqa: E402
 
@@ -171,8 +172,9 @@ def find_in_order(hay, segments):
 
 
 def order_findings(conn, corpus, witness, refs, line):
-    """Findings for `order_flags` on the quoted Greek verses. A TR quote of a known-scrambled verse is an
-    error; any other flag but the informational KJV verse-break move warns."""
+    """Findings for `order_flags` on the quoted Greek verses (reasons: otslib/editions.py). A known-scrambled
+    verse is an error for any witness; an order rebuilt from TAGNT marks, an uncertain order or a verse
+    without ground truth warns; a KJV verse-break move or a placement note is informational (silent)."""
     if corpus != "grnt":
         return []
     try:
@@ -183,11 +185,15 @@ def order_findings(conn, corpus, witness, refs, line):
     out = []
     for ref in refs:
         why = {r[1] for r in rows if r[0] == ref}
-        if "known scrambled" in why:
+        why = {w for w in why if w != ed.KJV_BREAK and not w.startswith(ed.PLACEMENT)}
+        if ed.KNOWN_SCRAMBLED_REASON in why:
             out.append(Finding("ERROR", line, f"{witness} word order for {ref} is known to be wrong in the data; "
                                               "quote another witness"))
-        elif why - {"verse break follows KJV"}:
+        elif why - {ed.REBUILT}:
             out.append(Finding("WARN", line, f"order uncertain for {witness} {ref}: verify against a printed edition"))
+        elif why:
+            out.append(Finding("WARN", line, f"word order for {witness} {ref} rebuilt from TAGNT data; "
+                                             "prefer SBL or quote with a note"))
     return out
 
 

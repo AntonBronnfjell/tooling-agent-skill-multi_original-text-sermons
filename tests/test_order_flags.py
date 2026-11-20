@@ -38,11 +38,11 @@ class StepbibleFlags(unittest.TestCase):
         self.src = Path(self.tmp) / "src"
         shutil.copytree(FIXTURES, self.src)
 
-    def flags(self, rows):
+    def flags(self, rows, ref="Rom.1.1"):
         write_xz(self.src / "stepbible" / "TAGNT_Act-Rev.txt.xz",
                  "﻿pre\n\n" + HDR + "\n" + "\n".join(rows) + "\n")
         conn = build(self.src, Path(self.tmp) / "t.db", only=("stepbible",), case=self)
-        return {(r["witness"], r["ref"], r["reason"]) for r in conn.execute("SELECT * FROM order_flags WHERE ref='Rom.1.1'")}
+        return {(r["witness"], r["ref"], r["reason"]) for r in conn.execute("SELECT * FROM order_flags WHERE ref=?", (ref,))}
 
     def test_moved_word_over_partial_word_is_flagged(self):
         f = self.flags([row("Rom.1.1", 1, "α", ALL.replace("Tyn", "Tyn»2")),
@@ -50,10 +50,22 @@ class StepbibleFlags(unittest.TestCase):
                         row("Rom.1.1", 3, "γ", ALL)])
         self.assertEqual(f, {("THGNT", "Rom.1.1", "order uncertain")})
 
-    def test_moved_word_over_universal_words_is_not_flagged(self):
+    def test_moved_word_over_universal_words_is_marked_rebuilt(self):  # informational in lookup, WARN in check
         f = self.flags([row("Rom.1.1", 1, "α", ALL.replace("Tyn", "Tyn»2")),
                         row("Rom.1.1", 2, "β", ALL), row("Rom.1.1", 3, "γ", ALL)])
-        self.assertEqual(f, set())
+        self.assertEqual(f, {("THGNT", "Rom.1.1", "rebuilt from TAGNT marks")})
+
+    def test_known_scrambled_thgnt_verse_is_marked(self):  # THGNT 1Cor.8.8: no edition prints the rebuilt order
+        f = self.flags([row("1Co.8.8", 1, "α", ALL.replace("Tyn", "Tyn»2")),
+                        row("1Co.8.8", 2, "β", ALL), row("1Co.8.8", 3, "γ", ALL)], ref="1Cor.8.8")
+        self.assertEqual(f, {("THGNT", "1Cor.8.8", "known scrambled")})
+
+    def test_known_scrambled_is_per_witness(self):
+        from otslib.editions import KNOWN_SCRAMBLED
+        self.assertIn("1Cor.8.8", KNOWN_SCRAMBLED["THGNT"])
+        self.assertNotIn("1Cor.8.8", KNOWN_SCRAMBLED.get("WH", set()))
+        self.assertEqual(KNOWN_SCRAMBLED["TR"], {"1Tim.1.2", "Acts.1.24", "John.19.31", "Luke.12.56", "Rev.17.4"})
+        self.assertIn("Matt.12.14", KNOWN_SCRAMBLED["NA"])
 
     def test_diapantos_verse_with_a_move_is_flagged(self):
         f = self.flags([row("Rom.1.1", 1, "α", ALL.replace("WH", "WH»1")),
@@ -80,6 +92,8 @@ class Surfaces(unittest.TestCase):
         c.executemany("INSERT INTO order_flags VALUES ('grnt',?,?,?)", [
             ("THGNT", "John.1.1", "order uncertain"),
             ("TR", "1Tim.1.1", "known scrambled"),
+            ("THGNT", "John.3.16", "known scrambled"),
+            ("WH", "John.1.1", "rebuilt from TAGNT marks"),
             ("TR", "Acts.20.28", "verse break follows KJV")])
         c.commit()
         c.close()
@@ -101,6 +115,21 @@ class Surfaces(unittest.TestCase):
 
     def test_lookup_known_scrambled_is_uncertain(self):
         self.assertIs(self.verse("1Tim.1.1", "TR")["order_uncertain"], True)
+
+    def test_lookup_known_scrambled_says_use_another_witness(self):
+        v = self.verse("John.3.16", "THGNT")
+        self.assertIs(v["order_uncertain"], True)
+        self.assertIn("known wrong in the data; use another witness", v["order_note"])
+
+    def test_lookup_rebuilt_is_informational(self):
+        v = self.verse("John.1.1", "WH")
+        self.assertNotIn("order_uncertain", v)
+        self.assertIn("rebuilt from TAGNT", v["order_note"])
+
+    def test_lookup_placement_note_for_byz_rom_16_25(self):
+        v = self.verse("Rom.16.25", "Byz")
+        self.assertNotIn("order_uncertain", v)
+        self.assertIn("placement differs: Byz prints after 14:23", v["order_note"])
 
     def test_lookup_kjv_break_is_informational_only(self):
         v = self.verse("Acts.20.28", "TR")
@@ -130,6 +159,22 @@ class Surfaces(unittest.TestCase):
         got = [f for f in self.run_text(q) if "known to be wrong" in f.msg]
         self.assertEqual([f.level for f in got], ["ERROR"])
         self.assertIn("TR word order for 1Tim.1.1 is known to be wrong in the data; quote another witness", got[0].msg)
+
+    def test_check_errors_on_known_scrambled_any_witness(self):
+        q = ("> [GRC:THGNT John.3.16] οὕτως γὰρ\n> Literal: so for\n> Natural: for so\n")
+        got = [f for f in self.run_text(q) if "known to be wrong" in f.msg]
+        self.assertEqual([f.level for f in got], ["ERROR"])
+        self.assertIn("THGNT word order for John.3.16 is known to be wrong in the data", got[0].msg)
+
+    def test_check_warns_on_rebuilt_order(self):
+        q = "> [GRC:WH John.1.1] ἐν ἀρχῇ ἦν ὁ λόγος\n> Literal: in beginning was the word\n> Natural: in the beginning was the word\n"
+        got = [f for f in self.run_text(q) if "rebuilt" in f.msg]
+        self.assertEqual([f.level for f in got], ["WARN"])
+        self.assertIn("word order for WH John.1.1 rebuilt from TAGNT data; prefer SBL or quote with a note", got[0].msg)
+
+    def test_check_silent_for_placement_note(self):
+        q = "> [GRC:Byz Rom.16.25] Τῷ δὲ δυναμένῳ\n> Literal: to the one able\n> Natural: to him who is able\n"
+        self.assertFalse([f for f in self.run_text(q) if "order" in f.msg or "placement" in f.msg])
 
     def test_check_silent_for_kjv_break_and_unflagged(self):
         q = "> [GRC:TR Acts.20.28] καὶ\n> Literal: and\n> Natural: and\n"
@@ -183,6 +228,14 @@ class GreekEditionFlags(unittest.TestCase):
         c = build(FIXTURES, os.path.join(self.tmp, "t.db"),
                   only=("stepbible", "versification", "macula", "greek_editions"), case=self)
         self.assertNotIn("verse break follows KJV", self.reasons(c, "Byz").get("Rom.16.25", set()))
+
+    def test_whole_verses_printed_in_another_chapter_get_a_placement_note(self):
+        c = build(FIXTURES, os.path.join(self.tmp, "t.db"),
+                  only=("stepbible", "versification", "macula", "greek_editions"), case=self)
+        r = self.reasons(c, "Byz")
+        for v in ("Rom.16.25", "Rom.16.26", "Rom.16.27"):
+            self.assertEqual(r.get(v), {"placement differs: Byz prints after 14:23"}, v)
+        self.assertNotIn("Rom.16.25", self.reasons(c, "TR"))
 
     def test_known_scrambled_tr_verses_are_marked(self):
         w = "αλφα βητα".split()

@@ -280,9 +280,6 @@ def cmd_verse(conn, a, gloss_only=False):
     return out
 
 
-KJV_BREAK = "verse break follows KJV"
-
-
 def order_reasons(conn, corpus, witness, refs):
     """Set of `order_flags` reasons recorded for these verses (an older DB has no such table)."""
     try:
@@ -293,22 +290,30 @@ def order_reasons(conn, corpus, witness, refs):
 
 
 def _order_notes(conn, out, witness, refs):
-    """`order_uncertain` + `order_note` for the Greek witness. TR and Byz text is a printed edition
-    (see `meta` tr_source / byz_source) except flagged verses; THGNT, WH and NA are rebuilt from TAGNT
-    displacement marks; SBL is MACULA's text."""
+    """`order_uncertain` + `order_note` for the Greek witness (reasons: otslib/editions.py). TR and Byz text
+    is a printed edition (see `meta` tr_source / byz_source) except flagged verses; THGNT, WH and NA word
+    order is rebuilt from TAGNT displacement marks; SBL is MACULA's text."""
     reasons = order_reasons(conn, "grnt", witness, refs)
-    bad = reasons - {KJV_BREAK}
-    if bad:
+    info = {r for r in reasons if r in (ed.KJV_BREAK, ed.REBUILT) or r.startswith(ed.PLACEMENT)}
+    notes = []
+    if ed.KNOWN_SCRAMBLED_REASON in reasons:
         out["order_uncertain"] = True
-        out["order_note"] = (f"{witness} word order is uncertain here: the data may not "
-                             "match the printed edition; verify against a printed edition before quoting")
-    elif KJV_BREAK in reasons:
-        out["order_note"] = (f"{witness} follows its printed edition; words at a verse boundary were moved to "
-                             "follow the KJV verse break (informational)")
-    elif witness not in ("SBL", "TR", "Byz") and any(grnt_words(conn, witness, r)[1] for r in refs):
-        out["order_note"] = (f"{witness} word order rebuilt from TAGNT displacement marks (checked on 73 of 78 "
-                             "SBLGNT verses; upstream marks are occasionally inconsistent): `variants` shows each "
-                             "edition's order")
+        notes.append(f"{witness} word order here is known wrong in the data; use another witness "
+                     "(SBL, Byz or TR print their editions' text)")
+    elif reasons - info:
+        out["order_uncertain"] = True
+        notes.append(f"{witness} word order is uncertain here: the data may not "
+                     "match the printed edition; verify against a printed edition before quoting")
+    elif ed.REBUILT in reasons:
+        notes.append(f"{witness} word order rebuilt from TAGNT displacement marks (checked on 73 of 78 SBLGNT "
+                     "verses; upstream marks are occasionally inconsistent, and no printed edition was checked "
+                     "for this witness): `variants` shows each edition's order")
+    if ed.KJV_BREAK in reasons:
+        notes.append(f"{witness} follows its printed edition; words at a verse boundary were moved to "
+                     "follow the KJV verse break (informational)")
+    notes += [f"{r} (informational)" for r in sorted(reasons) if r.startswith(ed.PLACEMENT)]
+    if notes:
+        out["order_note"] = "; ".join(notes)
 
 
 def cmd_interlinear(conn, a):

@@ -22,7 +22,6 @@ _TRAIL_PUNCT = re.compile(r"[,.;·:?!;·]+$")
 _DISPLACE = re.compile(r"(?:[»«][\d.]+)+$")
 _SPELL = re.compile(r"\s*\+?([^:;]+):\s*([^;]*?)\s*;")
 _book_cache = {}
-ORDER_UNCERTAIN = "order uncertain"
 
 
 def _open(path):
@@ -213,19 +212,25 @@ def _load_tagnt(conn, sources_dir):
             surfaces = [s for _, _, s in ws]
             if any(d == ed.OTHER_VERSE for _, d, _ in ws):
                 other_verse[wit] = other_verse.get(wit, 0) + 1
-            if ed.moved(ws):
+            moved = ed.moved(ws)
+            if moved:
                 surfaces = _reorder_with_punct(ws)
                 reordered[wit] = reordered.get(wit, 0) + 1
-                # SBL text is replaced wholesale by MACULA's (loaders/macula.py), so it is never flagged
-                if wit != "SBL" and (ref in dia or _span_has_partial(ws, partial.get(ref, ()))):
-                    flags.append(("grnt", wit, ref, ORDER_UNCERTAIN))
+            # SBL text is replaced wholesale by MACULA's (loaders/macula.py), so it is never flagged; TR and
+            # Byz flags are replaced by loaders/greek_editions.py
+            if wit != "SBL" and ref in ed.KNOWN_SCRAMBLED.get(wit, ()):
+                flags.append(("grnt", wit, ref, ed.KNOWN_SCRAMBLED_REASON))
+            elif wit != "SBL" and moved:
+                at_risk = ref in dia or _span_has_partial(ws, partial.get(ref, ()))
+                flags.append(("grnt", wit, ref, ed.ORDER_UNCERTAIN if at_risk else ed.REBUILT))
             if surfaces:
                 vrows.append(_verse_row("grnt", wit, ref, " ".join(surfaces), "grc"))
     conn.executemany("INSERT INTO verses VALUES (?,?,?,?,?)", vrows)
     conn.executemany("INSERT INTO order_flags VALUES (?,?,?,?)", flags)
     fmt = lambda d: ", ".join(f"{w}={n}" for w, n in d.items()) or "none"
     conn.executemany("INSERT INTO meta VALUES (?, ?)", [
-        ("tagnt_reordered_verses", fmt(reordered)),
+        # TR/Byz/SBL verse text is replaced later (greek_editions, macula): only THGNT/WH/NA keep this order
+        ("tagnt_reordered_verses_thgnt_wh_na", fmt({w: n for w, n in reordered.items() if w in ("THGNT", "WH", "NA")})),
         ("tagnt_other_verse_displacement_kept_in_place", fmt(other_verse))])
     return len(word_rows) + len(variant_rows) + len(vrows)
 

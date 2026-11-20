@@ -22,6 +22,31 @@ _ENDPUNCT = ".,;·:;·¶"
 OTHER_VERSE = "other-verse"
 CHAINED = "chained"
 
+# `order_flags.reason` values. ERROR in check_sermon: KNOWN_SCRAMBLED. WARN: ORDER_UNCERTAIN, NO_GROUND_TRUTH,
+# REBUILT. Informational (lookup note only): KJV_BREAK and reasons starting with PLACEMENT.
+KNOWN_SCRAMBLED_REASON = "known scrambled"
+ORDER_UNCERTAIN = "order uncertain"
+NO_GROUND_TRUTH = "no ground truth"
+REBUILT = "rebuilt from TAGNT marks"
+KJV_BREAK = "verse break follows KJV"
+PLACEMENT = "placement differs"
+
+# Verses whose word order, rebuilt from TAGNT marks, is an order no printed edition has (checked by hand).
+# TR: checked against Scrivener 1894. THGNT/WH/NA: found by scanning every verse these witnesses get
+# reordered from TAGNT marks (THGNT 124, WH 108, NA 12) for article/article or article/punctuation
+# pairs, a postpositive (δέ γάρ οὖν τε μέν) opening a clause, an elided word before a consonant,
+# and adjacent duplicates, then reading each hit against SBL: e.g. THGNT/WH `ἔστιν τοῦτ᾽ τὸν` for
+# τοῦτ᾽ ἔστιν, Matt.12.14 `δὲ οἱ Φαρισαῖοι … Ἐξελθόντες`, WH Matt.18.8 `ἢ ἢ`, THGNT 1Cor.8.8
+# `ἐὰν φάγωμεν μὴ ὑστερούμεθα`, THGNT 2Pet.1.18 `ἁγίῳ τῷ.`, WH Matt.21.30 (verse halves swapped).
+_TOUT_ESTIN = ("1Pet.3.20 Acts.1.19 Acts.19.4 Heb.2.14 Heb.7.5 Heb.9.11 Heb.10.20 Heb.11.16 Heb.13.15 "
+               "Mark.7.2 Matt.27.46 Phlm.1.12 Rom.7.18 Rom.9.8 Rom.10.6 Rom.10.7 Rom.10.8").split()
+KNOWN_SCRAMBLED = {
+    "TR": {"1Tim.1.2", "Acts.1.24", "John.19.31", "Luke.12.56", "Rev.17.4"},
+    "THGNT": {"1Cor.8.8", "2Pet.1.18", "Matt.12.14", "Matt.18.8", "Mark.10.19", "John.14.7", *_TOUT_ESTIN},
+    "WH": {"Heb.2.14", "Matt.12.14", "Matt.18.8", "Matt.21.30"},
+    "NA": {"Matt.12.14"},
+}
+
 
 def parse_token(tok):
     """'TR»2' -> ('TR', 2); 'Byz«3' -> ('Byz', -3); 'SBL' -> ('SBL', 0); 'Byz«14.24' -> ('Byz', OTHER_VERSE)."""

@@ -134,9 +134,10 @@ class GroundTruthEditions(unittest.TestCase):
         self.assertTrue(self.text("NA", "Acts.20.28").endswith("διὰ τοῦ αἵματος τοῦ ἰδίου."))
         n = self.conn.execute("SELECT count(*) FROM words WHERE corpus='grnt' AND ref='Mark.7.30'").fetchone()[0]
         self.assertGreater(n, 10)
-        # only stepbible's at-risk flags remain on the other witnesses
-        self.assertEqual(self.conn.execute("SELECT count(*) FROM order_flags WHERE witness NOT IN ('TR','Byz') "
-                                           "AND reason != 'order uncertain'").fetchone()[0], 0)
+        # only stepbible's TAGNT-order flags remain on the other witnesses
+        self.assertEqual(self.conn.execute("SELECT count(*) FROM order_flags WHERE witness NOT IN ('TR','Byz') AND "
+                                           "reason NOT IN ('order uncertain', 'rebuilt from TAGNT marks', "
+                                           "'known scrambled')").fetchone()[0], 0)
 
     def test_meta_sources(self):
         meta = dict(self.conn.execute("SELECT key, value FROM meta").fetchall())

@@ -14,7 +14,9 @@ is NA's. This loader replaces those `verses` rows with the printed editions; TAG
 Source verse numbers are mapped to KJV refs by aligning the words with the TAGNT text of the same
 edition (the loaders/macula.py approach): Byz prints Rom 16:25-27 after 14:23 and swaps Matt 23:13/14,
 and both editions divide some verses unlike the KJV (2 Cor 8:13/14, Heb 1:1/2).
-A verse with no ground-truth text keeps its TAGNT text and gets an `order_flags` row.
+A verse with no ground-truth text keeps its TAGNT text and gets an `order_flags` row; one in
+otslib.editions.KNOWN_SCRAMBLED is marked `known scrambled`. Whole verses printed in another chapter get
+an informational `placement differs: <W> prints after <c:v>` row (Byz Rom 16:25-27 after 14:23).
 """
 import csv
 import json
@@ -26,13 +28,10 @@ from pathlib import Path
 
 from loaders import macula
 from otslib import norm
+from otslib.editions import KJV_BREAK, KNOWN_SCRAMBLED, NO_GROUND_TRUTH, PLACEMENT
+from otslib.editions import KNOWN_SCRAMBLED_REASON as SCRAMBLED
 
 CORPUS = "grnt"
-NO_GROUND_TRUTH = "no ground truth"
-KJV_BREAK = "verse break follows KJV"
-KNOWN_SCRAMBLED = "known scrambled"
-# TR verses whose TAGNT text keeps Scrivener's words in another order (checked by hand against Scrivener 1894)
-SCRAMBLED_TR = {"1Tim.1.2", "Acts.1.24", "John.19.31", "Luke.12.56", "Rev.17.4"}
 # eBible / Robinson file book codes -> OSIS
 BOOKS = {
     "MAT": "Matt", "MT": "Matt", "MAR": "Mark", "MR": "Mark", "LUK": "Luke", "LU": "Luke",
@@ -243,6 +242,7 @@ def rebuild(conn, witness, src, trusted):
     # words moved across a verse break the edition prints elsewhere: both verses are affected. A source
     # verse that moves whole to one KJV verse (Rom 16:25-27 in Byz) is renumbering, not a boundary move.
     broken = {r for ks in split.values() if len(ks) > 1 for r in ks}
+    placed = _placement(split, [s for s, _ in src], witness)
     stats = {"same": 0, "reordered": 0, "different_words": 0, "added": 0, "flagged": 0,
              "unplaced": sorted(r for r in verses if r not in known), "examples": []}
     rows, flags = [], []
@@ -257,16 +257,40 @@ def rebuild(conn, witness, src, trusted):
             continue  # unverified text at a ref TAGNT does not give this edition: leave it out
         rows.append((CORPUS, witness, ref, text, norm.match_key(text, "grc")))
     flags += [(CORPUS, witness, r, KJV_BREAK) for r in sorted(broken & {x[2] for x in rows}, key=macula._ref_key)]
-    if witness == "TR":
-        flags = [(c, w, r, KNOWN_SCRAMBLED if r in SCRAMBLED_TR else why) for c, w, r, why in flags]
-    stats["flagged"] = sum(1 for f in flags if f[3] != KJV_BREAK)
-    stats["kjv_breaks"] = len(flags) - stats["flagged"]
-    stats["scrambled"] = sum(1 for f in flags if f[3] == KNOWN_SCRAMBLED)
+    flags = [(c, w, r, SCRAMBLED if r in KNOWN_SCRAMBLED.get(witness, ()) else why) for c, w, r, why in flags]
+    flags += [(CORPUS, witness, r, why) for r, why in placed.items() if r in {x[2] for x in rows}]
+    flags = list(dict.fromkeys(flags))
+    stats["flagged"] = sum(1 for f in flags if f[3] in (NO_GROUND_TRUTH, SCRAMBLED))
+    stats["kjv_breaks"] = sum(1 for f in flags if f[3] == KJV_BREAK)
+    stats["placement"] = len(placed)
+    stats["scrambled"] = sum(1 for f in flags if f[3] == SCRAMBLED)
     conn.execute("DELETE FROM verses WHERE corpus=? AND witness=?", (CORPUS, witness))
     conn.executemany("INSERT INTO verses VALUES (?,?,?,?,?)", rows)
     conn.execute("DELETE FROM order_flags WHERE corpus=? AND witness=?", (CORPUS, witness))
     conn.executemany("INSERT INTO order_flags VALUES (?,?,?,?)", flags)
     return stats
+
+
+def _placement(split, src_refs, witness):
+    """{kjv_ref: reason} for source verses that move whole to a KJV verse in another chapter and are not
+    printed next to their KJV neighbour (Byz Rom 16:25-27 after 14:23; a verse renumbered across a chapter
+    break, like Rev 12:18 -> 13:1, stays adjacent and is not listed). The reason names the source verse
+    they are printed after."""
+    one = {s: next(iter(ks)) for s, ks in split.items() if len(ks) == 1}
+    kjv = sorted({k for ks in split.values() for k in ks if k}, key=macula._ref_key)
+    at = {k: i for i, k in enumerate(kjv)}
+    out, last, run = {}, None, None
+    for sref in dict.fromkeys(src_refs):
+        k = one.get(sref)
+        if not (k and k.split(".")[:2] != sref.split(".")[:2]):
+            last, run = sref, None
+            continue
+        if run is None:  # first verse of a moved run: away from where its KJV predecessor is printed?
+            prev = one.get(last) if last else None
+            run = bool(prev) and at[k] != at.get(prev, -2) + 1
+        if run:
+            out[k] = f"{PLACEMENT}: {witness} prints after {':'.join(last.split('.')[1:])}"
+    return out
 
 
 def _count(stats, ref, old, new):
@@ -338,7 +362,7 @@ def load(conn, sources_dir, out=print):
         out(f"greek_editions {wit}: same_as_tagnt={s['same']} reordered={s['reordered']} "
             f"different_words={s['different_words']} (>=3 words: {len(s['examples'])}) added={s['added']} "
             f"flagged_no_ground_truth_or_scrambled={s['flagged']} (known_scrambled={s['scrambled']}) "
-            f"kjv_verse_breaks={s['kjv_breaks']} unplaced={len(s['unplaced'])}"
+            f"kjv_verse_breaks={s['kjv_breaks']} placement_differs={s['placement']} unplaced={len(s['unplaced'])}"
             + (f" grctr_not_scrivener={len(s['rejected'])}" if "rejected" in s else ""))
         n += s["same"] + s["reordered"] + s["different_words"] + s["added"]
     return n
