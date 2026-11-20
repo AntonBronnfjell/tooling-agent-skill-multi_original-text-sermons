@@ -7,7 +7,8 @@
 <p>
   <img alt="Python 3.9+" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="Standard library only" src="https://img.shields.io/badge/dependencies-stdlib%20only-success">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-335%20passing-success">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-421%20passing-success">
+  <img alt="Evals" src="https://img.shields.io/badge/evals-15%20cases%2C%2081%2F81%20assertions-success">
   <img alt="Code license MIT" src="https://img.shields.io/badge/code-MIT-blue">
   <img alt="Data non-commercial" src="https://img.shields.io/badge/data-personal%20%2F%20non--commercial-orange">
 </p>
@@ -160,6 +161,9 @@ All sources are vendored (xz-compressed, pinned) under `sources/`; `sources/MANI
 | [Perseus canonical-greekLit](https://github.com/PerseusDL/canonical-greekLit) — Josephus | 1st-century Greek usage (Niese edition) | CC BY-SA 4.0 (Perseus Digital Library) |
 | [First1KGreek](https://github.com/OpenGreekAndLatin/First1KGreek) — Philo | 1st-century Greek usage (Cohn–Wendland edition) | CC BY-SA 4.0 (First1KGreek / Open Greek and Latin) |
 | [Moulton & Milligan, *Vocabulary of the Greek Testament*](https://archive.org/details/vocabularyofgree00mouluoft) | papyri and inscription usage per lemma (noisy OCR) | Public domain (Hodder & Stoughton 1914–1929; scan University of Toronto / Internet Archive 2008) |
+| [Robinson–Pierpont Byzantine text](https://github.com/byztxt/byzantine-majority-text) | Byzantine verse text (2018 edition) | Public domain (CC0 1.0; repository LICENSE: 'IN THE PUBLIC DOMAIN') |
+| [Scrivener 1894 (byztxt)](https://github.com/byztxt/greektext-scrivener) and [eBible.org grctr](https://ebible.org/details.php?id=grctr) | Textus Receptus verse text; grctr checked word-for-word against Scrivener 1894 (unaccented) | Scrivener: Public domain (repository README: 'Public Domain. Copy freely.'); grctr: Public domain (eBible.org: 'firmly in the Public Domain due to its age'; Adam Boyd's annotations dedicated to the public domain) |
+| [Faithlife SBLGNT](https://github.com/Faithlife/SBLGNT) | SBL text cross-checked per verse by `scripts/check_sblgnt.py` | SBLGNT text CC BY 4.0 (Society of Biblical Literature and Faithlife); apparatus not vendored |
 | [eBible.org](https://ebible.org/) — KJV, YLT, BSB, WEB, RV1909 | comparison translations | Public domain |
 
 Listed in the manifest but not vendored: LXX Swete 1930 (CC BY-NC-SA 4.0) and Reina 1569 (public domain; no digital text found).
@@ -168,9 +172,13 @@ Listed in the manifest but not vendored: LXX Swete 1930 (CC BY-NC-SA 4.0) and Re
 ## Known limitations
 
 > [!WARNING]
-> - About 10–30 TR/Byzantine verses still come out with wrong word order (e.g. Mark 7:30, 2 Pet 1:18, Luke 15:30) because some upstream TAGNT word-order marks are inconsistent; a TR/Byz quote of those verses can validate against text no printed edition contains.
-> - The data holds **printed editions**, not individual manuscripts; the Romans 16:25–27 doxology is absent from the SBL text: MACULA and TAGNT agree, and the published SBLGNT (Faithlife) text of Romans also ends at 16:24 with no 16:25–27 (`scripts/check_sblgnt.py` cross-checks every SBL verse against that file).
-> - Moulton & Milligan is noisy OCR and is never quoted as verified text.
+> - **TR/Byzantine text** now comes from printed editions: Byzantine from Robinson–Pierpont (2018); TR from eBible grctr, verified word-for-word against Scrivener 1894 (unaccented). TR verses without ground truth are flagged and the checker warns; 5 known-scrambled TR verses are rejected. Verse breaks follow the KJV where editions differ (flagged, informational).
+> - The `variants` word-order entries for TR/Byzantine come from TAGNT word data and can differ from the printed verse text (e.g. 1 Tim 1:1).
+> - **SBL text** is verified against Faithlife SBLGNT (`scripts/check_sblgnt.py`). Romans ends at 16:24 in the published SBLGNT file (no 16:25–27); the data reflects that.
+> - The data holds **printed editions**, not individual manuscripts.
+> - Moulton & Milligan is cleaned but still OCR and is never quoted as verified text. Reina 1569 is still unavailable (searched 2026-11-19).
+
+Evals: 15 cases, 81/81 assertions (iteration 4) — see [evals/RESULTS.md](evals/RESULTS.md).
 
 The plan to close these gaps is in [docs/superpowers/plans/2026-11-19-gap-closure.md](docs/superpowers/plans/2026-11-19-gap-closure.md).
 
