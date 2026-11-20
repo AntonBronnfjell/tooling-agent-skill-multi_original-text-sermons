@@ -152,6 +152,26 @@ class Lookup(unittest.TestCase):
         self.assertIn("order", t)
         self.assertIn("τοῦ ἰδίου αἵματος", t)
 
+    def test_order_entries_carry_a_note(self):  # TAGNT word data, not the printed verse text
+        for ref in ("Acts.20.28", "1Tim.1.1"):
+            for v in [x for x in run("variants", ref) if x.get("kind") == "order"]:
+                self.assertIn("built from TAGNT word data; may differ from the printed verse text", v["note"])
+                self.assertIn("verse --witness W", v["note"])
+        t = run_raw("variants", "Acts.20.28", "--format", "text").stdout
+        self.assertIn("built from TAGNT word data", t)
+
+    def test_order_entry_marks_witnesses_whose_printed_text_lacks_it(self):
+        v = [x for x in run("variants", "1Tim.1.1") if x.get("kind") == "order"][0]
+        self.assertEqual(v["mismatch_with_printed"], ["Byz", "TR"])  # printed: Ἰησοῦ χριστοῦ … κυρίου Ἰησοῦ
+        a = [x for x in run("variants", "Acts.20.28") if x.get("kind") == "order"][0]
+        self.assertNotIn("mismatch_with_printed", a)
+        t = run_raw("variants", "1Tim.1.1", "--format", "text").stdout
+        self.assertIn("mismatch with printed: Byz, TR", t)
+
+    def test_order_entry_names_flagged_witnesses(self):  # THGNT 2Pet.1.18 ἁγίῳ τῷ is in KNOWN_SCRAMBLED
+        v = [x for x in run("variants", "2Pet.1.18") if x.get("kind") == "order"][0]
+        self.assertEqual(v["order_flags"], {"THGNT": "known scrambled"})
+
     def test_variants_sbl_from_macula(self):
         v = run("variants", "Mark.16.9")
         first = [x for x in v if x["pos"] == 1][0]

@@ -330,6 +330,10 @@ def _strip_end(s):
     return (s or "").strip(ENDPUNCT + "¶")
 
 
+ORDER_ENTRY_NOTE = ("order entries are built from TAGNT word data; may differ from the printed verse text "
+                    "(see mismatch_with_printed) — quote with `verse --witness W`")
+
+
 def order_entry(conn, ref):
     """One `kind: order` entry when the editions print this verse's words in different orders, else None."""
     present = set(witnesses_for(conn, "grnt", [ref]))
@@ -358,8 +362,23 @@ def order_entry(conn, ref):
         groups.setdefault(text, []).append(w)
     orders = {"+".join(sorted(ws)): text for text, ws in groups.items()}
     eds = "+".join(EDITION_TOKEN[w] for w in GREEK_EDITIONS if w in moved)
-    return {"ref": ref, "pos": lo + 1, "kind": "order", "reading": None, "editions": eds,
-            "class": "late" if is_late(eds) else "early", "orders": orders}
+    out = {"ref": ref, "pos": lo + 1, "kind": "order", "reading": None, "editions": eds,
+           "class": "late" if is_late(eds) else "early", "orders": orders, "note": ORDER_ENTRY_NOTE}
+    printed = {w: f" {r[0] or match_key(r[1], 'grc')} " for w, *r in conn.execute(
+        "SELECT witness, match_key, text FROM verses WHERE corpus='grnt' AND ref=?", (ref,))}
+    mismatch = [w for text, ws in groups.items() for w in ws
+                if w in printed and f" {match_key(text, 'grc')} " not in printed[w]]
+    if mismatch:
+        out["mismatch_with_printed"] = sorted(mismatch)
+    flagged = {}
+    for w in printed:
+        why = sorted(r for r in order_reasons(conn, "grnt", w, [ref])
+                     if r not in (ed.KJV_BREAK, ed.REBUILT) and not r.startswith(ed.PLACEMENT))
+        if why and w in {x for ws in groups.values() for x in ws}:
+            flagged[w] = ", ".join(why)
+    if flagged:
+        out["order_flags"] = flagged
+    return out
 
 
 def sbl_from_macula(conn, ref):
@@ -666,7 +685,11 @@ def render_text(cmd, out):
         for v in out:
             if v.get("kind") == "order":
                 L.append(f"{v['ref']} #{v['pos']} order  [{v['editions']}]  {v['class']}: "
-                         + " | ".join(f"{k}: {t}" for k, t in v["orders"].items()))
+                         + " | ".join(f"{k}: {t}" for k, t in v["orders"].items())
+                         + (f"  (mismatch with printed: {', '.join(v['mismatch_with_printed'])})"
+                            if v.get("mismatch_with_printed") else "")
+                         + (f"  (order flags: {'; '.join(f'{w}: {r}' for w, r in v['order_flags'].items())})"
+                            if v.get("order_flags") else ""))
             else:
                 L.append(f"{v['ref']} #{v['pos']} {v['reading']}  [{v['editions']}]  {v['class']}")
             if v.get("note") and v["note"] not in notes:
