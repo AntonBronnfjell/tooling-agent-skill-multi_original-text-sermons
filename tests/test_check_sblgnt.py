@@ -1,4 +1,5 @@
 import io
+import os
 import sqlite3
 import sys
 import unittest
@@ -137,8 +138,30 @@ class CheckSblgnt(unittest.TestCase):
             self.assertIn("Rom.16.25", buf.getvalue())
 
 
-REAL_DB = ROOT / "data" / "bible.db"
+REAL_DB = Path(os.environ.get("OTS_DB") or ROOT / "data" / "bible.db")
 REAL_SOURCES = ROOT / "sources"
+
+
+def real_sbl_copy():
+    """In-memory DB holding only the real SBL `verses` rows (the check reads nothing else)."""
+    src = sqlite3.connect(f"file:{REAL_DB}?mode=ro", uri=True)
+    try:
+        rows = src.execute("SELECT corpus, witness, ref, text, match_key FROM verses "
+                           "WHERE corpus='grnt' AND witness='SBL'").fetchall()
+    finally:
+        src.close()
+    c = make_db({})
+    c.executemany("INSERT INTO verses VALUES (?,?,?,?,?)", rows)
+    return c
+
+
+def move_last_word(c, ref_a, ref_b):
+    """Move the last word of SBL `ref_a` to the start of `ref_b`."""
+    (a,) = c.execute("SELECT text FROM verses WHERE corpus='grnt' AND witness='SBL' AND ref=?", (ref_a,)).fetchone()
+    (b,) = c.execute("SELECT text FROM verses WHERE corpus='grnt' AND witness='SBL' AND ref=?", (ref_b,)).fetchone()
+    head, _, last = a.rstrip().rpartition(" ")
+    for ref, text in ((ref_a, head), (ref_b, last + " " + b)):
+        c.execute("UPDATE verses SET text=?, match_key='' WHERE corpus='grnt' AND witness='SBL' AND ref=?", (text, ref))
 
 
 @unittest.skipUnless(REAL_DB.is_file() and (REAL_SOURCES / "sblgnt").is_dir(), "real bible.db not built")
@@ -160,40 +183,22 @@ class RealData(unittest.TestCase):
             self.assertNotIn(f"Rom 16:{v}\t", text)
         self.assertNotIn("δυναμένῳ", text)
 
+    def tearDown(self):
+        while _OPEN:
+            _OPEN.pop().close()
+
     def test_moved_word_across_verse_boundary_caught_on_real_db(self):
-        import shutil
-        import tempfile
-        with tempfile.TemporaryDirectory() as t:
-            copy = Path(t) / "b.db"
-            shutil.copy(REAL_DB, copy)
-            c = sqlite3.connect(copy)
-            (a,) = c.execute("SELECT text FROM verses WHERE corpus='grnt' AND witness='SBL' AND ref='John.3.16'").fetchone()
-            (b,) = c.execute("SELECT text FROM verses WHERE corpus='grnt' AND witness='SBL' AND ref='John.3.17'").fetchone()
-            head, _, last = a.rstrip().rpartition(" ")
-            for ref, text in (("John.3.16", head), ("John.3.17", last + " " + b)):
-                c.execute("UPDATE verses SET text=? WHERE corpus='grnt' AND witness='SBL' AND ref=?", (text, ref))
-            c.commit()
-            rep = cs.check(c, REAL_SOURCES / "sblgnt")
-            c.close()
+        c = real_sbl_copy()
+        move_last_word(c, "John.3.16", "John.3.17")
+        rep = cs.check(c, REAL_SOURCES / "sblgnt")
         self.assertEqual({m["ref"] for m in rep["mismatches"]}, {"John.3.16", "John.3.17"})
 
-    def test_moved_word_inside_allowlisted_chapter_caught_on_real_db(self):
-        import shutil
-        import tempfile
-        with tempfile.TemporaryDirectory() as t:
-            copy = Path(t) / "b.db"
-            shutil.copy(REAL_DB, copy)
-            c = sqlite3.connect(copy)
-            self.assertIn(("Acts", 2), cs.SHIFTS)
-            (a,) = c.execute("SELECT text FROM verses WHERE corpus='grnt' AND witness='SBL' AND ref='Acts.2.4'").fetchone()
-            (b,) = c.execute("SELECT text FROM verses WHERE corpus='grnt' AND witness='SBL' AND ref='Acts.2.5'").fetchone()
-            head, _, last = a.rstrip().rpartition(" ")
-            for ref, text in (("Acts.2.4", head), ("Acts.2.5", last + " " + b)):
-                c.execute("UPDATE verses SET text=? WHERE corpus='grnt' AND witness='SBL' AND ref=?", (text, ref))
-            c.commit()
-            rep = cs.check(c, REAL_SOURCES / "sblgnt")
-            c.close()
-        self.assertEqual({m["ref"] for m in rep["mismatches"]}, {"Acts.2.4", "Acts.2.5"})
+    def test_moved_word_across_a_pinned_shift_boundary_caught_on_real_db(self):
+        self.assertEqual(cs.SHIFTS[("Acts", 2)], {10: -4})  # the boundary after Acts 2:10 carries a known shift
+        c = real_sbl_copy()
+        move_last_word(c, "Acts.2.10", "Acts.2.11")
+        rep = cs.check(c, REAL_SOURCES / "sblgnt")
+        self.assertEqual({m["ref"] for m in rep["mismatches"]}, {"Acts.2.10", "Acts.2.11"})
 
 
 if __name__ == "__main__":

@@ -32,10 +32,9 @@ _LINE = re.compile(r"^(\w+) (\d+):(\d+)\t(.*)$")
 # SBLGNT apparatus anchors (U+2E00-U+2E0F, optionally followed by a variant-unit digit: ⸀1ἄλλῳ),
 # editorial brackets, and punctuation match_key does not know (em dash, parentheses, Greek ; and ·)
 _MARKS = re.compile("[\u2e00-\u2e0f]\\d*|[\u27e6\u27e7\\[\\]\u2014()\u037e\u0387]")
-# Faithlife numbering -> KJV numbering, the only places the two differ beyond a verse boundary that the
-# chapter-level word stream already absorbs: Phil 1:16/17 are swapped, and Rev 12:18 is the first sentence of
-# KJV Rev 13:1 (it crosses a chapter boundary). Everything else (3John 14/15, Acts 19:40/41, 2Cor 13:12-14 ...)
-# stays inside one chapter and needs no mapping.
+# Faithlife numbering -> KJV numbering for whole verses: Phil 1:16/17 are swapped, and Rev 12:18 is the first
+# sentence of KJV Rev 13:1 (it crosses a chapter boundary). Words shifted across a verse boundary inside one
+# chapter (3John 14/15, Acts 19:40/41, 2Cor 13:12-14 ...) are pinned in SHIFTS below.
 FL_TO_KJV = {("Phil", 1, 16): ("Phil", 1, 17), ("Phil", 1, 17): ("Phil", 1, 16), ("Rev", 12, 18): ("Rev", 13, 1)}
 # Known verse-boundary differences between Faithlife (SBL numbering) and the KJV-keyed DB, one entry per chapter:
 # {verse: n} means that at the boundary after that verse, Faithlife's running word count minus the DB's is n
