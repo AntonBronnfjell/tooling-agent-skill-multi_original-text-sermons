@@ -46,6 +46,9 @@ HAS_SCRIPT = re.compile("[\u0370-\u03ff\u1f00-\u1fff\u0590-\u05ff]")
 SCRIPT_WORD = "[\u0300-\u036f\u0370-\u03ff\u1f00-\u1fff\u0590-\u05ff]+[\u2019\u02bc']?"
 SCRIPT_RUN = re.compile(rf"{SCRIPT_WORD}(?:[\s,.;\u00b7:\u05c3\u2026]+{SCRIPT_WORD})*")
 SCRIPT_TOKEN = re.compile(SCRIPT_WORD)
+# words for the untagged-run rule: maqaf (U+05BE) and sof pasuq (U+05C3) join Hebrew words into one SCRIPT_WORD,
+# so a hyphenated phrase (בָּרָא־אֱלֹהִים) is split on them before counting
+COUNT_TOKEN = re.compile("[\u0300-\u036f\u0370-\u03ff\u1f00-\u1fff\u0590-\u05bd\u05bf-\u05c2\u05c4-\u05ff]+")
 # an inline-tagged quote: like SCRIPT_RUN, but only source punctuation joins words (no `:`, which no source text has)
 TAGGED_RUN = re.compile(rf"{SCRIPT_WORD}(?:[\s,.;\u00b7\u037e\u0387\u05c3\u2026]+{SCRIPT_WORD})*")
 # the tag, optionally followed by a leading elision (`[GRC John.1.1] … καὶ θεὸς`)
@@ -437,7 +440,7 @@ def inline_quotes(lines, start, block_quotes):
         for g in groups:  # untagged: pieces split on , ; / \u00b7 are judged alone (a lemma list is not a quote)
             pieces = [x for run in g for x in LIST_SEP.split(run) if SCRIPT_TOKEN.search(x)]
             for piece in pieces:
-                if len(SCRIPT_TOKEN.findall(piece)) >= 2 and not quoted_already(piece, block_quotes + out, i + 1):
+                if len(COUNT_TOKEN.findall(piece)) >= 2 and not quoted_already(piece, block_quotes + out, i + 1):
                     problems.append((i + 1, "untagged original-language text: tag it inline "
                                             "`[CORPUS[:WITNESS] Ref] <original>` right before the words, or quote it"))
                     bad = True

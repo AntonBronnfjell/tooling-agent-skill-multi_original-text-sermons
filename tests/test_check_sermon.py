@@ -605,6 +605,17 @@ class FinalReview(Base):
                       "\u03ba\u03b1\u1f76, \u03b8\u03b5\u1f78\u03c2 \u1f26\u03bd \u1f41 \u03bb\u03cc\u03b3\u03bf\u03c2"):
             self.assertTrue(any("untagged" in m for m in self.errs(self.doc(prose=prose))), prose)
 
+    def test_maqaf_or_sof_pasuq_joined_words_count_as_several(self):
+        for joined in ("בָּרָא־אֱלֹהִים־"
+                       "חֹשֶׁךְ־רַע",  # בָּרָא־אֱלֹהִים־חֹשֶׁךְ־רַע
+                       "חֹשֶׁךְ׃רַע"):  # חֹשֶׁךְ׃רַע
+            e = self.errs(self.doc(prose=f"The text says {joined} here."))
+            self.assertTrue(any("untagged original-language text" in m for m in e), (joined, e))
+
+    def test_single_hebrew_word_with_sof_pasuq_is_free(self):
+        e = self.errs(self.doc(prose="The word אֱלֹהִים׃ here."))  # אֱלֹהִים׃
+        self.assertFalse([m for m in e if "untagged" in m], e)
+
     def test_baptiz_stems(self):
         q = "> [GRC John.1.1] καὶ θεὸς\n> Literal: a\n> Natural: {}\n"
         cases = [("es", "id y bautizad"), ("es", "bautizarlos"), ("es", "yo bautizo"), ("es", "que se bautícen"),
