@@ -50,6 +50,7 @@ One rule covers θεός / אֱלֹהִים and κύριος, on `Literal:`/`Nat
 - No reverential capitals on pronouns or titles (he/him, hijo, palabra, él). "Son/Hijo", "Word/Verbo", "the LORD", "el Señor" as published capitals are a translation choice: quote them as such and mention them in comparison notes.
 - State the convention in one line in Notes (e.g. "Capitals: names capitalized; κύριος lower case by default for every referent — a typographic convention that claims nothing about who is meant; both casings shown at Phil.2.11; manuscripts make no upper/lower-case distinction").
 - Capitalization is not machine-checked (that would force a side on contested readings); this rule is enforced by review and evals.
+- **Capitals in the Greek data are not evidence.** The TR text's letter-case (John.1.1 Θεὸς, Rom.9.5 Θεὸς, Rom.10.9 Κύριον Ἰησοῦν, 1Tim.1.1 Κυρίου) comes from the digital edition (eBible `grctr`) and was not checked against Scrivener 1894, whose transcription is lower case. It is not a reading: never report TR Θεός vs Byz/SBL θεός as a difference, and never argue from a capital in any edition. Quote the text exactly as `lookup.py` prints it (the validator ignores case).
 
 ## 5. Usage claims only from the tool
 

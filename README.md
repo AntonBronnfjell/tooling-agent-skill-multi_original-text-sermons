@@ -162,7 +162,7 @@ All sources are vendored (xz-compressed, pinned) under `sources/`; `sources/MANI
 | [First1KGreek](https://github.com/OpenGreekAndLatin/First1KGreek) — Philo | 1st-century Greek usage (Cohn–Wendland edition) | CC BY-SA 4.0 (First1KGreek / Open Greek and Latin) |
 | [Moulton & Milligan, *Vocabulary of the Greek Testament*](https://archive.org/details/vocabularyofgree00mouluoft) | papyri and inscription usage per lemma (noisy OCR) | Public domain (Hodder & Stoughton 1914–1929; scan University of Toronto / Internet Archive 2008) |
 | [Robinson–Pierpont Byzantine text](https://github.com/byztxt/byzantine-majority-text) | Byzantine verse text (2018 edition) | Public domain (CC0 1.0; repository LICENSE: 'IN THE PUBLIC DOMAIN') |
-| [Scrivener 1894 (byztxt)](https://github.com/byztxt/greektext-scrivener) and [eBible.org grctr](https://ebible.org/details.php?id=grctr) | Textus Receptus verse text; grctr checked word-for-word against Scrivener 1894 (unaccented) | Scrivener: Public domain (repository README: 'Public Domain. Copy freely.'); grctr: Public domain (eBible.org: 'firmly in the Public Domain due to its age'; Adam Boyd's annotations dedicated to the public domain) |
+| [Scrivener 1894 (byztxt)](https://github.com/byztxt/greektext-scrivener) and [eBible.org grctr](https://ebible.org/details.php?id=grctr) | Textus Receptus verse text; grctr checked word-for-word against Scrivener 1894 (unaccented, lower case), so its accents and case are unverified | Scrivener: Public domain (repository README: 'Public Domain. Copy freely.'); grctr: Public domain (eBible.org: 'firmly in the Public Domain due to its age'; Adam Boyd's annotations dedicated to the public domain) |
 | [Faithlife SBLGNT](https://github.com/Faithlife/SBLGNT) | SBL text cross-checked per verse by `scripts/check_sblgnt.py` | SBLGNT text CC BY 4.0 (Society of Biblical Literature and Faithlife); apparatus not vendored |
 | [eBible.org](https://ebible.org/) — KJV, YLT, BSB, WEB, RV1909 | comparison translations | Public domain |
 
@@ -172,15 +172,15 @@ Listed in the manifest but not vendored: LXX Swete 1930 (CC BY-NC-SA 4.0) and Re
 ## Known limitations
 
 > [!WARNING]
-> - **TR/Byzantine text** now comes from printed editions: Byzantine from Robinson–Pierpont (2018); TR from eBible grctr, verified word-for-word against Scrivener 1894 (unaccented). TR verses without ground truth are flagged and the checker warns; 5 known-scrambled TR verses are rejected. Verse breaks follow the KJV where editions differ (flagged, informational).
-> - The `variants` word-order entries for TR/Byzantine come from TAGNT word data and can differ from the printed verse text (e.g. 1 Tim 1:1).
+> - **TR/Byzantine text** now comes from printed editions: Byzantine from Robinson–Pierpont (2018); TR from eBible grctr, verified word-for-word against Scrivener 1894 (unaccented). TR verses without ground truth are flagged and the checker warns; 5 known-scrambled TR verses are rejected. Verse breaks follow the KJV where editions differ (flagged, informational); Byz prints Rom 16:25–27 after 14:23 (informational note).
+> - **TR accents and letter-case** come from eBible grctr and were not checked against Scrivener 1894 (an unaccented, lower-case transcription): capitals such as John 1:1 Θεὸς, Rom 9:5 Θεὸς, Rom 10:9 Κύριον Ἰησοῦν are the digital edition's, not a reading, and are never reported as a difference.
+> - **THGNT, WH and NA word order** is rebuilt from TAGNT displacement marks, not taken from the printed editions, so a quote can validate against an order no printed edition contains. Every rebuilt verse is flagged and the checker warns; verses checked by hand and found scrambled (e.g. THGNT 1 Cor 8:8, Matt 12:14 in THGNT/WH/NA) are rejected.
+> - The `variants` word-order entries come from TAGNT word data and can differ from the printed verse text for TR, Byzantine **and SBL** (342 of 1,168 entries; e.g. 1 Tim 1:1, 1 Cor 8:8); each entry says so and lists the mismatching witnesses.
 > - **SBL text** is verified against Faithlife SBLGNT (`scripts/check_sblgnt.py`). Romans ends at 16:24 in the published SBLGNT file (no 16:25–27); the data reflects that.
 > - The data holds **printed editions**, not individual manuscripts.
 > - Moulton & Milligan is cleaned but still OCR and is never quoted as verified text. Reina 1569 is still unavailable (searched 2026-11-19).
 
-Evals: 15 cases, 81/81 assertions (iteration 4) — see [evals/RESULTS.md](evals/RESULTS.md).
-
-The plan to close these gaps is in [docs/superpowers/plans/2026-11-19-gap-closure.md](docs/superpowers/plans/2026-11-19-gap-closure.md).
+Evals: 15 cases, 81/81 assertions (iterations 3–4 combined) — see [evals/RESULTS.md](evals/RESULTS.md). What changed in each release is in [CHANGELOG.md](CHANGELOG.md).
 
 ## Use and license
 

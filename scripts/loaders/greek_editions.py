@@ -355,7 +355,8 @@ def load(conn, sources_dir, out=print):
         ("byz_source", "Robinson-Pierpont 2018 Byzantine Textform (byztxt/byzantine-majority-text "
                        f"{pins.get('byz', 'unpinned')}); verses without it keep TAGNT text, see order_flags"),
         ("tr_source", "Scrivener 1894: eBible.org grctr accented text, used only where it equals Robinson's "
-                      f"Scrivener 1894 word for word ({pins.get('tr', 'unpinned')}); "
+                      f"Scrivener 1894 word for word, ignoring accents and case (accents and case are grctr's, unverified) "
+                      f"({pins.get('tr', 'unpinned')}); "
                       f"{len(tr['rejected'])} grctr verses differ and keep TAGNT text, see order_flags")])
     n = 0
     for wit, s in (("Byz", byz), ("TR", tr)):
