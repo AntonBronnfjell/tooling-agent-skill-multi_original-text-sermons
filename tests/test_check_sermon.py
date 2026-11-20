@@ -664,6 +664,18 @@ class Iteration3(Base):
             bad = self.errs(self.doc(notes=f"- John.1.1: [GRC John.1.1] {ell} καὶ θεὸς ἀγαθός"))
             self.assertTrue(any("not found" in m for m in bad), (ell, bad))
 
+    def test_repeat_exemption_does_not_bridge_ellipsis(self):
+        for ell in ("...", "…", " ...", "…"):
+            q = f"> [GRC John.1.1] Ἐν ἀρχῇ{ell} ὁ λόγος ἦν πρὸς τὸν θεόν\n> Literal: a\n> Natural: b\n"
+            # words on both sides of the elision are not contiguous text: no exemption
+            bad = self.errs(self.doc(quote=q, notes="- John.1.1: ἀρχῇ ὁ λόγος here."))
+            self.assertTrue(any("untagged original-language text" in m for m in bad), (ell, bad))
+            # a run inside one segment is still a verbatim repeat
+            self.assertEqual(self.errs(self.doc(quote=q, notes="- John.1.1: ὁ λόγος ἦν here.")), [], ell)
+            self.assertEqual(self.errs(self.doc(quote=q, notes="- John.1.1: Ἐν ἀρχῇ here.")), [], ell)
+        inline = self.doc(notes="- John.1.1: [GRC John.1.1] Ἐν ἀρχῇ ... ὁ λόγος ἦν\n- then ἀρχῇ ὁ λόγος again")
+        self.assertTrue(any("untagged original-language text" in m for m in self.errs(inline)))
+
     def test_help_lang_default_matches_behaviour(self):
         r = subprocess.run([sys.executable, str(CHECK), "--help"], capture_output=True, text=True)
         self.assertEqual(r.returncode, 0)

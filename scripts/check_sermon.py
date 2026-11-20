@@ -328,11 +328,18 @@ def tradition_regex(*langs):
 
 # ---------------------------------------------------------------- main check
 
+def repeat_key(text, lg):
+    """match_key with every elision (`…` or ASCII `...`, which match_key would strip) kept as its own token,
+    so a repeat can never bridge the words on both sides of an elision."""
+    return f" {match_key(re.sub(r'…|\.\.\.', ' \u2026 ', nfc(text)), lg)} "
+
+
 def quoted_already(run, quotes, line):
-    """True if `run` (prose original-language words) appears verbatim in a verified quote above `line`."""
+    """True if `run` (prose original-language words) appears verbatim in a verified quote above `line`
+    (contiguously: within one segment of an elided quote, or with the same elisions)."""
     lg = "heb" if re.search("[\u0590-\u05ff]", run) else "grc"
-    k = f" {match_key(run, lg)} "
-    return any(q["line"] < line and k in f" {match_key(nfc(q['original']), lg)} " for q in quotes)
+    k = repeat_key(run, lg)
+    return any(q["line"] < line and k in repeat_key(q["original"], lg) for q in quotes)
 
 
 def ext_bracketed(conn, witness, refs, original):
