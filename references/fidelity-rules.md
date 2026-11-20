@@ -32,12 +32,20 @@ Where grammar, vocabulary or the manuscripts honestly allow more than one readin
 
 ## 4. Capitalization rule
 
-Hebrew and Greek manuscripts of the period have no upper/lower case distinction; capitals in a translation are the translator's decision.
+Early Hebrew and Greek manuscripts make no distinction between upper and lower case (they are written in one letter-case); every capital in a translation is the translator's decision. Say it that way — not "they had no capital letters" (majuscule manuscripts are written entirely in capitals).
 
+One rule covers θεός / אֱלֹהִים and κύριος, on `Literal:`/`Natural:` lines **and in the preacher's own prose**, and it is applied the same way whoever the word refers to (God, Jesus, a human master):
+
+- **Name vs title, by the target language's grammar.** A word used as a proper name takes a capital: ὁ θεός as the subject or referent of a clause (John.3.16 → "Dios"), אֱלֹהִים with a singular verb (Gen.1.1 בָּרָא, Gen.1.26 וַיֹּאמֶר → "God"; in Gen.1.26 what is contested is the plural "let us … our", not "God"). A title or common noun stays lower case, as the language writes any title ("the king", "el maestro"):
+  - κύριος in a predicate: "X is lord" / "X es señor";
+  - κύριε in address: "lord", "señor", "sir" (the sense the context shows);
+  - κύριος in plain prose and narration: "the lord said", "el señor dijo", "the lord's meal" — not "the Lord", "el Señor".
+- **Coordinated pairs get the same casing.** Where one phrase joins the two words (Byz Acts.20.28 τοῦ κυρίου καὶ θεοῦ; John.20.28 ὁ κύριός μου καὶ ὁ θεός μου) don't capitalize one and not the other ("del señor y Dios"); show the options — "of the lord and god / of the Lord and God" — and say capitals are the translator's choice.
+- **Contested θεός: show the options.** Where the form is anarthrous and the sense is debated (John.1.1c, Heb.1.8) or the word takes plural agreement (1Sam.28.13 אֱלֹהִים … עֹלִים, Ps.82.6 אֱלֹהִים אַתֶּם), show "God / divine / a god / gods" instead of choosing by capital letter.
+- **κύριος in an OT quotation or echo.** Show what `lxx <ref>` and `verse <ref>` print for that verse — including whether κύριος or יהוה stands there at all — and the senses the shown `usage κύριος` contexts display. A capital never decides whether a NT κύριος stands for the divine name; for any other sense (address "sir", master/owner…), `search`/`verse` an example first. Report; give no verdict.
 - **No capitals added to πνεῦμα ἅγιον / רוּחַ**: write "holy spirit" / "espíritu santo" on `Literal:`/`Natural:` lines. If the sermon discusses how others capitalize it, do so in prose.
-- θεός / אֱלֹהִים is rendered "God" / "Dios" only where the target language's grammar treats the word as a name (e.g. ὁ θεὸς as subject in John.3.16 → "Dios"; אֱלֹהִים with a singular verb, as in Gen.1.1 בָּרָא and Gen.1.26 וַיֹּאמֶר → "God"). Where the form is anarthrous and the sense is debated (John.1.1c, Heb.1.8) or the word takes plural agreement (1Sam.28.13 אֱלֹהִים … עֹלִים, Ps.82.6 אֱלֹהִים אַתֶּם), show the options ("God / divine / a god / gods") instead of choosing by capital letter. In Gen.1.26 what is contested is the plural "let us … our", not the rendering of אֱלֹהִים.
-- No reverential capitals on pronouns or titles (he/him, hijo, palabra, él) on translation lines. "Son/Hijo", "Word/Verbo" as capitalized titles are a translation choice; mention them in comparison notes when a published version uses them.
-- κύριος / κύριε, whoever it refers to: render by the target language's grammar, never for reverence. For a predicate ("X is lord/Lord") use the language's normal capitalization for a title; if the choice is contested, state it in Notes. If the passage quotes or echoes an OT verse, show what `lxx <ref>` and `verse <ref>` print for that verse — including whether κύριος or יהוה stands there at all — and the senses the shown `usage κύριος` contexts display; for any other sense (address "sir", master/owner…), `search`/`verse` an example first. Report; give no verdict.
+- No reverential capitals on pronouns or titles (he/him, hijo, palabra, él). "Son/Hijo", "Word/Verbo", "the LORD", "el Señor" as published capitals are a translation choice: quote them as such and mention them in comparison notes.
+- State the convention in one line in Notes (e.g. "Capitals: names capitalized, titles such as lord/señor lower case for every referent; manuscripts have no case distinction").
 - Capitalization is not machine-checked (that would force a side on contested readings); this rule is enforced by review and evals.
 
 ## 5. Usage claims only from the tool

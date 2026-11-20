@@ -11,7 +11,7 @@ The audience shapes vocabulary, illustrations and the closing response — never
 
 ## non-christian
 
-- **No unexplained insider terms.** Prefer the plain word; if an insider word must appear (a quote, a name people know), explain it in the same sentence.
+- **No unexplained insider terms** — in prose **and on the `Natural:` line**, which the hearer hears too. Prefer the plain word; if an insider word must appear (a quote, a name people know, or a standard rendering on a `Natural:` line such as "vida eterna"), explain it in plain words in the same sentence or the sentence right after the quote.
 - Assume no Bible knowledge. **Required:** before the first quote, one or two sentences that name *who* (writer or speaker), *where* (the place of the scene, by name, as the text or its context gives it) and *when*. Example: "In Jerusalem, in the first century, a teacher named Nicodemus comes to Jesus at night." This sentence is permitted background (`fidelity-rules.md` §7, §8): keep it general and uncontested — not a background lecture, two sentences at most.
 - Illustrations from ordinary life, not church life.
 - Response: an invitation to consider, ask, read, or trust — respectful, no pressure, no assumed agreement.
@@ -32,7 +32,7 @@ Terms to explain or replace (English / Spanish):
 | apostle / apóstol | sent one, envoy |
 | holy spirit / espíritu santo | God's breath/spirit — say what the passage says it does |
 | born again / nacer de nuevo | born from above / born again (both are possible for ἄνωθεν — explain) |
-| eternal life / vida eterna | life of the age to come, life without end (explain the phrase) |
+| eternal life / vida eterna | explain it every time it appears, Natural lines included: ζωὴ αἰώνιος — "life" with the adjective of αἰών, "age"; renderings in use are "eternal life / life without end" and "life of the age (to come)". Show both, say what the passage sets it against (e.g. John.3.16: perishing), no verdict |
 | righteous, justified / justo, justificado | in the right; made or declared right — say which the context shows |
 | amen / amén | "so it is", "truly" |
 | hallelujah / aleluya | "praise Yah" |

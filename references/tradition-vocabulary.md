@@ -97,7 +97,7 @@ Rules for this table:
 | es | sacramento | — | latín *sacramentum*; el griego cercano suele ser μυστήριον |
 | es | rapto | ser arrebatado | ἁρπάζω (1Thess.4.17) |
 | es | eucaristía | acción de gracias | εὐχαριστέω |
-| es | santa cena | cena del Señor (1Cor.11.20) | κυριακὸν δεῖπνον; "santa" no está en el texto |
+| es | santa cena | cena del señor (1Cor.11.20) | κυριακὸν δεῖπνον; "santa" no está en el texto |
 | es | misa | — | no está en el texto |
 | es | cristo | Ungido, Mesías | Χριστός = "ungido" (מָשִׁיחַ) |
 | es | cristos | ungidos, mesías | ψευδόχριστοι (Matt.24.24) |
