@@ -54,7 +54,7 @@ TAGGED_RUN = re.compile(rf"{SCRIPT_WORD}(?:[\s,.;\u00b7\u037e\u0387\u05c3\u2026]
 # the tag, optionally followed by a leading elision (`[GRC John.1.1] … καὶ θεὸς`)
 INLINE_TAG = re.compile(r"\[(" + "|".join(CORPUS) + r")(?::([^\s\]]+))?\s+([^\]]+?)\s*\]\s*(?:(?:…|\.\.\.)\s*)?$",
                         re.IGNORECASE)
-EDITOR_NOTE = re.compile(r"bracket|corchete|editor", re.IGNORECASE)
+EDITOR_NOTE = re.compile(r"\b(?:bracket|corchete|editor)", re.IGNORECASE)
 TEMPLATE_NAME = re.compile(r"^[a-z0-9-]+$")
 MAX_RANGE = 50
 MAX_ELLIPSES = 4

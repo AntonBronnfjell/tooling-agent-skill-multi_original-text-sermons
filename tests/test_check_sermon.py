@@ -533,6 +533,10 @@ class FinalReview(Base):
         self.assertTrue(self.ext_errs(notes))
         self.assertTrue(self.ext_errs("- Ant.18.63 is a testimonium.\n- elsewhere the editor brackets things."))
 
+    def test_ext_bracket_note_needs_the_whole_word(self):  # "creditor" is not "editor"
+        self.assertTrue(self.ext_errs("- Ant.18.63 — the creditor of this saying is Josephus."))
+        self.assertFalse(self.ext_errs("- Ant.18.63 — editors bracket it; Editorial brackets in Niese"))
+
     def test_ext_bracket_note_same_line_ok(self):
         self.assertFalse(self.ext_errs("- Ant.18.63 \u2014 editor-bracketed in Niese"))
         self.assertFalse(self.ext_errs("- Ant.18.63\n  editor-bracketed in Niese"))
