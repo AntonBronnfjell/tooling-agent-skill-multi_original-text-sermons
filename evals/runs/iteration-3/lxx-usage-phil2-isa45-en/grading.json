@@ -1,0 +1,87 @@
+{
+  "eval_id": 6,
+  "eval_name": "lxx-usage-phil2-isa45-en",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "The response shows the Hebrew text (WLC) of Isa 45:21-25 and the Rahlfs LXX text of Isa 45:21-25, both taken from lookup.py output (tagged [HEB Isa.45.x] and [LXX Isa.45.x] quotes or equivalent)",
+      "passed": true,
+      "evidence": "[HEB Isa.45.21]–[HEB Isa.45.25] and [LXX Isa.45.21]–[LXX Isa.45.25] quoted; verified by check_sermon. Caveat (regression vs iteration 2): v.21 again quoted only from הֲלוֹא / ἐγὼ ὁ θεός, although the chat says 'All five Isaiah verses are quoted'."
+    },
+    {
+      "text": "The response reports that the Hebrew (WLC) has יְהוָה in Isa 45:21, 45:24 and 45:25",
+      "passed": true,
+      "evidence": "'Hebrew יְהוָה stands in verses 21, 24 and 25.'"
+    },
+    {
+      "text": "The response reports that Isa 45:23 in the LXX ends with τῷ θεῷ",
+      "passed": true,
+      "evidence": "LXX 45:23 quote ends 'ἐξομολογήσεται πᾶσα γλῶσσα τῷ θεῷ'; Notes: '\"God\" (dative) in v.23, with no counterpart word in WLC v.23'."
+    },
+    {
+      "text": "The response reports that the LXX has ὁ θεός in 45:21, no divine name in 45:24, and κυρίου in 45:25",
+      "passed": true,
+      "evidence": "'The Greek has ὁ θεός in 21, no divine name in 24, and κυρίου in 25.'"
+    },
+    {
+      "text": "The response does not claim that the LXX has κύριος in 45:23, and does not assert a link between Phil 2:10-11 and Isa 45 other than what the shown texts support (it reports Paul's wording alongside the data, or states what the data does not show)",
+      "passed": true,
+      "evidence": "No κύριος-in-45:23 claim ('Isaiah 45:23 itself, the line Paul shares, has neither name' = neither κύριος nor יהוה). 'How much of Isaiah 45 Paul means to bring along is a question for you to weigh with the evidence'."
+    },
+    {
+      "text": "Any Hebrew/Greek quotes in the saved file pass check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-every-knee-every-tongue.en.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 14083,
+    "transcript_chars": 17204,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "κύριος NT 710 (SBL), LXX 7423",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`word κύριος` SBL 710 … all 756 (grader re-ran)."
+    },
+    {
+      "claim": "ἐξομολογέω LXX 92 / יָדָה 80; ἐξομολογέομαι NT 10",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Re-verified."
+    },
+    {
+      "claim": "'Isaiah 45:23 … has neither name'",
+      "type": "quality",
+      "verified": false,
+      "evidence": "Confusing next to the Notes' 'God (dative) in v.23'; LXX 23 does have τῷ θεῷ."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "κύριος capitalization differs from iterations 2 and other iteration-3 runs: 'Jesus the Anointed is Lord' (capital, on the Natural line and in prose; Notes call it a translation choice) while 'God the father' is lower case. Homiletic close 'when you say \"Jesus is Lord,\" say it as Isaiah's tongue does' leans toward identifying the referents, after the body declined to decide.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The response shows the Hebrew text (WLC) of Isa 45:21-25 …",
+        "reason": "Partial v.21 passes again; require full verses."
+      }
+    ],
+    "overall": "6/6 (iterations 1: 6/6, 2: 6/6), with two note-level regressions vs iteration 2."
+  }
+}

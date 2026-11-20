@@ -1,0 +1,82 @@
+{
+  "eval_id": 15,
+  "eval_name": "chat-answer-es-quotes-only-john3-16",
+  "iteration": 4,
+  "expectations": [
+    {
+      "text": "The transcript shows `lookup.py verse John.3.16` was run and the Greek quoted in the answer matches its output for the witness named in the tag",
+      "passed": true,
+      "evidence": "Tool log `verse John.3.16`; [GRC John.3.16] quote matches SBL output."
+    },
+    {
+      "text": "The transcript shows the answer's quote blocks were written to a temp file outside sermons/ and `check_sermon.py --quotes-only --lang es <tmpfile>` was run and finally exited 0",
+      "passed": true,
+      "evidence": "Tool log: '`check_sermon.py --quotes-only --lang es eval15-answer.md (run 1)` — exit 1: ERROR untagged ὥστε … ἔδωκεν'; '(run 2, final) — exit 0'. The temp file is a bare filename, not under sermons/ (directory not named in the log)."
+    },
+    {
+      "text": "No file was created under sermons/ and the answer is given in the chat in Spanish",
+      "passed": true,
+      "evidence": "Run dir holds only transcript.md; answer in Spanish."
+    },
+    {
+      "text": "Every Greek phrase of two or more words in the answer (outside a quote block as well) is preceded by an inline tag [CORPUS[:WITNESS] Ref]; a run that repeats verbatim (same words, order and accents; case and punctuation ignored) text quoted in a quote block or inline-tagged quote on an earlier line of the same answer counts as tagged; single lemmas (ἠγάπησεν, μονογενῆ) may stand alone",
+      "passed": true,
+      "evidence": "Grader's independent scan (multi-word Greek runs outside quote blocks, with the revised rule: verbatim repeats of earlier quoted/inline-tagged text, case and punctuation ignored, count as tagged): no untagged run. 'ὁ θεὸς' repeats the John 3:16 quote verbatim (now covered by the revised assertion); other phrases are quote blocks or inline tags ([GRC:TR John.3.16] τὸν υἱὸν αὐτοῦ τὸν μονογενῆ, [EXT:Josephus Ant.20.20] block…)."
+    },
+    {
+      "text": "Each quote block has a tag line, a `> Literal:` line and a `> Natural:` line in Spanish",
+      "passed": true,
+      "evidence": "Quote blocks John.3.16, 2Sam.13.15, 2Tim.4.10, Judg.11.34, Ant.1.222, Heb.11.17, Ant.20.20 each have tag, Literal and Natural in Spanish."
+    },
+    {
+      "text": "The answer shows evidence/options (e.g. what `word` or `variants` print) and draws no doctrinal conclusion",
+      "passed": true,
+      "evidence": "Options (a)/(b) for μονογενῆ with `word`/`usage` evidence; 'los datos … no deciden por sí solos qué matiz quiso Juan' (the iteration-3 weighting 'Ninguno … exige' is gone); ἀγαπάω: 'la calidad de ese amor la da el contexto'."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 0,
+    "transcript_chars": 8792,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "ἀγαπάω contexts Gen 24:67, 25:28, 29:18, Rom 9:13, Josephus Ant.1.75, 1.64",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`usage ἀγαπάω` (grader re-ran)."
+    },
+    {
+      "claim": "Josephus Ant.20.20: Izates treated 'as only son' though he had brothers",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`verse Ant.20.20`: Μονόβαζος … πρεσβύτερος … ἄλλοι τε παῖδες … ὡς εἰς μονογενῆ τὸν Ἰζάτην."
+    },
+    {
+      "claim": "'la viuda de Naín', 'la hija de Jairo', 'el rey Monobazo'",
+      "type": "factual",
+      "verified": false,
+      "evidence": "Names not in the verses printed (Luke 7:12, 8:42, Ant.20.20 name neither Nain, Jairus nor the king); background from memory, unmarked."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "New counter-example (Izates) strengthens the evidence for option (a) while both options remain open. No doctrinal conclusion.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "6/6 (iteration 3: 5/6)."
+  }
+}

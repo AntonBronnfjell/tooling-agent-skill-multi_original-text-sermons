@@ -1,0 +1,71 @@
+{
+  "eval_id": 10,
+  "eval_name": "languages-same-passage-es-and-en",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "Two sermon files exist under ./sermons/, one named *.es.md with language: es and one named *.en.md with language: en",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-arbol-junto-al-agua.es.md (language: es) and 2026-11-19-tree-by-the-water.en.md (language: en)."
+    },
+    {
+      "text": "Both files pass check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "Both grade_programmatic.py: check_sermon exit 0, errors []; one separated-words WARN each (Notes line 93)."
+    },
+    {
+      "text": "The Spanish file uses Spanish section headings (Introducción, Texto, Idea central, ...) and the English file uses English headings (Introduction, Text, Big Idea, ...)",
+      "passed": true,
+      "evidence": "ES: Introducción, Texto, Idea central, Punto 1–3, Conclusión, Notas; EN: Introduction, Text, Big Idea, Point 1–3, Conclusion, Notes."
+    },
+    {
+      "text": "Both files cite the same Hebrew quote(s) from Ps.1.1-3 (identical tagged Hebrew text) with Literal and Natural lines in their own language",
+      "passed": true,
+      "evidence": "Grader diff of all '> [' tag lines: IDENTICAL; Literal/Natural in each language."
+    },
+    {
+      "text": "Neither file's translation lines contain tradition vocabulary flagged by the validator for its language",
+      "passed": true,
+      "evidence": "No tradition-vocabulary error or warning in either file."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 21475,
+    "transcript_chars": 23802,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "No DSS witness for Ps.1.1–3",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`dss Ps.1.1|2|3` → absent (tool log)."
+    },
+    {
+      "claim": "LXX Ps.1.1 λοιμῶν for לֵצִים; co-occurrence 6",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Tool log `word λοιμός`; inline [LXX Ps.1.1] tag validated."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Clean.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "5/5 (iteration 1: 5/5)."
+  }
+}

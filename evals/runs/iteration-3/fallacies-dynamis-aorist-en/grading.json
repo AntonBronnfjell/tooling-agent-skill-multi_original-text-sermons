@@ -1,0 +1,76 @@
+{
+  "eval_id": 5,
+  "eval_name": "fallacies-dynamis-aorist-en",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "The response says the dynamis = dynamite argument does not hold and names the fallacy (etymological fallacy / anachronism / root fallacy or equivalent label)",
+      "passed": true,
+      "evidence": "'This is an anachronism' (chat) and Point 1 'the anachronism fallacy'."
+    },
+    {
+      "text": "The response gives a concrete reason for dynamis (dynamite is a 19th-century word, or the 1st-century usage of δύναμις shown from lookup.py word/usage output)",
+      "passed": true,
+      "evidence": "'dynamite' coined in modern times (marked 'background, not from our data') plus `word δύναμις` SBL 119, LXX 379, חַיִל 147, צָבָא 134 and LXX Gen.21.22 / Exod.7.4 (grader re-ran counts: exact)."
+    },
+    {
+      "text": "The response says the aorist does not by itself mean 'once for all' and names the fallacy (e.g. aspect/tense overreach, 'aorist = once-for-all' fallacy)",
+      "passed": true,
+      "evidence": "'the aorist doesn't mean \"once for all, never repeated\"' with John 2:20; 'Preaching \"aorist = once for all\" is overspecification'."
+    },
+    {
+      "text": "The response does not write the dynamite illustration or the 'once for all' claim into the sermon outline as if they were valid",
+      "passed": true,
+      "evidence": "Chat: 'I've left both illustrations out as you worded them'; sermon offers replacements only."
+    },
+    {
+      "text": "The response offers an alternative the text does support, citing the Greek (e.g. δύναμις as ability/power in Rom 1:16 context)",
+      "passed": true,
+      "evidence": "Exodus illustration from [LXX Exod.7.4] σὺν δυνάμει μου; Ruth 3:18 for τελέω; ἐφάπαξ in [GRC Rom.6.10]."
+    },
+    {
+      "text": "The response notes that τετέλεσται in John 19:30 is a perfect, not an aorist, citing the tense/morphology from lookup.py output (e.g. `verse John.19.30` or `interlinear`)",
+      "passed": true,
+      "evidence": "'the data tags it as a **perfect** (`V-RPI-3S`)'; Point 2 repeats with [GRC John.19.30]."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 10100,
+    "transcript_chars": 13701,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "ἐφάπαξ NT 5, gloss 'once/at once'",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`word ἐφάπαξ` (grader re-ran)."
+    },
+    {
+      "claim": "τελέω NT SBL 28 (TR 24)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`word τελέω` SBL 28, TR 24."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Minor inconsistency: Big Idea states Paul says 'once for all', Point 3 then leaves 'once' vs 'once for all' open. No doctrinal lean.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "6/6 (iteration 1: 6/6)."
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "eval_id": 9,
+  "eval_name": "template-default-and-custom-skeleton-en",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "The first sermon file contains the default sections Introduction, Text, Big Idea, Point 1, Point 2, Point 3, Conclusion, Notes as H2 headings",
+      "passed": true,
+      "evidence": "shepherd-in-the-valley.en.md H2s: Introduction, Text, Big Idea, Point 1, Point 2, Point 3, Conclusion, Notes."
+    },
+    {
+      "text": "The second sermon file has template: custom in its frontmatter and a sections: list whose names and order match the example (Opener, The Word, The Anchor Point, Three Ropes, Response, or direct equivalents)",
+      "passed": true,
+      "evidence": "guarded-by-peace.en.md: 'template: custom', 'sections: Opener, The Word, The Anchor Point, Three Ropes, Response, Notes'."
+    },
+    {
+      "text": "The second sermon contains none of the example's sentences verbatim (e.g. the storm story sentence about the waves and the boat does not appear)",
+      "passed": true,
+      "evidence": "Grep for the example's sentences: none. The opener is a hypothetical ('Imagine lying awake…'); 'storm' recurs only as a metaphor ('your mind is a storm')."
+    },
+    {
+      "text": "Both sermon files pass check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "Both files exit 0, errors []; WARNs: shepherd 2 separated-words, guarded-by-peace length 426 (stated in Notes as the user's short structure)."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 21812,
+    "transcript_chars": 26011,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "No DSS witness for Ps.23.1; 56hev1b has parts of vv.2–4",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Tool log; consistent with grader's iteration-2 check."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Settings carry-over: audience/specialization of sermon 2 assumed from sermon 1 and disclosed. κύριος written 'lord' in lower case here (contrast eval 6 'Lord'). Two separated-words WARNs left unresolved in the Psalm sermon.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "4/4 (iterations 1–2: 4/4)."
+  }
+}

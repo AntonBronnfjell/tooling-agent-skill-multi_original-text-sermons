@@ -1,0 +1,71 @@
+{
+  "eval_id": 3,
+  "eval_name": "contested-readings-john1-gal2-gen1",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "John 1:1c is shown in Greek (καὶ θεὸς ἦν ὁ λόγος) as a tagged quote, with at least two distinct renderings or readings listed and a note about the context (e.g. article, word order, John 1:1b/1:18)",
+      "passed": true,
+      "evidence": "[GRC John.1.1] 'καὶ θεὸς ἦν ὁ λόγος.' Natural '(options) … God / what God was … / a god'; Point 1: anarthrous fronted θεὸς, τὸν θεόν in 1:1b, Colwell limit, three options."
+    },
+    {
+      "text": "Galatians 2:16 shows πίστεως Ἰησοῦ Χριστοῦ in Greek with at least two options for the genitive (objective vs subjective or equivalent) and a context note",
+      "passed": true,
+      "evidence": "[GRC Gal.2.16] '…διὰ πίστεως Ἰησοῦ Χριστοῦ'; (a) objective (BSB, WEB) / (b) subjective (KJV, YLT, RV1909); context: πίστις senses, Rom.3.3, Mark.11.22, the 'we trusted' clause."
+    },
+    {
+      "text": "Genesis 1:26 shows the Hebrew (נַעֲשֶׂה / אֱלֹהִים) as a tagged quote with at least two options for the plural \"us\" and a context note",
+      "passed": true,
+      "evidence": "[HEB Gen.1.26] 'וַיֹּאמֶר אֱלֹהִים נַעֲשֶׂה …'; options court / majesty-deliberation / plurality; context: singular verb, 1Sam.28.13, Gen.1.27 בְּצַלְמוֹ, LXX plural, DSS lacuna."
+    },
+    {
+      "text": "Each of the three contested places is presented as options with evidence; the response does not state that one option is the only correct one",
+      "passed": true,
+      "evidence": "'The text allows each reading to be argued. That is the finding.' / 'The text allows both.' / 'The verse itself does not choose.'"
+    },
+    {
+      "text": "The sermon file passes check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-what-the-text-says.en.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 13492,
+    "transcript_chars": 21119,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "'the Greek of this period had no capital letters'",
+      "type": "factual",
+      "verified": false,
+      "evidence": "Same wording error as eval 2 (should be 'no case distinction')."
+    },
+    {
+      "claim": "Mark 11:22 BSB/KJV/WEB 'faith in God', YLT 'faith of God'; Rom 3:3 'faithfulness of God'",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Tool log `compare Mark.11.22`, `compare Rom.3.3`."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Neutral at all three contested places. Slight framing in the Big Idea ('In each of these sentences God acts first', 'a rightness that comes … through the πίστις of Jesus') — not a verdict but a unifying theological gloss.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "5/5 (iteration 1: 5/5)."
+  }
+}

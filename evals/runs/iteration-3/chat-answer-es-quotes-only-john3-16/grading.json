@@ -1,0 +1,81 @@
+{
+  "eval_id": 15,
+  "eval_name": "chat-answer-es-quotes-only-john3-16",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "The transcript shows `lookup.py verse John.3.16` was run and the Greek quoted in the answer matches its output for the witness named in the tag",
+      "passed": true,
+      "evidence": "Tool log `verse John.3.16`; [GRC John.3.16] quote matches SBL output (grader re-ran)."
+    },
+    {
+      "text": "The transcript shows the answer's quote blocks were written to a temp file outside sermons/ and `check_sermon.py --quotes-only --lang es <tmpfile>` was run and finally exited 0",
+      "passed": true,
+      "evidence": "Tool log: '`check_sermon.py --quotes-only --lang es <scratch>/e15.md` — run 1 … run 3 (final text): exit 0'; answer: 'sobre un archivo temporal fuera de `sermons/`'."
+    },
+    {
+      "text": "No file was created under sermons/ and the answer is given in the chat in Spanish",
+      "passed": true,
+      "evidence": "Run dir holds only transcript.md; answer in Spanish."
+    },
+    {
+      "text": "Every Greek phrase of two or more words in the answer (outside a quote block as well) is preceded by an inline tag [CORPUS[:WITNESS] Ref]; single lemmas (ἠγάπησεν, μονογενῆ) may stand alone",
+      "passed": false,
+      "evidence": "Two multi-word runs outside quote blocks have no inline tag: 'el sujeto es ὁ θεὸς, \"Dios\"' and 'en aposición: τὸν υἱὸν τὸν μονογενῆ, \"al hijo, al único\"'. Other phrases are tagged ([GRC Luke.7.12], [GRC Heb.11.17], [EXT:Josephus Ant.1.222] …). Untagged runs that the validator accepts under the SKILL.md exemption 'Words already quoted verbatim in a quote block above need no new tag' (SKILL.md Output format) — the assertion as written has no such exemption."
+    },
+    {
+      "text": "Each quote block has a tag line, a `> Literal:` line and a `> Natural:` line in Spanish",
+      "passed": true,
+      "evidence": "Every quote block (John.3.16, 2Sam.13.15, 2Tim.4.10, Ant.1.64, Judg.11.34, Ant.1.222) has tag, Literal and Natural lines in Spanish."
+    },
+    {
+      "text": "The answer shows evidence/options (e.g. what `word` or `variants` print) and draws no doctrinal conclusion",
+      "passed": true,
+      "evidence": "Options (a) 'único' / (b) 'unigénito' with `word`/`usage` evidence; 'no se elige por doctrina'. Mild weighting: 'Ninguno de esos contextos exige la idea de \"engendrar\"' (scoped to the contexts shown)."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.83
+  },
+  "execution_metrics": {
+    "output_chars": 0,
+    "transcript_chars": 10335,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "ἀγαπάω NT 143 (SBL; TR, Byz 140), LXX 210, אָהֵב 153; Josephus 55, Philo 48",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`word`/`usage ἀγαπάω` (grader re-ran)."
+    },
+    {
+      "claim": "μονογενής NT 9 all editions, LXX 4, Josephus 3",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Re-verified."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Aorist explanation reuses the John 2:20 / ἐφάπαξ evidence correctly. No doctrinal conclusion.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Every Greek phrase of two or more words in the answer (outside a quote block as well) is preceded by an inline tag…",
+        "reason": "Same conflict as evals 13–14; the validator cannot catch it while the exemption stands."
+      }
+    ],
+    "overall": "5/6 — fails only on the strict tagging clause."
+  }
+}

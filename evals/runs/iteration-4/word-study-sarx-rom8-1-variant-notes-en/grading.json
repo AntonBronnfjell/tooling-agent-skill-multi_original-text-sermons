@@ -1,0 +1,76 @@
+{
+  "eval_id": 14,
+  "eval_name": "word-study-sarx-rom8-1-variant-notes-en",
+  "iteration": 4,
+  "expectations": [
+    {
+      "text": "The transcript shows `lookup.py verse Rom.8.1` (at least SBL or another critical edition, and TR or Byz) and `lookup.py variants Rom.8.1` were run",
+      "passed": true,
+      "evidence": "Tool log: `verse Rom.8.1` (SBL), `verse Rom.8.1 --witness NA|WH|THGNT|TR|Byz`, `variants Rom.8.1`."
+    },
+    {
+      "text": "The Notes (or body) state that the words μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα are listed by `variants` for TR and Byz only, and that the SBL text of Rom.8.1 ends at Ἰησοῦ (as lookup prints it)",
+      "passed": true,
+      "evidence": "Notes: 'TR and Byz add [GRC:TR Rom.8.1] μὴ κατὰ σάρκα περιπατοῦσιν, ἀλλὰ κατὰ πνεῦμα … absent in SBL, NA, WH, THGNT. All seven added words carry the tool label \"late\" (support TR+Byz only)'; SBL quote ends 'τοῖς ἐν Χριστῷ Ἰησοῦ·'."
+    },
+    {
+      "text": "Every run of two or more Greek words in the response (quote blocks, prose and Notes, including the variant phrase) carries a quote-block tag or an inline tag [CORPUS[:WITNESS] Ref] immediately before it on the same line, with the witness named for the variant phrase (GRC:TR and/or GRC:Byz); a run that repeats verbatim (same words, order and accents; case and punctuation ignored) text quoted in a quote block or inline-tagged quote on an earlier line of the same answer counts as tagged",
+      "passed": true,
+      "evidence": "Variant phrase tagged [GRC:TR Rom.8.1] and [GRC:Byz Rom.8.1]; other phrases tagged ([LXX Gen.2.24], [GRC Rom.1.3], [GRC Rom.8.4] ἀλλὰ κατὰ πνεῦμα, [GRC Rom.1.4]). Grader's independent scan (multi-word Greek runs outside quote blocks, with the revised rule: verbatim repeats of earlier quoted/inline-tagged text, case and punctuation ignored, count as tagged): no untagged run."
+    },
+    {
+      "text": "Each quoted or inline-tagged Greek text matches what `lookup.py verse` printed for that witness (including TR/Byz punctuation or capitalization differences, e.g. Byz χριστῷ lowercase), and validates with `check_sermon.py --quotes-only --lang en` on a temp file outside sermons/",
+      "passed": true,
+      "evidence": "Grader ran `check_sermon.py --quotes-only` on the whole chat answer (everything above '## Tool log') in a scratch file: exit 0, no warnings. TR/Byz/SBL texts match `verse --witness` (grader re-ran Rom.8.1 per witness in iteration 3; unchanged)."
+    },
+    {
+      "text": "If a count of σάρξ is given it matches `lookup.py word σάρξ` and names the edition (SBL/NA/THGNT/WH 147, Byz 150, TR 151, any edition 152; lxx 158)",
+      "passed": true,
+      "evidence": "'147 times in the NT (SBL; TR 151, Byz 150) and 158 times in the LXX'; Notes give all editions incl. 'all editions 152' — matches `word σάρξ`."
+    },
+    {
+      "text": "The response draws no conclusion about which reading is original or doctrinally correct, and claims nothing about the meaning of σάρξ beyond what the cited examples show",
+      "passed": true,
+      "evidence": "No verdict on the reading ('which editions print it'). Meaning scoped: 'in this stretch of Romans 8 σάρξ is … a way of living and thinking that the text opposes to living by the spirit … a class should describe it from these verses, not from a dictionary label'."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 0,
+    "transcript_chars": 9502,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "σάρξ domain 26.7 in Rom 8:4, 8:5, 8:8, 8:9; 58.10 in Rom 1:3 and the last σαρκί of 8:3",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Grader read `verse … ` JSON domains: exact."
+    },
+    {
+      "claim": "Josephus Ant.6.120 of meat eaten with the blood",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`verse Ant.6.120` has ταῦτʼ ἔναιμα κατήσθιον."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Clean; no doctrinal lean. The added-clause 'Meaning' note describes the effect of the TR/Byz words without judging them.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "6/6 (iteration 3: 5/6)."
+  }
+}

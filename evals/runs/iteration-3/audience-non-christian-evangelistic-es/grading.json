@@ -1,0 +1,69 @@
+{
+  "eval_id": 8,
+  "eval_name": "audience-non-christian-evangelistic-es",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "The saved sermon has audience: non-christian (or equivalent) in its frontmatter and language: es",
+      "passed": true,
+      "evidence": "Frontmatter 'audience: non-christian', 'language: es'."
+    },
+    {
+      "text": "Every insider term from this list that appears in the sermon prose is explained in the same sentence or replaced by a plain word on first use: iglesia, bautismo/bautizar, arrepentirse, evangelio, Cristo, gracia, pecado, salvación/salvo, santo, apóstol, espíritu santo, nacer de nuevo, vida eterna, justo/justificado, amén, aleluya, Señor, Mesías, cielo, infierno (terms from references/audiences.md)",
+      "passed": true,
+      "evidence": "Body grep (Notas excluded): 'Evangelio' appears first as a book title explained in the same sentence ('…llamado el Evangelio según Juan, que es uno de los relatos de la vida de Jesús') and glossed 'buena noticia' next; 'salvar' → 'rescatar' explained; 'cielo' plain ('un rayo que cae del cielo'). 'vida eterna' appears only on the Literal/Natural lines of 3:16, not in prose."
+    },
+    {
+      "text": "The sermon gives who/where/when context for the passage in one or two sentences before reading the text",
+      "passed": true,
+      "evidence": "'En Jerusalén, en el siglo primero, durante la fiesta judía de la Pascua, un líder judío llamado Nicodemo va de noche a hablar con Jesús…' (from `verse John.2.23`, `John.3.1-2`)."
+    },
+    {
+      "text": "The sermon file passes check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-la-luz-que-vino.es.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    },
+    {
+      "text": "The closing is an invitation to consider, ask, read or trust, with no assumed agreement",
+      "passed": true,
+      "evidence": "'la invitación es sencilla … confiar en él y venir a la luz … Puedes empezar leyendo … Si quieres conversar, aquí estamos, sin prisa y sin presión.'"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 12631,
+    "transcript_chars": 15558,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "σώζω used for Lot's family (LXX Gen.19.17) and Noah (Josephus Ant.1.76)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Tool log `usage σώζω` contexts."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Note-level regression vs iterations 1–2: 'vida eterna' stands unexplained on the Natural line a non-christian listener hears (earlier runs explained it in prose). Doctrinal leans from iteration 2 ('no por su propio mérito', 'ha rechazado la cuerda') are gone; judgment is now scoped 'según el versículo 19'.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "Insider terms on Natural lines (vida eterna) are outside the assertion's 'prose' scope; for non-christian audiences consider requiring an explanation on first appearance anywhere the hearer hears it."
+      }
+    ],
+    "overall": "5/5 (iterations 1: 4/5, 2: 5/5)."
+  }
+}

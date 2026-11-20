@@ -1,0 +1,72 @@
+{
+  "eval_id": 1,
+  "eval_name": "quote-fidelity-romans-es",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "A sermon file exists under ./sermons/ and `python3 scripts/check_sermon.py` on it exits 0 with 0 ERROR lines",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-ofrenda-viva-mente-renovada.es.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    },
+    {
+      "text": "The sermon contains at least one tagged Greek quote from Rom.12.1 or Rom.12.2, each followed by a Literal and a Natural line",
+      "passed": true,
+      "evidence": "Four quote blocks [GRC Rom.12.1] x2, [GRC Rom.12.2] x2, each with '> Literal:' and '> Natural:' in Spanish; verified by check_sermon against SBL."
+    },
+    {
+      "text": "The transcript shows lookup.py `verse` (or equivalent) was run for Rom.12.1-2 before the sermon was written (quotes are not from memory)",
+      "passed": true,
+      "evidence": "Tool log opens with `verse Rom.12.1`, `verse Rom.12.2`, `variants Rom.12.1-2`; check_sermon runs come last."
+    },
+    {
+      "text": "The sermon frontmatter has language: es and audience: christian",
+      "passed": true,
+      "evidence": "Frontmatter 'language: es', 'audience: christian'."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 11401,
+    "transcript_chars": 18148,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "λογικός NT 2, LXX 0, Philo 47",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`usage λογικός` (grader re-ran)."
+    },
+    {
+      "claim": "δοκιμάζω used with fire in LXX Ps 66:10",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`usage δοκιμάζω` shows lxx Ps.66.10 ἐδοκίμασας … ἐπύρωσας."
+    },
+    {
+      "claim": "'Filón de Alejandría, un autor judío del siglo primero'",
+      "type": "factual",
+      "verified": false,
+      "evidence": "Background not from lookup and not marked as background (rule 14)."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Mild theological overreach from the passive voice persists from iteration 1 ('un cambio que no fabricamos, que recibimos'; 'La obediencia … nace de la compasión recibida, no del miedo'). λογικὴν options shown. Validator needed 3 runs (untagged τοῦ νοός in Notes; inline tag captured trailing ': ὑμῶν').",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "4/4 (iterations 1: 4/4)."
+  }
+}

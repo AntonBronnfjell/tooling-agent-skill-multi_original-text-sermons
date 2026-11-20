@@ -1,0 +1,88 @@
+{
+  "eval_id": 6,
+  "eval_name": "lxx-usage-phil2-isa45-en",
+  "iteration": 4,
+  "expectations": [
+    {
+      "text": "The response shows the Hebrew text (WLC) of Isa 45:21-25 and the Rahlfs LXX text of Isa 45:21-25, both taken from lookup.py output (tagged [HEB Isa.45.x] and [LXX Isa.45.x] quotes or equivalent)",
+      "passed": true,
+      "evidence": "[HEB Isa.45.21]–[HEB Isa.45.25] and [LXX Isa.45.21]–[LXX Isa.45.25] all quoted as full verses (v.21 now complete from הַגִּידוּ / εἰ ἀναγγελοῦσιν — fixes the iteration-3 partial verse); check_sermon verified each."
+    },
+    {
+      "text": "The response reports that the Hebrew (WLC) has יְהוָה in Isa 45:21, 45:24 and 45:25",
+      "passed": true,
+      "evidence": "Point 3: 'In the Hebrew, the name יְהוָה stands in verses 21, 24 and 25.' Notes repeat it per verse."
+    },
+    {
+      "text": "The response reports that Isa 45:23 in the LXX ends with τῷ θεῷ",
+      "passed": true,
+      "evidence": "Point 3: 'The Greek adds τῷ θεῷ, \"to God,\" at the end of that verse'; Notes: 'Isa.45.23: LXX adds τῷ θεῷ at the end'."
+    },
+    {
+      "text": "The response reports that the LXX has ὁ θεός in 45:21, no divine name in 45:24, and κυρίου in 45:25",
+      "passed": true,
+      "evidence": "'verse 21 has ὁ θεός, verse 24 has no divine name at all, and verse 25 has κυρίου' (grader re-ran `lxx Isa.45.21-25`)."
+    },
+    {
+      "text": "The response does not claim that the LXX has κύριος in 45:23, and does not assert a link between Phil 2:10-11 and Isa 45 other than what the shown texts support (it reports Paul's wording alongside the data, or states what the data does not show)",
+      "passed": true,
+      "evidence": "No κύριος-in-45:23 claim. Link limited to shared wording and Rom 14:11 ('with \"it is written\"' — grader confirmed SBL Rom.14.11 opens γέγραπται γάρ). κύριος at Phil 2:11 given three options (a) identification with Isaiah's speaker, (b) exalted master to God's glory, (c) both, each with its basis; 'The grammar does not decide between these'."
+    },
+    {
+      "text": "Any Hebrew/Greek quotes in the saved file pass check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-every-knee-every-tongue.en.md — grade_programmatic: exit 0, errors [], warnings []."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 18540,
+    "transcript_chars": 25078,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "ἐξομολογέομαι contexts Acts 19:18, Jas 5:16, Rom 15:9",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`usage ἐξομολογέομαι` (grader re-ran)."
+    },
+    {
+      "claim": "1QIsaa Isa.45.23 ותשבע; 4Q56 ברך תשבע with other words reconstructed",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`dss Isa.45.23` (grader re-ran)."
+    },
+    {
+      "claim": "κύριος co-occurs with יהוה 5,130 times in LXX verses",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`word κύριος` (iteration-3 check, unchanged)."
+    },
+    {
+      "claim": "Rom 14:11 quoted from ὅτι ἐμοὶ…",
+      "type": "quality",
+      "verified": true,
+      "evidence": "Accurate, but the omitted opening Ζῶ ἐγώ, λέγει κύριος is itself relevant to the κύριος question the sermon raises; not mentioned."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "κύριος convention applied as revised: 'lord / Lord' on the Phil 2:11 and LXX Isa 45:25 translation lines, Notes state it is a typographic convention. Closing is neutral in both directions ('let the evidence above, not a habit, shape your answer'), replacing the iteration-3 'say it as Isaiah's tongue does'. No doctrinal lean found.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "6/6 (iterations 1–3: 6/6), with the iteration-3 note-level regressions resolved."
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "eval_id": 7,
+  "eval_name": "dss-isa53-11-light-en",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "The transcript shows lookup.py `dss` and `lxx` were run for Isa.53.11",
+      "passed": true,
+      "evidence": "Tool log: `dss Isa.53.11`, `lxx Isa.53.11`, plus per-scroll `verse --corpus dss --witness 1QIsaa|1Q8|4Q58|4Q56`."
+    },
+    {
+      "text": "The response shows the WLC/MT reading of Isa 53:11 and reports that it does not contain the word for light",
+      "passed": true,
+      "evidence": "[HEB Isa.53.11] quoted; '\"He will see\" has no object here.'"
+    },
+    {
+      "text": "The response shows that 1QIsaᵃ (witness 1QIsaa) has אור in Isa 53:11",
+      "passed": true,
+      "evidence": "[DSS:1QIsaa Isa.53.11] 'מעמל נפשוה יראה אור וישבע ובדעתו'."
+    },
+    {
+      "text": "The response shows that the LXX (Rahlfs) has φῶς in Isa 53:11",
+      "passed": true,
+      "evidence": "[LXX Isa.53.11] '…δεῖξαι αὐτῷ φῶς…'."
+    },
+    {
+      "text": "The response labels 1QIsaᵃ and the LXX as readings that differ from the MT and does not state which one is the original text",
+      "passed": true,
+      "evidence": "'without picking a winner'; options (a)/(b) 'Neither is a verdict'; 'The data doesn't show which Hebrew text the Greek translators had'. No weighting words (iteration-1 'lean'/'independent' gone)."
+    },
+    {
+      "text": "Any quoted Hebrew/Greek is copied from lookup.py output (a [DSS ...] tag uses the 1QIsaa witness)",
+      "passed": true,
+      "evidence": "Grader ran `check_sermon.py --quotes-only` on the whole chat answer (everything above '## Tool log') in a scratch file: exit 0. DSS tags name witnesses (1QIsaa, 1Q8, 4Q58, 4Q56); 4Q58 quote stops at extant או, reconstructed ר not quoted."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 0,
+    "transcript_chars": 9336,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "1Q8 reads עבדי after a gap; 4Q58 עבדי and gap after לר",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`dss Isa.53.11`: 1Q8 '…אור יש … עבדי לרם…', 4Q58 '…עבדי לר … הוא יסבול' (grader re-ran)."
+    },
+    {
+      "claim": "φῶς LXX 130, co-occurs with אוֹר 90",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`word φῶς` (grader re-ran)."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Fixes all iteration-1 notes: every scroll reported with its reading, including the עבדי agreements; no weighting.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "6/6 (iteration 1: 6/6, now without the soft tilt)."
+  }
+}

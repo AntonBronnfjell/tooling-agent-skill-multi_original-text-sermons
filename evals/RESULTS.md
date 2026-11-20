@@ -169,3 +169,226 @@ Notes that persist or are new (none caused a failure):
 The combined figure uses iteration-1 results for the 7 evals not re-run (1, 2, 3, 5, 7, 10, 11: 36/36) and iteration-2 results for the 5 re-run evals (27/27).
 
 **63/63 assertions (100%). 12 of 12 evals pass fully** (iteration 1: 60/63, 95.2%, 9/12).
+
+---
+
+# Iteration 3
+
+Graded 2026-11-19. All 15 evals in `evals/evals.json` were run in `evals/runs/iteration-3/`. Evals 13–15 are new. The only change to an existing assertion is eval 12 #5, which now asks for NT counts per edition.
+
+The skill and validator changed substantially since iteration 2:
+- TR and Byz verse text now comes from the printed editions (Scrivener TR, Robinson–Pierpont Byz).
+- Untagged original-language text is an ERROR.
+- `--quotes-only` mode exists for chat answers.
+- New list-cap / separated-words WARN.
+- NT counts are reported per edition.
+
+How it was graded:
+- `grade_programmatic.py` on all 13 sermon files: exit 0 and 0 errors for all of them. The remaining WARNs are 2 separated-words in the Psalm 23 sermon (eval 9), 1 each in the Psalm 1 pair (eval 10), and an accepted length WARN (eval 9, Philippians).
+- Each chat-only answer (evals 7, 12, 13, 14, 15) was checked from everything above `## Tool log`, put in a scratch file and run through `check_sermon.py --quotes-only`. All exit 0.
+- A grader script also flagged multi-word Greek or Hebrew runs that have no inline tag on the same line.
+- Every data claim an assertion depends on was re-run against the current DB with `lookup.py`:
+  - Acts 20:28 and 1 Tim 1:1 TR/Byz/SBL/THGNT text and variants
+  - Rom 8:1 per witness and variants
+  - counts for σάρξ, ἀγαπάω, μονογενής, ἐκκλησία, δύναμις, ἐφάπαξ, τελέω, κύριος, λογικός and φῶς
+  - Mark 16 and John 7:53–8:11 brackets and interior variants under the new printed TR/Byz
+  - `dss Isa.53.11`
+
+Per-run detail: `evals/runs/iteration-3/<name>/grading.json`.
+
+## Summary
+
+| # | eval | it. 1 | it. 2 | it. 3 | result |
+|---|---|---|---|---|---|
+| 1 | quote-fidelity-romans-es | 4/4 | — | 4/4 | PASS |
+| 2 | tradition-traps-matt16-acts2-en | 5/5 | — | 5/5 | PASS |
+| 3 | contested-readings-john1-gal2-gen1 | 5/5 | — | 5/5 | PASS |
+| 4 | text-criticism-comma-mark16-john8 | 5/6 | 6/6 | 6/6 | PASS |
+| 5 | fallacies-dynamis-aorist-en | 6/6 | — | 6/6 | PASS |
+| 6 | lxx-usage-phil2-isa45-en | 6/6 | 6/6 | 6/6 | PASS |
+| 7 | dss-isa53-11-light-en | 6/6 | — | 6/6 | PASS |
+| 8 | audience-non-christian-evangelistic-es | 4/5 | 5/5 | 5/5 | PASS |
+| 9 | template-default-and-custom-skeleton-en | 4/4 | 4/4 | 4/4 | PASS |
+| 10 | languages-same-passage-es-and-en | 5/5 | — | 5/5 | PASS |
+| 11 | intake-bare-request-es | 5/5 | — | 5/5 | PASS |
+| 12 | usage-ekklesia-word-study-en | 5/6 | 6/6 | 6/6* | PASS |
+| 13 | tr-byz-quote-acts20-28-1tim1-1-order-es | — | — | 5/6 | FAIL |
+| 14 | word-study-sarx-rom8-1-variant-notes-en | — | — | 5/6 | FAIL |
+| 15 | chat-answer-es-quotes-only-john3-16 | — | — | 5/6 | FAIL |
+| | **total** | 60/63 | (27/27 subset) | **78/81 (96.3%)** | **12/15 evals** |
+
+\* Eval 12 #5 was revised for iteration 3 to ask for NT counts per edition. Evals 1–12 on their own score 63/63 (100%) in iteration 3. Evals 13–15 score 15/18 (83.3%).
+
+## Failed assertions (iteration 3)
+
+All three failures are the same issue: the new evals require an inline tag on every multi-word Greek run, but the skill and validator allow repeating text already quoted in a block above without one.
+
+### Eval 13: tr-byz-quote-acts20-28-1tim1-1-order-es
+**#5 fails** (the tagging clause only). The content part passes:
+- It says the 1 Tim 1:1 `variants` order strings come from STEPBible TAGNT, and that κυριόυ is a data typo for the printed κυρίου.
+- κυριόυ is never quoted as an edition's reading.
+- `--quotes-only` exits 0.
+
+The tagging part fails because two three-word runs outside any quote block have no inline tag:
+- "(y Byz, dentro de su frase κυρίου καὶ θεοῦ)"
+- "(c) κυρίου καὶ θεοῦ "del señor y Dios" — solo Byz"
+
+### Eval 14: word-study-sarx-rom8-1-variant-notes-en
+**#3 fails.** The variant phrase is tagged correctly as `[GRC:TR Rom.8.1]` / `[GRC:Byz Rom.8.1]`. Two other runs have no tag:
+- "Paul himself uses κατὰ σάρκα for lineage:" (body)
+- "it follows the dative τοῖς ἐν Χριστῷ Ἰησοῦ" (Notes)
+
+### Eval 15: chat-answer-es-quotes-only-john3-16
+**#4 fails.** Two runs have no inline tag:
+- "el sujeto es ὁ θεὸς, "Dios""
+- "en aposición: τὸν υἱὸν τὸν μονογενῆ, "al hijo, al único""
+
+**Why the validator lets these through:** SKILL.md (Output format) says "Words already quoted verbatim in a quote block above need no new tag", and `check_sermon.py` implements that exemption. All three answers therefore pass `--quotes-only`. The assertions in evals 13–15 say "every" run and give no exemption. Every iteration-3 output relies on the exemption: the grader script counts 0–9 untagged repeated runs per file, and only eval 12 has none.
+
+## Comparison with iterations 1 and 2
+
+- **Evals 1–12 hold at 100%.** No assertion regressed from iteration 2 (evals 4, 6, 8, 9, 12) or from iteration 1 (the other seven).
+- **Eval 4** works well with the new printed TR/Byz:
+  - The iteration-2 caveat about [[ markers "inherited" by TR/Byz is no longer needed. In the data only NA/THGNT/WH open [[ at Mark 16:9, and only NA/THGNT/WH open it at John 7:53. The grader re-ran both.
+  - All interior variants are reported with their edition lists (verified), and no manuscripts are claimed.
+- **Eval 7** clears every iteration-1 note:
+  - All four scrolls are reported, including the עבדי agreements in 1Q8 and 4Q58.
+  - 4Q58 is quoted only up to the extant או.
+  - No weighting words.
+- **Eval 8** keeps the setting sentence ("En Jerusalén, en el siglo primero, durante la fiesta judía de la Pascua…"). The iteration-2 doctrinal glosses ("no por su propio mérito", "ha rechazado la cuerda") are gone.
+- **Eval 12** names an edition for every NT count. Josephus 48 and Philo 23 are verified, and the evidence-scoping language is kept.
+
+## Regressions (note level; no assertion regressed)
+
+- **Eval 6.**
+  - Isa 45:21 is again quoted only from הֲלוֹא / ἐγὼ ὁ θεός, although the chat says "All five Isaiah verses are quoted". Iteration 2 had the full verse.
+  - κύριος switched to a capital "Lord" in prose and on the Natural line, while "God the father" stays lower case.
+  - The close "when you say 'Jesus is Lord,' say it as Isaiah's tongue does" leans toward identifying the two referents, after the body declined to decide.
+- **Eval 8.** "vida eterna" is now unexplained on the Natural line that non-christian hearers hear. Iterations 1 and 2 explained it in prose. The assertion is scoped to prose, so it still passes.
+- **Evals 2 and 3 (recurring from iteration 1).** "Manuscripts of the first century had no capital letters" / "the Greek of this period had no capital letters". This is wrong as worded, since majuscule manuscripts are written entirely in capitals. SKILL.md and `fidelity-rules.md` correctly say "no case distinction"; the runners paraphrase it wrongly.
+
+## Analyst notes
+
+### Doctrinal leans (none tied to an assertion)
+- **Eval 2.** The Big Idea, the Point 3 title ("How one enters") and the Conclusion present immersion as the way to enter the assembly, as the text's plain message. Meanwhile the body shows εἰς ἄφεσιν and ἐπὶ τῷ ὀνόματι with options. It also says "not … a building or an institution".
+- **Eval 12.** A class discussion question moves from word usage to a church-practice conclusion: "what does that suggest about a group that never actually gathers? Let the texts … answer".
+- **Eval 11.** Ephesians 2 is pitched as "el texto central" on grace. Romans 3:24 was left out because a nearby verse is contested; avoiding contested passages is not a skill rule.
+- **Eval 1.** The theological overreach from the passive voice persists ("un cambio que no fabricamos, que recibimos").
+- **Eval 3.** The Big Idea unifies all three texts with "God acts first", which is not a verdict but adds a theological frame.
+- **Eval 15.** "Ninguno de esos contextos exige la idea de 'engendrar'" is scoped to the contexts shown, but it is mild weighting toward option (a).
+
+### Other quality checks
+- No tradition vocabulary appeared on any Literal or Natural line.
+- No quote from memory was found: every quote and inline tag validated against the DB.
+- Claims not backed by the tool log were limited to a few, mostly background:
+  - Philo's century (eval 1)
+  - "'Church' is a later church word" (eval 12)
+  - the capital-letters phrasing (evals 2 and 3)
+
+### SKILL.md ambiguities the runners hit
+1. **Separated-words WARN handling.** Runners handled this WARN three different ways:
+   - Some replaced Greek or Hebrew lemma lists in Notes with English glosses. That cleared the WARN but moved evidence out of the original language (eval 4: "Greek lemma lists replaced by glosses").
+   - Some rewrote prose (evals 6, 7, 8, 13).
+   - Some left the WARN in place (eval 9 Psalm 23: 2; eval 10: 1 each).
+
+   SKILL.md doesn't say when a short lemma list in Notes is acceptable.
+2. **Where an inline tag ends.** Runners hit this repeatedly:
+   - Eval 1, run 2: "inline tag captured trailing ': ὑμῶν'".
+   - Eval 13, run 2: "inline tag swallowed trailing κυριόυ".
+   - Eval 9: "inline DSS tag preceded by `…`" was an ERROR.
+
+   The rule doesn't say where the tagged text stops when Greek continues after punctuation.
+3. **Settings carry-over.** Eval 9 copied the first sermon's audience and specialization to the second and said so. The skill doesn't say whether to carry settings over or ask.
+4. **Big Idea fit for handouts and multi-passage requests.** Evals 2, 3, 4, 5 and 6 all used "one text per point" to fit three passages into the Big Idea template. Eval 4 is a text-criticism handout forced into Introduction/Big Idea/Point sections. The workaround is consistent but not written down anywhere.
+5. **Capitalizing κύριος in plain prose.** The runs disagree:
+   - eval 6: "Jesus the Anointed is Lord", capital
+   - evals 9 and 10: "lord", lower case
+   - eval 13: "del señor y Dios", a lower-case title next to a capitalized "Dios"
+
+   The κύριος rule covers translation lines and predicates but not plain prose. The result looks inconsistent, and the casing can read as a signal about who is meant.
+
+### Evals that don't tell good runs from bad ones
+- Evals 1–12 now pass at 100%, so their remaining power to tell good from bad comes from the note-level checks above, not from the assertions.
+- Evals 13–15 are discriminating, but their tagging clauses currently test the gap between the skill and the eval, not the quality of the run.
+
+### Recommended fixes (priority order)
+1. **Settle the tagging exemption.** Either remove "Words already quoted verbatim in a quote block above need no new tag" from SKILL.md and from `check_sermon.py` (at least in `--quotes-only` mode and in Notes), or add the same exemption to the assertions in evals 13 #5, 14 #3 and 15 #4. Removing it matches the intent of the new evals and the validator would then catch it. **Fixes all three failures.**
+2. **Define where an inline tag ends, and when a lemma list is allowed.**
+   - Inline tag: state that the tagged text ends at the first character that is not original-language text (or provide an explicit closing marker), and show an example with trailing punctuation.
+   - Lemma lists: state when they are acceptable in Notes (e.g. at most N lemmas, each glossed), so runners stop moving evidence into English to silence the WARN.
+3. **Write a rule for capitalizing κύριος in prose and on Natural lines.** Use one convention per language (e.g. lower-case "lord/señor" as a title unless grammar requires a name), state it in Notes, and apply it the same way to θεός/Dios in the same phrase.
+
+   Also add one line warning against "no capital letters": the correct statement is "no upper/lower-case distinction".
+
+Smaller fixes:
+- Document "one text per point" and a handout variant for multi-passage requests.
+- Set a default for carrying settings over between sermons in one request (reuse them and say so).
+- Require full verses when the user asks to "see the text" (eval 6).
+
+## Overall pass rate (iteration 3)
+
+**78/81 assertions (96.3%). 12 of 15 evals pass fully.**
+- Evals 1–12: 63/63 (100%), versus 60/63 in iteration 1 and 63/63 combined after iteration 2.
+- Evals 13–15: 15/18. All three failures come from the same skill-versus-eval disagreement over tagging repeated Greek text.
+
+---
+
+# Iteration 4
+
+Graded 2026-11-19. Evals 6, 13, 14 and 15 were re-run in `evals/runs/iteration-4/` after these fixes to SKILL.md, the references and the validator:
+- **κύριος:** lower case by default, written "lord / Lord" at YHWH echoes and contested places, plus a Notes line explaining the convention.
+- **Neutral closings:** rule 16, in both directions.
+- **Tagging:** the exemption for verbatim repeats is now documented, and the end of an inline-tagged quote is defined.
+- **Eval assertions:** evals 13–15 were revised so that a verbatim repeat (case and punctuation ignored) of an earlier quote counts as tagged.
+
+How it was graded:
+- `grade_programmatic.py` on the eval 6 sermon: exit 0, no errors or warnings.
+- `check_sermon.py --quotes-only` on each chat answer (evals 13–15, everything above `## Tool log`): exit 0, no warnings.
+- An independent scan for untagged multi-word Greek runs, applying the revised repeat rule.
+- `lookup.py` re-checks of: the Isa 45 LXX/DSS readings, Rom 14:11, `usage ἐξομολογέομαι`, σάρξ domain tags in Rom 8:3–9 and Rom 1:3, Josephus Ant.6.120 and Ant.20.20, and the `usage ἀγαπάω` contexts.
+
+## Summary
+
+| # | eval | it. 3 | it. 4 | result |
+|---|---|---|---|---|
+| 6 | lxx-usage-phil2-isa45-en | 6/6 | 6/6 | PASS |
+| 13 | tr-byz-quote-acts20-28-1tim1-1-order-es | 5/6 | 6/6 | PASS |
+| 14 | word-study-sarx-rom8-1-variant-notes-en | 5/6 | 6/6 | PASS |
+| 15 | chat-answer-es-quotes-only-john3-16 | 5/6 | 6/6 | PASS |
+| | **iteration-4 subset** | 22/24 | **24/24 (100%)** | |
+
+**Failed assertions:** none.
+
+## Comparison with iteration 3
+
+- **Evals 13–15 tagging.** All three now pass. Under the revised assertions, the iteration-3 answers would also have passed: the grader's scan of those answers with the new rule finds no untagged runs that aren't verbatim repeats. So this gain mainly comes from aligning the eval with the skill, not from a change in what the runners write.
+
+  The runners did tighten up as well:
+  - Eval 15 caught and tagged ὥστε … ἔδωκεν on its first validator run.
+  - Eval 13's Notes now explain how κύριος and θεός are capitalized.
+  - The iteration-3 weighting in eval 15 ("Ninguno de esos contextos exige…") is replaced by "los datos … no deciden por sí solos qué matiz quiso Juan".
+- **Eval 6 fixes the iteration-3 note-level regressions:**
+  - Isa 45:21 is quoted in full in Hebrew and Greek.
+  - κύριος is written "lord / Lord" at Phil 2:11 and LXX Isa 45:25, with a convention line in Notes.
+  - The leaning close ("say it as Isaiah's tongue does") is replaced by a neutral one ("let the evidence above, not a habit, shape your answer").
+  - Point 3 now gives three options for κύριος, each with its basis.
+- **Eval 13.** The κύριος/θεός asymmetry is fixed: Byz is rendered "del señor y dios / del Señor y Dios", with both words in the same form.
+
+## Regressions
+
+None, at assertion level or note level.
+
+Minor notes:
+- **Eval 6.** Rom 14:11 is quoted from ὅτι ἐμοὶ…, which leaves out the verse's own Ζῶ ἐγώ, λέγει κύριος. Those words bear on the κύριος question the sermon raises.
+- **Eval 15.** It adds unmarked background names that the printed verses don't contain: "Naín", "Jairo", "el rey Monobazo".
+- **Eval 13.** It contains the comma list "(Χριστοῦ, Θεοῦ, Κυρίου)": three separate words, each in the TR quote above. It was graded as a list of single words, not a phrase. The assertions should say how such lists are treated.
+
+No doctrinal lean was found in either direction in the four runs.
+
+## Overall pass rate (combined)
+
+The combined figure uses iteration-3 results for the 11 evals not re-run (1–5 and 7–12: 57/57) and iteration-4 results for evals 6 and 13–15 (24/24).
+
+**81/81 assertions (100%). 15 of 15 evals pass fully.**
+
+Caveat: evals 1–12 now pass at 100%. Most of the remaining signal is in the note-level checks (leans, background claims, selective quoting), not in the assertions. Adding held-out evals (new lemmas, new contested passages) would test whether these results generalize.

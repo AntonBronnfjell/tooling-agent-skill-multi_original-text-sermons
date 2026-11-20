@@ -1,0 +1,82 @@
+{
+  "eval_id": 4,
+  "eval_name": "text-criticism-comma-mark16-john8",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "For 1 John 5:7-8 the response names the witnesses that include or omit the extra words (e.g. TR vs SBL/NA/early editions per lookup.py variants output) and reports the extra clause as a late reading",
+      "passed": true,
+      "evidence": "Point 1: TR alone has the Comma; 'the Byzantine text … does not. The variant tool marks every added word as TR-only, class \"late\"'. Grader: `variants 1John.5.7-8` all [TR] late; `verse 1John.5.7 --witness Byz` short text."
+    },
+    {
+      "text": "For Mark 16:9-20 the response reports, as shown by lookup.py `verse`/`variants` output, which editions enclose the passage in [[ ]] (NA28, WH) and which print it (TR/Byz); it does not claim the passage is \"missing from\" an edition the data shows printing it; any \"late\" label is sourced to the data",
+      "passed": true,
+      "evidence": "Point 2: 'all six editions … print verses 9–20. But NA, THGNT and WH open the passage with double brackets … THGNT closes the brackets after … verse 20; SBL, Byz and TR print no brackets at all.' Grader re-ran `verse Mark.16.9|16.20 --witness …`: exact (new printed TR/Byz texts have no inherited [[)."
+    },
+    {
+      "text": "For John 7:53-8:11 the response reports, as shown by lookup.py `verse`/`variants` output, which editions enclose the passage in [[ ]] (NA28, WH) and which print it (TR/Byz); it does not claim the passage is \"missing from\" an edition the data shows printing it; any \"late\" label is sourced to the data",
+      "passed": true,
+      "evidence": "Point 3: 'NA, THGNT and WH open [[ at 7:53; NA and WH close ]] at 8:11 … SBL, Byz and TR print the passage without brackets.' Confirmed by grader."
+    },
+    {
+      "text": "The transcript shows lookup.py `variants` (or `verse`) was run covering each of the three passages; for John 7:53-8:11, which crosses a chapter boundary, split calls (John.7.53 and John.8.1-11) or per-verse calls count",
+      "passed": true,
+      "evidence": "`variants 1John.5.7-8`, `variants Mark.16.9-20` ('179 rows read'), `variants John.7.53`, `variants John.8.1-11` ('210 rows read'), plus per-edition `verse` calls."
+    },
+    {
+      "text": "Every witness cited in the handout is one that appears in the lookup.py output of that session",
+      "passed": true,
+      "evidence": "Witnesses cited: SBL, NA/NA28/NA27, THGNT/Tyn, WH, Treg, Byz, TR — all in the session's output; 'No manuscript, papyrus or codex claims are made.'"
+    },
+    {
+      "text": "Any Greek quotes in the file pass check_sermon.py with 0 errors",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-three-passages-witnesses.en.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 11866,
+    "transcript_chars": 30072,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "Mark 16:19 'the lord Jesus' in SBL, WH, Tregelles, THGNT, NA27; NA28, TR, Byz 'the lord'",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`variants Mark.16.9-20` #5 Ἰησοῦς [NA27+Tyn+WH+Treg+SBL]."
+    },
+    {
+      "claim": "John 8:4 'testing him' Byz+SBL; 8:2 πρὸς αὐτόν NA28+NA27+Tyn+WH+TR",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`variants John.8.1-11` (grader re-ran)."
+    },
+    {
+      "claim": "Mark 16:14 'but' absent in NA28, Byz",
+      "type": "factual",
+      "verified": true,
+      "evidence": "#2 δὲ [NA27+Tyn+WH+Treg+TR+SBL]."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Excellent; the iteration-2 'inherited marker' caveat is no longer needed because TR/Byz are now printed editions. To clear the separated-words WARN the runner replaced Greek lemma lists in Notes with English glosses (evidence moved out of Greek).",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "6/6 (iterations 1: 5/6, 2: 6/6)."
+  }
+}

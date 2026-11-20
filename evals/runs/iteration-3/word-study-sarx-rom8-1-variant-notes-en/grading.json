@@ -1,0 +1,87 @@
+{
+  "eval_id": 14,
+  "eval_name": "word-study-sarx-rom8-1-variant-notes-en",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "The transcript shows `lookup.py verse Rom.8.1` (at least SBL or another critical edition, and TR or Byz) and `lookup.py variants Rom.8.1` were run",
+      "passed": true,
+      "evidence": "Tool log: `verse Rom.8.1` (SBL), `verse Rom.8.1 --witness TR|Byz|NA|THGNT|WH`, `variants Rom.8.1`."
+    },
+    {
+      "text": "The Notes (or body) state that the words μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα are listed by `variants` for TR and Byz only, and that the SBL text of Rom.8.1 ends at Ἰησοῦ (as lookup prints it)",
+      "passed": true,
+      "evidence": "Notes: 'after Ἰησοῦ, TR and Byz add [GRC:TR Rom.8.1] μὴ κατὰ σάρκα περιπατοῦσιν, ἀλλὰ κατὰ πνεῦμα. Each word (#9–#15) is tagged [TR+Byz]…'; body: SBL quote ends at Ἰησοῦ. Grader re-ran: exact."
+    },
+    {
+      "text": "Every run of two or more Greek words in the response (quote blocks, prose and Notes, including the variant phrase) carries a quote-block tag or an inline tag [CORPUS[:WITNESS] Ref] immediately before it on the same line, with the witness named for the variant phrase (GRC:TR and/or GRC:Byz)",
+      "passed": false,
+      "evidence": "Variant phrase is tagged GRC:TR / GRC:Byz, but two multi-word runs carry no inline tag: '- **Human descent.** Paul himself uses κατὰ σάρκα for lineage:' (body) and 'In TR 8:1 it follows the dative τοῖς ἐν Χριστῷ Ἰησοῦ' (Notes). Untagged runs that the validator accepts under the SKILL.md exemption 'Words already quoted verbatim in a quote block above need no new tag' (SKILL.md Output format) — the assertion as written has no such exemption."
+    },
+    {
+      "text": "Each quoted or inline-tagged Greek text matches what `lookup.py verse` printed for that witness (including TR/Byz punctuation or capitalization differences, e.g. Byz χριστῷ lowercase), and validates with `check_sermon.py --quotes-only --lang en` on a temp file outside sermons/",
+      "passed": true,
+      "evidence": "Grader ran `check_sermon.py --quotes-only` on the whole chat answer (everything above '## Tool log') in a scratch file: exit 0. Byz inline tag text 'μὴ κατὰ σάρκα περιπατοῦσιν, ἀλλὰ κατὰ πνεῦμα' and SBL/TR quotes match `verse` output."
+    },
+    {
+      "text": "If a count of σάρξ is given it matches `lookup.py word σάρξ` and names the edition (SBL/NA/THGNT/WH 147, Byz 150, TR 151, any edition 152; lxx 158)",
+      "passed": true,
+      "evidence": "'NT 147 in SBL, 150 in Byz, 151 in TR (152 in any edition); LXX 158' — matches `word σάρξ` exactly."
+    },
+    {
+      "text": "The response draws no conclusion about which reading is original or doctrinally correct, and claims nothing about the meaning of σάρξ beyond what the cited examples show",
+      "passed": true,
+      "evidence": "No verdict on the reading ('this is a difference between editions'); meaning claims scoped to the cited contexts ('From these contexts…', 'The data does not let us narrow it further than Paul's own contrasts do'). Edge: '\"flesh\" in 8:4–5 names human existence as a guide for living' is a synthesis, framed as from the contexts."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.83
+  },
+  "execution_metrics": {
+    "output_chars": 0,
+    "transcript_chars": 10033,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "σάρξ co-occurs with בָּשָׂר 130; Josephus 11, Philo 90",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`word σάρξ`, `usage σάρξ` (grader re-ran)."
+    },
+    {
+      "claim": "περιπατοῦσιν parsed V-PAI-3P in TR 8:1 but V-PAP-DPM in 8:4",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Tool log; options shown in Notes."
+    },
+    {
+      "claim": "'the Greek phrase you are studying is securely in Paul's argument, three verses later'",
+      "type": "quality",
+      "verified": true,
+      "evidence": "Supported by `variants Rom.8.4` (no rows)."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Good handling of the finding that σάρξ is absent from Rom 8:1 in the critical editions. No doctrinal lean.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Every run of two or more Greek words … carries a quote-block tag or an inline tag …",
+        "reason": "Same skill/assertion conflict as eval 13."
+      }
+    ],
+    "overall": "5/6 — fails only on the strict tagging clause."
+  }
+}

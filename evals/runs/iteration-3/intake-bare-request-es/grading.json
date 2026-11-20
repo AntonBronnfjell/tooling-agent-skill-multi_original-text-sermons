@@ -1,0 +1,58 @@
+{
+  "eval_id": 11,
+  "eval_name": "intake-bare-request-es",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "The response asks which specialization is wanted (e.g. teología, apologética, evangelístico, enseñanza/discipulado, pastoral)",
+      "passed": true,
+      "evidence": "'2. **Especialización:** teología · apologética · evangelística · enseñanza/discipulado · pastoral.'"
+    },
+    {
+      "text": "The response asks who the audience is (cristiana, no cristiana, mixta)",
+      "passed": true,
+      "evidence": "'3. **Audiencia:** cristiana · no cristiana · mixta.'"
+    },
+    {
+      "text": "The response asks whether to use the default template or an example sermon structure",
+      "passed": true,
+      "evidence": "'5. **Plantilla:** ¿uso la plantilla por defecto … o me pegas un sermón de ejemplo…?'"
+    },
+    {
+      "text": "The response infers or confirms the output language (Spanish) rather than asking blindly",
+      "passed": true,
+      "evidence": "'4. **Idioma:** entiendo que lo quieres en español; ¿lo confirmas?'"
+    },
+    {
+      "text": "No sermon file is written to ./sermons/ in that turn and the response contains no drafted sermon body",
+      "passed": true,
+      "evidence": "Run dir has only transcript.md; no sermon body; 4 `verse` lookups only to vet proposals."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 0,
+    "transcript_chars": 1816,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Mild framing in a passage pitch: Eph 2:4–10 'el texto central para un sermón sobre qué es la gracia', and Rom 3:24 was not proposed because 'Rom.3.22 nearby is a contested reading' — avoiding contested passages is not a skill rule and narrows the user's options.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "5/5 (iteration 1: 5/5)."
+  }
+}

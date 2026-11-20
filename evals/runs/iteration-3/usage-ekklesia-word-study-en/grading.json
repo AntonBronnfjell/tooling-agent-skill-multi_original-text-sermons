@@ -1,0 +1,82 @@
+{
+  "eval_id": 12,
+  "eval_name": "usage-ekklesia-word-study-en",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "The transcript shows `lookup.py usage` was run for ἐκκλησία",
+      "passed": true,
+      "evidence": "Tool log: `usage ἐκκλησία` (text + JSON)."
+    },
+    {
+      "text": "The response cites LXX usage of ἐκκλησία with at least one reference and quote from the lookup output (e.g. Deut.4.10, Deut.9.10, Deut.23.1-2)",
+      "passed": true,
+      "evidence": "[LXX Deut.9.10], [LXX Deut.4.10], [LXX Ps.26.5] with WLC counterparts."
+    },
+    {
+      "text": "The response cites Josephus usage of ἐκκλησία with at least one reference and quote from the lookup output (e.g. Ant.3.84, Ant.3.188)",
+      "passed": true,
+      "evidence": "[EXT:Josephus Ant.3.84], [EXT:Josephus War.4.162], [EXT:Josephus Ant.16.62]."
+    },
+    {
+      "text": "If the papyri/lexicon excerpt is mentioned, it is flagged as noisy OCR/unverified and is not quoted as verified text",
+      "passed": true,
+      "evidence": "'noisy OCR of a printed lexicon, so I only paraphrase the ancient evidence it cites and leave aside its own commentary … Treat these as pointers, not verified text.'"
+    },
+    {
+      "text": "The response reports the corpus counts as given by the tool (grnt per edition, e.g. SBL 114 / TR 116 / all_editions 117 — naming the edition for any NT number; lxx 77; ext Josephus 48, Philo 23) without inventing other counts",
+      "passed": true,
+      "evidence": "'114 times in the SBL edition (NA 114, THGNT 114, WH 114, Byz 113, TR 116; 117 rows across all editions)'; LXX 77; Josephus 48, Philo 23. Grader re-ran `word`/`usage ἐκκλησία`: exact (revised assertion satisfied, editions named)."
+    },
+    {
+      "text": "The response draws no conclusion that goes beyond the cited examples (it states what the examples show and says what they do not show)",
+      "passed": true,
+      "evidence": "'In the contexts shown here (…) ἐκκλησία names a gathering of people … These examples are a sample; they don't tell us how every first-century hearer understood the word.' Note the leading discussion question below."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 0,
+    "transcript_chars": 10786,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "In the Gospels the word occurs only at Matt 16:18 and 18:17",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`search ἐκκλησία --corpus grnt` (grader re-ran)."
+    },
+    {
+      "claim": "Philo uses it for civic assemblies (Prob.1.138)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`verse Prob.1.138 --corpus ext --witness Philo` (grader re-ran)."
+    },
+    {
+      "claim": "'\"Church\" is a later church word'",
+      "type": "quality",
+      "verified": false,
+      "evidence": "Historical claim not from lookup output."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Ecclesiological lean in the class discussion: 'if ἐκκλησία is \"the people gathered\", what does that suggest about a group that never actually gathers? Let the texts … answer' — a leading question that moves from word usage to a practice conclusion. All quotes and inline tags validated; zero untagged repeated runs.",
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "6/6 (iterations 1: 5/6, 2: 6/6)."
+  }
+}

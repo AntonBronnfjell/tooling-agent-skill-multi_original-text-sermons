@@ -1,0 +1,81 @@
+{
+  "eval_id": 13,
+  "eval_name": "tr-byz-quote-acts20-28-1tim1-1-order-es",
+  "iteration": 4,
+  "expectations": [
+    {
+      "text": "The transcript shows `lookup.py verse Acts.20.28` and `lookup.py verse 1Tim.1.1` run with `--witness TR` and with `--witness Byz` (or an equivalent that prints both editions), and `lookup.py variants` for both refs",
+      "passed": true,
+      "evidence": "Tool log: `verse Acts.20.28 --witness TR|Byz|SBL`, `verse 1Tim.1.1 --witness TR|Byz|SBL`, `variants Acts.20.28`, `variants 1Tim.1.1`."
+    },
+    {
+      "text": "The Acts.20.28 TR quote reads exactly as lookup prints it for TR (…ἐκκλησίαν τοῦ Θεοῦ, ἣν περιεποιήσατο διὰ τοῦ ἰδίου αἵματος) and the Byz quote reads exactly as lookup prints it for Byz (…ἐκκλησίαν τοῦ κυρίου καὶ θεοῦ, ἣν περιεποιήσατο διὰ τοῦ ἰδίου αἵματος); each is tagged with its witness (GRC:TR / GRC:Byz)",
+      "passed": true,
+      "evidence": "[GRC:TR Acts.20.28] '…τοῦ Θεοῦ, ἣν περιεποιήσατο διὰ τοῦ ἰδίου αἵματος.' and [GRC:Byz Acts.20.28] '…τοῦ κυρίου καὶ θεοῦ, ἣν περιεποιήσατο διὰ τοῦ ἰδίου αἵματος.' — identical to `verse --witness` output."
+    },
+    {
+      "text": "The 1Tim.1.1 TR quote reads exactly as lookup prints it for TR (…καὶ Κυρίου Ἰησοῦ Χριστοῦ τῆς ἐλπίδος ἡμῶν) and the Byz quote as printed for Byz (…καὶ κυρίου Ἰησοῦ χριστοῦ τῆς ἐλπίδος ἡμῶν); each is tagged with its witness",
+      "passed": true,
+      "evidence": "[GRC:TR 1Tim.1.1] '…καὶ Κυρίου Ἰησοῦ Χριστοῦ τῆς ἐλπίδος ἡμῶν,' and [GRC:Byz 1Tim.1.1] '…καὶ κυρίου Ἰησοῦ χριστοῦ τῆς ἐλπίδος ἡμῶν,' — identical."
+    },
+    {
+      "text": "The response shows the Acts.20.28 word order as `variants` prints it: τοῦ αἵματος τοῦ ἰδίου (NA/SBL/THGNT/WH) versus τοῦ ἰδίου αἵματος (Byz+TR). For 1Tim.1.1 it reports that `variants` lists three different order entries (NA+SBL+THGNT+WH, Byz, TR), describing them in prose or with sub-phrases that validate against `verse --witness <W>`; verbatim TR/Byz order strings are not required",
+      "passed": true,
+      "evidence": "Acts: '[GRC Acts.20.28] διὰ τοῦ αἵματος τοῦ ἰδίου — NA, SBL, THGNT, WH; τοῦ ἰδίου αἵματος — TR y Byz (entrada \"order\" de `variants`)'. 1 Tim: the critical order (quoted [GRC 1Tim.1.1] text, 'Ungido Jesús' twice, no κυρίου), the Byz order entry ('coloca la palabra \"señor\" de Byz al principio, justo después de \"enviado\"') and TR's order (señor after 'y', as the TR verse) are all described. It does not say in so many words 'three entries'."
+    },
+    {
+      "text": "The response notes that the 1Tim.1.1 `variants` order strings come from TAGNT word data (including the typo κυριόυ) and differ from the printed TR/Byz verse text (TR Κυρίου, Byz κυρίου), and does not quote the κυριόυ form as an edition's reading; any Greek of two or more words outside a quote block is preceded by an inline tag [CORPUS[:WITNESS] Ref] — a run that repeats verbatim (same words, order and accents; case and punctuation ignored) text quoted in a quote block or inline-tagged quote on an earlier line of the same answer counts as tagged — and the response's quotes pass `check_sermon.py --quotes-only --lang es` on a temp file outside sermons/",
+      "passed": true,
+      "evidence": "'esas filas de palabras escriben κυριόυ … es una errata de los datos (TAGNT), y el texto impreso dice κυρίου'; κυριόυ never quoted as a reading. Grader's independent scan (multi-word Greek runs outside quote blocks, with the revised rule: verbatim repeats of earlier quoted/inline-tagged text, case and punctuation ignored, count as tagged): only '(Χριστοῦ, Θεοῦ, Κυρίου)', a comma list of three separate single words each in the TR quote above — treated as a lemma list, not a 2+ word phrase. Grader ran `check_sermon.py --quotes-only` on the whole chat answer (everything above '## Tool log') in a scratch file: exit 0, no warnings."
+    },
+    {
+      "text": "The response states the Acts.20.28 `verse` texts as printed (TR θεοῦ, Byz κυρίου καὶ θεοῦ, SBL θεοῦ), or names the three `variants` rows as printed (#21 κυρίου, #22 καὶ, #23 θεοῦ with their edition lists), and draws no conclusion about which reading is original, correct or doctrinally preferred",
+      "passed": true,
+      "evidence": "'θεοῦ — NA28, NA27, SBL, WH, TR'; 'κυρίου καὶ θεοῦ — solo Byz'; 'los datos muestran las combinaciones; no deciden cuál es la original'."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 0,
+    "transcript_chars": 10343,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "variants Acts.20.28 rows and edition lists",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Re-verified in iteration 3; data unchanged."
+    },
+    {
+      "claim": "THGNT reads τοῦ κυρίου",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`verse Acts.20.28 --witness THGNT`."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "κύριος convention: Byz pair rendered 'del señor y dios / del Señor y Dios' (both casings, same form for both words), with a Notes line explaining the convention — resolves the iteration-3 asymmetry ('del señor y Dios'). Neutral throughout.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "…any Greek of two or more words outside a quote block is preceded by an inline tag…",
+        "reason": "Say whether a comma-separated list of single words (e.g. 'Χριστοῦ, Θεοῦ, Κυρίου') counts as a run; the validator treats it under the separated-words WARN only."
+      }
+    ],
+    "overall": "6/6 (iteration 3: 5/6)."
+  }
+}

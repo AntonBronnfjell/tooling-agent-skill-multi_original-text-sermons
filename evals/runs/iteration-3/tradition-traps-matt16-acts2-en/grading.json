@@ -1,0 +1,75 @@
+{
+  "eval_id": 2,
+  "eval_name": "tradition-traps-matt16-acts2-en",
+  "iteration": 3,
+  "expectations": [
+    {
+      "text": "The Matt 16:18 Literal and Natural lines render ἐκκλησία with a plain word such as \"assembly\" or \"gathering\" and do not use \"church\" on those translation lines",
+      "passed": true,
+      "evidence": "[GRC Matt.16.18] Literal '…I-will-build my the assembly'; Natural '…on this rock I will build my assembly'. No 'church'."
+    },
+    {
+      "text": "The Acts 2:38 Literal and Natural lines render βαπτισθήτω with a plain word such as \"immerse\" or \"immersed\" and do not use \"baptize\"/\"baptized\"/\"baptism\" on those translation lines",
+      "passed": true,
+      "evidence": "[GRC Acts.2.38] Literal 'let-be-immersed each of-you'; Natural 'let each of you be immersed (or: washed)'. No baptize/baptism on translation lines."
+    },
+    {
+      "text": "The Acts 2:4 translation lines render πνεύματος ἁγίου without capitalizing \"Holy Spirit\" (e.g. \"holy spirit\" or \"a holy breath/spirit\")",
+      "passed": true,
+      "evidence": "[GRC Acts.2.4] Literal 'of-holy spirit'; Natural 'filled with holy spirit … as the spirit kept giving them words'. Lower case throughout."
+    },
+    {
+      "text": "The sermon file passes check_sermon.py with 0 errors (no tradition-vocabulary error on translation lines)",
+      "passed": true,
+      "evidence": "sermons/2026-11-19-assembly-spirit-name.en.md — grade_programmatic.py: check_sermon exit 0, errors [], warnings []."
+    },
+    {
+      "text": "Where the response mentions the traditional wording (church, baptize, Holy Spirit), it does so in prose or notes and labels it as a tradition/translation choice, not on a Literal/Natural line",
+      "passed": true,
+      "evidence": "Prose: 'The word our Bibles render \"church\" is ἐκκλησίαν'; 'Our Bibles say \"be baptized\", and in our churches \"baptize\" is a technical term'; 'The KJV says \"Holy Ghost\"…'. Notes tag KJV/BSB/RV1909 renderings [tradition-vocabulary]/[capitalization]."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 13890,
+    "transcript_chars": 24248,
+    "note": "No metrics.json in run dir."
+  },
+  "timing": {
+    "note": "No timing.json available for this run."
+  },
+  "claims": [
+    {
+      "claim": "Josephus uses βαπτίζω of a ship that sank (Life.1.15)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`usage βαπτίζω`: Josephus Life.1.15 βαπτισθέντος … τοῦ πλοίου (grader re-ran)."
+    },
+    {
+      "claim": "'Manuscripts of the first century had no capital letters'",
+      "type": "factual",
+      "verified": false,
+      "evidence": "Wrong as worded (majuscule manuscripts are all capitals); SKILL.md/fidelity-rules say 'no case distinction'. Same error as iteration 1."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": [],
+    "note": "No user_notes.md in run dir."
+  },
+  "grader_notes": "Doctrinal lean to flag: Big Idea 'Peter tells his hearers how to join it: turn, and be immersed on Jesus' name', Point 3 title 'How one enters', Conclusion 'Peter tells people how to enter' — presents immersion as the entry rite into the assembly as the text's plain message, while εἰς ἄφεσιν and ἐπὶ τῷ ὀνόματι are shown with options. Also 'So Jesus is not promising a building or an institution' (anti-institutional framing). 'this rock' shown with three options, no verdict.",
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "No assertion checks Big Idea/Conclusion framing for a reading the body itself marks as contested (Acts 2:38)."
+      }
+    ],
+    "overall": "5/5 (iteration 1: 5/5)."
+  }
+}
