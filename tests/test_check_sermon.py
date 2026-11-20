@@ -622,5 +622,54 @@ class FinalReview(Base):
         return p
 
 
+class Iteration3(Base):
+    """Eval iteration 3: where an inline-tagged quote ends, a leading `…` after the tag, --help text."""
+
+    doc = FinalReview.doc
+    errs = FinalReview.errs
+
+    def test_inline_quote_stops_at_colon(self):
+        # a lemma after `:` is not part of the tagged quote (no source text has `:`)
+        ok = self.doc(notes="- John.1.1: [GRC John.1.1] καὶ θεὸς ἦν: ἀγαθός is not in the verse.")
+        self.assertEqual(self.errs(ok), [])
+        # 2+ words after the colon are an untagged run: still an ERROR (never accepted unverified)
+        bad = self.errs(self.doc(notes="- John.1.1: [GRC John.1.1] καὶ θεὸς ἦν: ἀγαθός ἐστιν here."))
+        self.assertTrue(any("untagged original-language text" in m for m in bad), bad)
+        self.assertFalse(any("not found" in m for m in bad), bad)
+        # ...unless those words were quoted verbatim on an earlier line
+        again = self.doc(notes="- John.1.1: [GRC John.1.1] ὁ λόγος ἦν\n- [GRC John.1.1] καὶ θεὸς ἦν: ὁ λόγος ἦν")
+        self.assertEqual(self.errs(again), [])
+
+    def test_inline_quote_still_verified_before_colon(self):
+        bad = self.errs(self.doc(notes="- John.1.1: [GRC John.1.1] καὶ θεὸς ἀγαθός: ἦν here."))
+        self.assertTrue(any("not found" in m for m in bad), bad)
+
+    def test_inline_quote_continues_across_source_punctuation(self):
+        ok = self.doc(notes="- John.1.1: [GRC John.1.1] ἦν ὁ λόγος, καὶ ὁ λόγος ἦν here.")
+        self.assertEqual(self.errs(ok), [])
+        # `.` and `,` are in the source text, so the quote runs on and the extra word is verified (and fails)
+        for sep in (". ", ", ", " · ", "; ", " … "):
+            bad = self.errs(self.doc(notes=f"- John.1.1: [GRC John.1.1] καὶ θεὸς ἦν ὁ λόγος{sep}ἀγαθός"))
+            self.assertTrue(any("not found" in m for m in bad), (sep, bad))
+
+    def test_inline_quote_stops_at_other_delimiters(self):
+        for sep in (" / ", " — ", " (", " «", ' "'):
+            ok = self.doc(notes=f"- John.1.1: [GRC John.1.1] καὶ θεὸς ἦν{sep}ἀγαθός")
+            self.assertEqual(self.errs(ok), [], sep)
+
+    def test_inline_tag_may_open_with_ellipsis(self):
+        for ell in ("…", "...", "… "):
+            ok = self.doc(notes=f"- John.1.1: [GRC John.1.1] {ell}ἦν πρὸς τὸν θεόν")
+            self.assertEqual(self.errs(ok), [], ell)
+            bad = self.errs(self.doc(notes=f"- John.1.1: [GRC John.1.1] {ell} καὶ θεὸς ἀγαθός"))
+            self.assertTrue(any("not found" in m for m in bad), (ell, bad))
+
+    def test_help_lang_default_matches_behaviour(self):
+        r = subprocess.run([sys.executable, str(CHECK), "--help"], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0)
+        self.assertNotIn("default en)", r.stdout)
+        self.assertRegex(" ".join(r.stdout.split()), r"omitted.*es and en")
+
+
 if __name__ == "__main__":
     unittest.main()

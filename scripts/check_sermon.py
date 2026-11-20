@@ -5,11 +5,15 @@ avoid tradition vocabulary, template sections and frontmatter must be present.
 Usage: check_sermon.py <file>... [--db PATH] [--quotes-only [--lang xx]]
 --quotes-only: for chat answers (word studies, single-verse questions) — checks only quote tags, quoted
 text, inline-tagged text, untagged original-language runs, Literal:/Natural: lines and tradition vocabulary
-(language from --lang, default en); any frontmatter is ignored (read as text); no sections, Notes or length
-checks; an answer with no tagged quote at all is an ERROR.
+(with --lang xx the list for xx; without --lang both the es and en lists); any frontmatter is ignored (read
+as text); no sections, Notes or length checks; an answer with no tagged quote at all is an ERROR.
 Original-language text anywhere in the body (Notes included): a run of 2+ Greek/Hebrew words must be a
 tagged quote block or carry an inline tag right before it, `[CORPUS[:WITNESS] Ref] <original text>`, which
-is verified like a quote; single words (lemmas) are free; a run already quoted verbatim above is exempt.
+is verified like a quote; single words (lemmas) are free; a run already quoted verbatim (same words, order
+and accents; case and punctuation ignored) in a quote block or inline-tagged quote on an earlier line is exempt.
+An inline-tagged quote may open with `…` and runs over original-language words, spaces, `…` and the
+punctuation the source texts print inside a verse (`,` `.` `;` `·` `׃`); any other character (`:` `/` `—`
+`(` a quote mark, a Latin letter) ends it, and original-language words after that are judged as untagged.
 Output: `ERROR <line>: <msg>` / `WARN <line>: <msg>` (with a `<path>:` header when several files), then
 `OK <path>` for each file without errors.
 Exit: 1 if any ERROR, 2 if bible.db is missing, else 0.
@@ -41,7 +45,11 @@ HAS_SCRIPT = re.compile("[\u0370-\u03ff\u1f00-\u1fff\u0590-\u05ff]")
 SCRIPT_WORD = "[\u0300-\u036f\u0370-\u03ff\u1f00-\u1fff\u0590-\u05ff]+[\u2019\u02bc']?"
 SCRIPT_RUN = re.compile(rf"{SCRIPT_WORD}(?:[\s,.;\u00b7:\u05c3\u2026]+{SCRIPT_WORD})*")
 SCRIPT_TOKEN = re.compile(SCRIPT_WORD)
-INLINE_TAG = re.compile(r"\[(" + "|".join(CORPUS) + r")(?::([^\s\]]+))?\s+([^\]]+?)\s*\]\s*$", re.IGNORECASE)
+# an inline-tagged quote: like SCRIPT_RUN, but only source punctuation joins words (no `:`, which no source text has)
+TAGGED_RUN = re.compile(rf"{SCRIPT_WORD}(?:[\s,.;\u00b7\u037e\u0387\u05c3\u2026]+{SCRIPT_WORD})*")
+# the tag, optionally followed by a leading elision (`[GRC John.1.1] … καὶ θεὸς`)
+INLINE_TAG = re.compile(r"\[(" + "|".join(CORPUS) + r")(?::([^\s\]]+))?\s+([^\]]+?)\s*\]\s*(?:(?:…|\.\.\.)\s*)?$",
+                        re.IGNORECASE)
 EDITOR_NOTE = re.compile(r"bracket|corchete|editor", re.IGNORECASE)
 TEMPLATE_NAME = re.compile(r"^[a-z0-9-]+$")
 MAX_RANGE = 50
@@ -381,6 +389,17 @@ def inline_quotes(lines, start, block_quotes):
 
     A run preceded on its line by `[CORPUS[:WITNESS] Ref]` is an inline quote (verified like a block quote);
     an untagged run of 2+ words is a problem unless it appears verbatim in a quote above it."""
+    def runs(scan, text):
+        """Original-language runs in `scan` -> (start, run text, tag match | None). A tagged run is cut at
+        the first non-source character; the rest of the run is scanned again as untagged runs."""
+        pos = 0
+        while (m := SCRIPT_RUN.search(scan, pos)):
+            t = INLINE_TAG.search(text[:m.start()])
+            if t:
+                m = TAGGED_RUN.match(scan, m.start())
+            yield m.start(), m.group(0), t
+            pos = m.end()
+
     out, problems, warns = [], [], []
     block_n = 0  # untagged original-language pieces in the current paragraph/bullet (any separator)
     for i in range(start, len(lines)):
@@ -390,18 +409,17 @@ def inline_quotes(lines, start, block_quotes):
             continue
         text = nfc(lines[i])
         groups, prev_end = [], None  # untagged runs; runs joined only by a `/` form one list
-        for m in SCRIPT_RUN.finditer(text):
-            t = INLINE_TAG.search(text[:m.start()])
+        for start, run, t in runs(text, text):
             if t:
-                out.append({"line": i + 1, "tag": t.groups(), "original": m.group(0), "labels": None})
+                out.append({"line": i + 1, "tag": t.groups(), "original": run, "labels": None})
                 prev_end = None
                 continue
-            gap = text[prev_end:m.start()] if prev_end is not None else ""
+            gap = text[prev_end:start] if prev_end is not None else ""
             if groups and prev_end is not None and "/" in gap and re.fullmatch(r"[\s,;/\u00b7]+", gap):
-                groups[-1].append(m.group(0))
+                groups[-1].append(run)
             else:
-                groups.append([m.group(0)])
-            prev_end = m.end()
+                groups.append([run])
+            prev_end = start + len(run)
         bad = False
         for g in groups:  # untagged: pieces split on , ; / \u00b7 are judged alone (a lemma list is not a quote)
             pieces = [x for run in g for x in LIST_SEP.split(run) if SCRIPT_TOKEN.search(x)]
@@ -413,8 +431,8 @@ def inline_quotes(lines, start, block_quotes):
                     break
         if not bad:  # count untagged pieces on the line (any separator), skipping tool-command snippets
             plain = COMMAND_SPAN.sub(lambda m: " " * len(m.group(0)), text)
-            n = sum(len([x for x in LIST_SEP.split(m.group(0)) if SCRIPT_TOKEN.search(x)])
-                    for m in SCRIPT_RUN.finditer(plain) if not INLINE_TAG.search(text[:m.start()]))
+            n = sum(len([x for x in LIST_SEP.split(run) if SCRIPT_TOKEN.search(x)])
+                    for _, run, t in runs(plain, text) if not t)
             before, block_n = block_n, block_n + n
             if before < 5 <= block_n:
                 warns.append((i + 1, f"{block_n} separated original-language words in one run \u2014 tag it "
@@ -571,11 +589,12 @@ def check(path, conn, quotes_only=False, lang=None):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap = argparse.ArgumentParser(description=" ".join(__doc__.split("\n\n")[0].split()))
     ap.add_argument("files", nargs="+")
     ap.add_argument("--db")
     ap.add_argument("--quotes-only", action="store_true", help="chat answers: check quotes/tags/tradition terms only")
-    ap.add_argument("--lang", help="language of the Literal:/Natural: lines in --quotes-only mode (default en)")
+    ap.add_argument("--lang", help="language of the Literal:/Natural: lines in --quotes-only mode; selects that "
+                    "language's tradition-vocabulary list (when omitted, both the es and en lists are scanned)")
     a = ap.parse_args(argv)
     if a.db:
         p = Path(a.db)
